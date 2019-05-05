@@ -42,16 +42,13 @@ public class BinomialMutation extends MutationDistribution {
    */
   @Override
   public boolean toMutate(int index) {
-    if (this.bitsToBeModified.contains(index)) {
-      return true;
-    }
-    return false;
+    return this.bitsToBeModified.contains(index);
   }
 
   /**
    * Number of bits to be mutated (in our context, number of test cases to be mutated) according to
    * a binomial distribution.
-   * 
+   *
    * @param numTrials
    * @param probability
    * @return number of test cases to be mutated
