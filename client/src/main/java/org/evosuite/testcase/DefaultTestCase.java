@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,23 +19,6 @@
  */
 package org.evosuite.testcase;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.evosuite.assertion.Assertion;
 import org.evosuite.assertion.InspectorAssertion;
 import org.evosuite.assertion.PrimitiveFieldAssertion;
@@ -43,25 +26,32 @@ import org.evosuite.contracts.ContractViolation;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.runtime.util.Inputs;
 import org.evosuite.setup.TestClusterUtils;
-import org.evosuite.testcase.statements.*;
-import org.evosuite.testcase.statements.environment.AccessedEnvironment;
 import org.evosuite.testcase.execution.CodeUnderTestException;
 import org.evosuite.testcase.execution.Scope;
+import org.evosuite.testcase.statements.*;
+import org.evosuite.testcase.statements.environment.AccessedEnvironment;
 import org.evosuite.testcase.variable.*;
-import org.evosuite.utils.generic.GenericClass;
-import org.evosuite.utils.generic.GenericField;
 import org.evosuite.utils.ListenableList;
 import org.evosuite.utils.Listener;
 import org.evosuite.utils.Randomness;
+import org.evosuite.utils.generic.GenericClass;
+import org.evosuite.utils.generic.GenericField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.springframework.util.ClassUtils;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A test case is a list of statements
- * 
+ *
  * @author Gordon Fraser
  */
 public class DefaultTestCase implements TestCase, Serializable {
@@ -78,10 +68,10 @@ public class DefaultTestCase implements TestCase, Serializable {
 	protected final ListenableList<Statement> statements;
 
 	/** Coverage goals this test covers */
-	private transient Set<TestFitnessFunction> coveredGoals = new LinkedHashSet<TestFitnessFunction>();
+	private transient Set<TestFitnessFunction> coveredGoals = new LinkedHashSet<>();
 
 	/** Violations revealed by this test */
-	private transient Set<ContractViolation> contractViolations = new LinkedHashSet<ContractViolation>();
+	private transient Set<ContractViolation> contractViolations = new LinkedHashSet<>();
 
 	private boolean isFailing = false;
 
@@ -109,11 +99,9 @@ public class DefaultTestCase implements TestCase, Serializable {
 	public void accept(TestVisitor visitor) {
 		visitor.visitTestCase(this);
 
-		Iterator<Statement> iterator = statements.iterator();
-		while (iterator.hasNext()) {
-			Statement statement = iterator.next();
-			logger.trace("Visiting statement " + statement.getCode());
-			visitor.visitStatement(statement);
+		for (Statement s : statements) {
+			logger.trace("Visiting statement " + s.getCode());
+			visitor.visitStatement(s);
 		}
 	}
 
@@ -177,7 +165,6 @@ public class DefaultTestCase implements TestCase, Serializable {
 					fieldType = field.getGenericType();
 				} catch (java.lang.reflect.GenericSignatureFormatError e) {
 					// Ignore
-					fieldType = field.getType();
 				}
 				FieldReference f = new FieldReference(this, new GenericField(field,
 				        var.getGenericClass()), fieldType, var);
@@ -258,7 +245,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	 * <p>
 	 * changeClassLoader
 	 * </p>
-	 * 
+	 *
 	 * @param loader
 	 *            a {@link java.lang.ClassLoader} object.
 	 */
@@ -268,13 +255,13 @@ public class DefaultTestCase implements TestCase, Serializable {
 			s.changeClassLoader(loader);
 		}
 	}
-	
+
 	private transient ClassLoader changedClassLoader = null;
 
 	public ClassLoader getChangedClassLoader() {
 		return changedClassLoader;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.evosuite.testcase.TestCase#chop(int)
 	 */
@@ -285,13 +272,13 @@ public class DefaultTestCase implements TestCase, Serializable {
 			statements.remove(length);
 		}
 	}
-	
+
 	@Override
 	public int sliceFor(VariableReference var) {
-		
-		Set<Statement> dependentStatements = new LinkedHashSet<Statement>();
+
+		Set<Statement> dependentStatements = new LinkedHashSet<>();
 		dependentStatements.add(statements.get(var.getStPosition()));
-		
+
 		int lastPosition = var.getStPosition();
 		// Add all statements that use this var
 		for(VariableReference ref : getReferences(var)) {
@@ -301,7 +288,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 		}
 
 		for (int i = lastPosition; i >= 0; i--) {
-			Set<Statement> newStatements = new LinkedHashSet<Statement>();
+			Set<Statement> newStatements = new LinkedHashSet<>();
 			for (Statement s : dependentStatements) {
 				if (s.references(statements.get(i).getReturnValue()) ||
 						s.references(statements.get(i).getReturnValue().getAdditionalVariableReference())) {
@@ -311,26 +298,21 @@ public class DefaultTestCase implements TestCase, Serializable {
 			}
 			dependentStatements.addAll(newStatements);
 		}
-		List<Integer> dependentPositions = new ArrayList<Integer>();
-		for(Statement s : dependentStatements) {
+		List<Integer> dependentPositions = new ArrayList<>();
+		for (Statement s : dependentStatements) {
 			dependentPositions.add(s.getPosition());
 		}
-		Collections.sort(dependentPositions, Collections.reverseOrder());
-		for(Integer pos = size(); pos >= 0 ; pos--) {
-			if(!dependentPositions.contains(pos)) {
+		dependentPositions.sort(Collections.reverseOrder());
+		for (int pos = size(); pos >= 0 ; pos--) {
+			if (!dependentPositions.contains(pos)) {
 				remove(pos);
 			}
 		}
 		return var.getStPosition();
 	}
-	
+
 	public boolean contains(Statement statement) {
-		for(Statement s : statements) {
-			if(s.equals(statement)) {
-				return true;
-			}
-		}
-		return false;
+		return statements.stream().anyMatch(s -> s.equals(statement));
 	}
 
 	/* (non-Javadoc)
@@ -344,13 +326,13 @@ public class DefaultTestCase implements TestCase, Serializable {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Create a copy of the test case
 	 */
 	@Override
 	public DefaultTestCase clone() {
 		DefaultTestCase t = null;
-		t = new DefaultTestCase(); //Note: cannot use super.clone() due to final fields :( 
+		t = new DefaultTestCase(); //Note: cannot use super.clone() due to final fields :(
 		/*
 		try {
 			t = (DefaultTestCase) super.clone();
@@ -394,8 +376,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 		DefaultTestCase other = (DefaultTestCase) obj;
 
 		if (statements == null) {
-			if (other.statements != null)
-				return false;
+			return other.statements == null;
 		} else {
 			if (statements.size() != other.statements.size())
 				return false;
@@ -415,7 +396,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public Set<Class<?>> getAccessedClasses() {
-		Set<Class<?>> accessedClasses = new LinkedHashSet<Class<?>>();
+		Set<Class<?>> accessedClasses = new LinkedHashSet<>();
 		for (Statement s : statements) {
 			for (VariableReference var : s.getVariableReferences()) {
 				if (var != null && !var.isPrimitive()) {
@@ -456,7 +437,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public List<Assertion> getAssertions() {
-		List<Assertion> assertions = new ArrayList<Assertion>();
+		List<Assertion> assertions = new ArrayList<>();
 		for (Statement s : statements) {
 			assertions.addAll(s.getAssertions());
 		}
@@ -478,7 +459,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public Set<Class<?>> getDeclaredExceptions() {
-		Set<Class<?>> exceptions = new LinkedHashSet<Class<?>>();
+		Set<Class<?>> exceptions = new LinkedHashSet<>();
 		for (Statement statement : statements) {
 			exceptions.addAll(statement.getDeclaredExceptions());
 		}
@@ -496,17 +477,17 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public Set<VariableReference> getDependencies(VariableReference var) {
-		Set<VariableReference> dependencies = new LinkedHashSet<VariableReference>();
+		Set<VariableReference> dependencies = new LinkedHashSet<>();
 
 		if (var == null || var.getStPosition() == -1)
 			return dependencies;
 
-		Set<Statement> dependentStatements = new LinkedHashSet<Statement>();
+		Set<Statement> dependentStatements = new LinkedHashSet<>();
 		if(statements.size() > var.getStPosition())
 			dependentStatements.add(statements.get(var.getStPosition()));
 
 		for (int i = var.getStPosition(); i >= 0; i--) {
-			Set<Statement> newStatements = new LinkedHashSet<Statement>();
+			Set<Statement> newStatements = new LinkedHashSet<>();
 			for (Statement s : dependentStatements) {
 				if (s.references(statements.get(i).getReturnValue())) {
 					newStatements.add(statements.get(i));
@@ -556,7 +537,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public List<VariableReference> getObjects(int position) {
-		List<VariableReference> variables = new LinkedList<VariableReference>();
+		List<VariableReference> variables = new LinkedList<>();
 
 		for (int i = 0; i < position && i < statements.size(); i++) {
 			VariableReference value = statements.get(i).getReturnValue();
@@ -584,7 +565,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public List<VariableReference> getObjects(Type type, int position) {
-		List<VariableReference> variables = new LinkedList<VariableReference>();
+		List<VariableReference> variables = new LinkedList<>();
 
 		GenericClass genericClass = new GenericClass(type);
 		Class<?> rawClass = genericClass.getRawClass();
@@ -635,7 +616,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 				variables.add(value);
 			} else {
 				addFields(variables, value, type);
-			}			
+			}
 		}
 
 		return variables;
@@ -749,7 +730,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public Set<VariableReference> getReferences(VariableReference var) {
-		Set<VariableReference> references = new LinkedHashSet<VariableReference>();
+		Set<VariableReference> references = new LinkedHashSet<>();
 
 		if (var == null || var.getStPosition() == -1)
 			return references;
@@ -757,7 +738,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 		// references.add(var);
 
 		for (int i = var.getStPosition() + 1; i < statements.size(); i++) {
-			Set<VariableReference> temp = new LinkedHashSet<VariableReference>();
+			Set<VariableReference> temp = new LinkedHashSet<>();
 			if (statements.get(i).references(var))
 				temp.add(statements.get(i).getReturnValue());
 			else if (statements.get(i).references(var.getAdditionalVariableReference()))
@@ -795,13 +776,15 @@ public class DefaultTestCase implements TestCase, Serializable {
 		}
 		return statements.get(position);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.evosuite.testcase.TestCase#hasStatement(int)
 	 */
 	/** {@inheritDoc} */
 	@Override
 	public boolean hasStatement(int position) {
+		// TODO: shouldn't it be:
+		//  return statements.size() > position && position >= 0;
 		return (statements.size() > position || position < 0);
 	}
 
@@ -811,11 +794,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean hasAssertions() {
-		for (Statement s : statements) {
-			if (s.hasAssertions())
-				return true;
-		}
-		return false;
+		return statements.stream().anyMatch(Statement::hasAssertions);
 	}
 
 	/* (non-Javadoc)
@@ -823,18 +802,13 @@ public class DefaultTestCase implements TestCase, Serializable {
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public boolean hasCastableObject(Type type) {
-		for (Statement st : statements) {
-			if (st.getReturnValue().isAssignableFrom(type)) {
-				return true;
-			}
-		}
-		return false;
+	public boolean hasCastableObject(Type t) {
+		return statements.stream().anyMatch(s -> s.getReturnValue().isAssignableFrom(t));
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Equality check
 	 */
 	// public boolean equals(TestCase t) {
@@ -895,11 +869,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 
 	@Override
 	public boolean isAccessible() {
-		for (Statement statement : statements) {
-			if (!statement.isAccessible())
-				return false;
-		}
-		return true;
+		return statements.stream().allMatch(Statement::isAccessible);
 	}
 
 	/* (non-Javadoc)
@@ -983,10 +953,8 @@ public class DefaultTestCase implements TestCase, Serializable {
 	}
 
 	@Override
-	public void removeAssertion(Assertion assertion) {
-		for (Statement s : statements) {
-			s.removeAssertion(assertion);
-		}
+	public void removeAssertion(Assertion a) {
+		statements.forEach(s -> s.removeAssertion(a));
 	}
 
 	/* (non-Javadoc)
@@ -995,9 +963,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public void removeAssertions() {
-		for (Statement s : statements) {
-			s.removeAssertions();
-		}
+		statements.forEach(Statement::removeAssertions);
 	}
 
 	private boolean methodNeedsDownCast(MethodStatement methodStatement, VariableReference var, Class<?> abstractClass) {
@@ -1041,20 +1007,16 @@ public class DefaultTestCase implements TestCase, Serializable {
 
 	private boolean fieldNeedsDownCast(FieldReference fieldReference, VariableReference var, Class<?> abstractClass) {
 		if(fieldReference.getSource().equals(var)) {
-			if(!fieldReference.getField().getDeclaringClass().isAssignableFrom(abstractClass)) {
-				// Need downcast for real
-				return true;
-			}
+			// Need downcast for real
+			return !fieldReference.getField().getDeclaringClass().isAssignableFrom(abstractClass);
 		}
 		return false;
 	}
 
 	private boolean fieldNeedsDownCast(FieldStatement fieldStatement, VariableReference var, Class<?> abstractClass) {
 		if(!fieldStatement.isStatic() && fieldStatement.getSource().equals(var)) {
-			if(!fieldStatement.getField().getDeclaringClass().isAssignableFrom(abstractClass)) {
-				// Need downcast for real
-				return true;
-			}
+			// Need downcast for real
+			return !fieldStatement.getField().getDeclaringClass().isAssignableFrom(abstractClass);
 		}
 		return false;
 	}
@@ -1127,9 +1089,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public void replace(VariableReference var1, VariableReference var2) {
-		for (Statement statement : statements) {
-			statement.replace(var1, var2);
-		}
+		statements.forEach(s -> s.replace(var1, var2));
 	}
 
 
@@ -1138,8 +1098,8 @@ public class DefaultTestCase implements TestCase, Serializable {
 	        IOException {
 		ois.defaultReadObject();
 
-		coveredGoals = new LinkedHashSet<TestFitnessFunction>();
-		contractViolations = new LinkedHashSet<ContractViolation>();
+		coveredGoals = new LinkedHashSet<>();
+		contractViolations = new LinkedHashSet<>();
 	}
 
 	public void setFailing(boolean failing) {
