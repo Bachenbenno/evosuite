@@ -45,7 +45,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger logger = LoggerFactory.getLogger(AbstractTestSuiteChromosome.class);
-	
+
 	protected List<T> tests = new ArrayList<T>();
 	protected ChromosomeFactory<T> testChromosomeFactory;
 
@@ -55,8 +55,8 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 	protected AbstractTestSuiteChromosome(){
 		super();
 	}
-	
-	
+
+
 	/**
 	 * <p>Constructor for AbstractTestSuiteChromosome.</p>
 	 *
@@ -110,7 +110,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 		tests.add(test);
 		this.setChanged(true);
 	}
-	
+
 	public void deleteTest(T test) {
 		boolean changed = tests.remove(test);
 		if(changed)
@@ -250,14 +250,8 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 			logger.debug("Adding new test case");
 			changed = true;
 		}
-		
-		Iterator<T> testIterator = tests.iterator();
-		while(testIterator.hasNext()) {
-			T test = testIterator.next();
-			if(test.size() == 0)
-				testIterator.remove();
-		}
-		
+
+        tests.removeIf(test -> test.size() == 0);
 
 		if (changed) {
 			this.increaseNumberOfMutations();
