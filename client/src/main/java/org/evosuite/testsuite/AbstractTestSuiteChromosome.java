@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,25 +19,22 @@
  */
 package org.evosuite.testsuite;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.ga.localsearch.LocalSearchObjective;
 import org.evosuite.ga.operators.mutation.MutationDistribution;
-import org.evosuite.regression.RegressionTestChromosomeFactory;
 import org.evosuite.testcase.ExecutableChromosome;
 import org.evosuite.testcase.execution.ExecutionResult;
-import org.evosuite.testcase.factories.RandomLengthTestFactory;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome> extends Chromosome {
 
@@ -46,7 +43,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 
 	private static final Logger logger = LoggerFactory.getLogger(AbstractTestSuiteChromosome.class);
 
-	protected List<T> tests = new ArrayList<T>();
+	protected List<T> tests = new ArrayList<>();
 	protected ChromosomeFactory<T> testChromosomeFactory;
 
 	/**
@@ -123,9 +120,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 	 * @param tests a {@link java.util.Collection} object.
 	 */
 	public void addTests(Collection<T> tests) {
-		for (T test : tests) {
-			this.tests.add(test);
-		}
+        this.tests.addAll(tests);
 		if (!tests.isEmpty())
 			this.setChanged(true);
 	}
@@ -235,7 +230,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 			T test = tests.get(i);
 			if (probabilityDistribution.toMutate(i)) {
 				test.mutate();
-				if(test.isChanged())
+				if (test.isChanged())
 					changed = true;
 			}
 		}
@@ -305,7 +300,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 	}
 
 	public List<ExecutionResult> getLastExecutionResults() {
-		return tests.stream().map(t -> t.getLastExecutionResult()).collect(Collectors.toList());
+		return tests.stream().map(ExecutableChromosome::getLastExecutionResult).collect(Collectors.toList());
 	}
 
 	/**
