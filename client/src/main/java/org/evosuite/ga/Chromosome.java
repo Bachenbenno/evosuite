@@ -30,359 +30,359 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Abstract base class of chromosomes
- * 
+ *
  * @author Gordon Fraser, Jose Miguel Rojas
  */
 public abstract class Chromosome implements Comparable<Chromosome>, Serializable,
-		PublicCloneable<Chromosome> {
+        PublicCloneable<Chromosome> {
 
-	private static final long serialVersionUID = -6921897301005213358L;
+    private static final long serialVersionUID = -6921897301005213358L;
 
-	/** Constant <code>logger</code> */
-	private static final Logger logger = LoggerFactory.getLogger(Chromosome.class);
+    /** Constant <code>logger</code> */
+    private static final Logger logger = LoggerFactory.getLogger(Chromosome.class);
 
-	/**
-	 * only used for testing/debugging
-	 */
-	protected Chromosome() {
-		// empty
-	}
-	/** Last recorded fitness value */
-	private LinkedHashMap<FitnessFunction<?>, Double> fitnessValues = new LinkedHashMap<FitnessFunction<?>, Double>();
-	
-	/** Previous fitness, to see if there was an improvement */
-	private LinkedHashMap<FitnessFunction<?>, Double> previousFitnessValues = new LinkedHashMap<FitnessFunction<?>, Double>();
+    /**
+     * only used for testing/debugging
+     */
+    protected Chromosome() {
+        // empty
+    }
+    /** Last recorded fitness value */
+    private LinkedHashMap<FitnessFunction<?>, Double> fitnessValues = new LinkedHashMap<FitnessFunction<?>, Double>();
 
-	/** Has this chromosome changed since its fitness was last evaluated? */
-	private boolean changed = true;
+    /** Previous fitness, to see if there was an improvement */
+    private LinkedHashMap<FitnessFunction<?>, Double> previousFitnessValues = new LinkedHashMap<FitnessFunction<?>, Double>();
 
-	/** Has local search been applied to this individual since it was last changed? */
-	private boolean localSearchApplied = false;
+    /** Has this chromosome changed since its fitness was last evaluated? */
+    private boolean changed = true;
 
-	private LinkedHashMap<FitnessFunction<?>, Double> coverageValues = new LinkedHashMap<FitnessFunction<?>, Double>();
+    /** Has local search been applied to this individual since it was last changed? */
+    private boolean localSearchApplied = false;
 
-	private LinkedHashMap<FitnessFunction<?>, Integer> numsNotCoveredGoals = new LinkedHashMap<FitnessFunction<?>, Integer>();
+    private LinkedHashMap<FitnessFunction<?>, Double> coverageValues = new LinkedHashMap<FitnessFunction<?>, Double>();
 
-	private LinkedHashMap<FitnessFunction<?>, Integer> numsCoveredGoals = new LinkedHashMap<FitnessFunction<?>, Integer>();
+    private LinkedHashMap<FitnessFunction<?>, Integer> numsNotCoveredGoals = new LinkedHashMap<FitnessFunction<?>, Integer>();
 
-	
-	// protected double coverage = 0.0;
+    private LinkedHashMap<FitnessFunction<?>, Integer> numsCoveredGoals = new LinkedHashMap<FitnessFunction<?>, Integer>();
 
-	// protected int numOfCoveredGoals = 0;
 
-	/** Generation in which this chromosome was created */
-	protected int age = 0;
+    // protected double coverage = 0.0;
 
-	/** */
-	protected int rank = -1;
+    // protected int numOfCoveredGoals = 0;
 
-	/** */
-	protected double distance = 0.0;
+    /** Generation in which this chromosome was created */
+    protected int age = 0;
 
-	/** Keep track of how many times this Chromosome has been mutated */
-	private int numberOfMutations = 0;
+    /** */
+    protected int rank = -1;
 
-	/** Keep track of how many times this Chromosome has been evaluated */
-	private int numberOfEvaluations = 0;
+    /** */
+    protected double distance = 0.0;
 
-	// It is a non-negative number and it quantifies the tolerance of the system accepting a worse
-	// solution than the existing one. (field used by Chemical Reaction Optimization algorithms)
-	protected double kineticEnergy = Properties.INITIAL_KINETIC_ENERGY;
+    /** Keep track of how many times this Chromosome has been mutated */
+    private int numberOfMutations = 0;
 
-	// When a molecule undergoes a collision, one of the elementary reactions will be triggered and it
-	// may experience a change in its molecular structure. It is a record of the total number of collisions
-	// a molecule has taken. (field used by Chemical Reaction Optimization algorithms)
-	protected int numCollisions = 0;
+    /** Keep track of how many times this Chromosome has been evaluated */
+    private int numberOfEvaluations = 0;
 
-	/**
-	 * Return current fitness value
-	 * 
-	 * @return a double.
-	 */
-	public double getFitness() {
-		if (fitnessValues.size() > 1) {
-			double sumFitnesses = 0.0;
-			for (FitnessFunction<?> fitnessFunction : fitnessValues.keySet()) {
-				sumFitnesses += fitnessValues.get(fitnessFunction);
-			}
-			return sumFitnesses;
-		} else
-			return fitnessValues.isEmpty() ? 0.0 : fitnessValues.get(fitnessValues.keySet().iterator().next());
-	}
+    // It is a non-negative number and it quantifies the tolerance of the system accepting a worse
+    // solution than the existing one. (field used by Chemical Reaction Optimization algorithms)
+    protected double kineticEnergy = Properties.INITIAL_KINETIC_ENERGY;
 
-	public <T extends Chromosome> double getFitness(FitnessFunction<T> ff) {
-		return fitnessValues.containsKey(ff) ? fitnessValues.get(ff) : ff.getFitness((T)this); // Calculate new value if non is cached
-	}
+    // When a molecule undergoes a collision, one of the elementary reactions will be triggered and it
+    // may experience a change in its molecular structure. It is a record of the total number of collisions
+    // a molecule has taken. (field used by Chemical Reaction Optimization algorithms)
+    protected int numCollisions = 0;
 
-	public Map<FitnessFunction<?>, Double> getFitnessValues() {
-		return this.fitnessValues;
-	}
+    /**
+     * Return current fitness value
+     *
+     * @return a double.
+     */
+    public double getFitness() {
+        if (fitnessValues.size() > 1) {
+            double sumFitnesses = 0.0;
+            for (FitnessFunction<?> fitnessFunction : fitnessValues.keySet()) {
+                sumFitnesses += fitnessValues.get(fitnessFunction);
+            }
+            return sumFitnesses;
+        } else
+            return fitnessValues.isEmpty() ? 0.0 : fitnessValues.get(fitnessValues.keySet().iterator().next());
+    }
 
-	public Map<FitnessFunction<?>, Double> getPreviousFitnessValues() {
-		return this.previousFitnessValues;
-	}
-	
-	public boolean hasExecutedFitness(FitnessFunction<?> ff) {
-		return this.previousFitnessValues.containsKey(ff);
-	}
+    public <T extends Chromosome> double getFitness(FitnessFunction<T> ff) {
+        return fitnessValues.containsKey(ff) ? fitnessValues.get(ff) : ff.getFitness((T)this); // Calculate new value if non is cached
+    }
 
-	public void setFitnessValues(Map<FitnessFunction<?>, Double> fits) {
-		//TODO mainfitness?
-		this.fitnessValues.clear();
-		this.fitnessValues.putAll(fits);
-	}
+    public Map<FitnessFunction<?>, Double> getFitnessValues() {
+        return this.fitnessValues;
+    }
 
-	public void setPreviousFitnessValues(Map<FitnessFunction<?>, Double> lastFits) {
-		this.previousFitnessValues.clear();
-		this.previousFitnessValues.putAll(lastFits);
-	}
+    public Map<FitnessFunction<?>, Double> getPreviousFitnessValues() {
+        return this.previousFitnessValues;
+    }
 
-	/**
-	 * Adds a fitness function and sets fitness, coverage, and numCoveredGoal
-	 * default.
-	 *
-	 * @param ff
-	 *            a fitness function
-	 */
-	public void addFitness(FitnessFunction<?> ff) {
-		if (ff.isMaximizationFunction())
-			this.addFitness(ff, 0.0, 0.0, 0);
-		else
-			this.addFitness(ff, Double.MAX_VALUE, 0.0, 0);
-	}
+    public boolean hasExecutedFitness(FitnessFunction<?> ff) {
+        return this.previousFitnessValues.containsKey(ff);
+    }
 
-	/**
-	 * Adds a fitness function with an associated fitness value
-	 *
-	 * @param ff
-	 *            a fitness function
-	 * @param fitnessValue
-	 *            the fitness value for {@code ff}
-	 */
-	public void addFitness(FitnessFunction<?> ff, double fitnessValue) {
-		this.addFitness(ff, fitnessValue, 0.0, 0);
-	}
+    public void setFitnessValues(Map<FitnessFunction<?>, Double> fits) {
+        //TODO mainfitness?
+        this.fitnessValues.clear();
+        this.fitnessValues.putAll(fits);
+    }
 
-	/**
-	 * Adds a fitness function with an associated fitness value and coverage
-	 * value
-	 *
-	 * @param ff
-	 *            a fitness function
-	 * @param fitnessValue
-	 *            the fitness value for {@code ff}
-	 * @param coverage
-	 *            the coverage value for {@code ff}
-	 */
-	public void addFitness(FitnessFunction<?> ff, double fitnessValue, double coverage) {
-		this.addFitness(ff, fitnessValue, coverage, 0);
-	}
+    public void setPreviousFitnessValues(Map<FitnessFunction<?>, Double> lastFits) {
+        this.previousFitnessValues.clear();
+        this.previousFitnessValues.putAll(lastFits);
+    }
 
-	/**
-	 * Adds a fitness function with an associated fitness value, coverage value,
-	 * and number of covered goals.
-	 *
-	 * @param ff
-	 *            a fitness function
-	 * @param fitnessValue
-	 *            the fitness value for {@code ff}
-	 * @param coverage
-	 *            the coverage value for {@code ff}
-	 * @param numCoveredGoals
-	 *            the number of covered goals for {@code ff}
-	 */
-	public void addFitness(FitnessFunction<?> ff, double fitnessValue, double coverage,
-			int numCoveredGoals) { 
-		this.fitnessValues.put(ff, fitnessValue);
-		this.previousFitnessValues.put(ff, fitnessValue);
-		this.coverageValues.put(ff, coverage);
-		this.numsCoveredGoals.put(ff, numCoveredGoals);
-		this.numsNotCoveredGoals.put(ff, -1);
-	}
+    /**
+     * Adds a fitness function and sets fitness, coverage, and numCoveredGoal
+     * default.
+     *
+     * @param ff
+     *            a fitness function
+     */
+    public void addFitness(FitnessFunction<?> ff) {
+        if (ff.isMaximizationFunction())
+            this.addFitness(ff, 0.0, 0.0, 0);
+        else
+            this.addFitness(ff, Double.MAX_VALUE, 0.0, 0);
+    }
 
-	/**
-	 * Set new fitness value
-	 * 
-	 * @param value
-	 *            a double.
-	 */
-	public void setFitness(FitnessFunction<?> ff, double value) throws IllegalArgumentException {
-		if ((Double.compare(value, Double.NaN) == 0) || (Double.isInfinite(value))) {
-//				 || ( value < 0 ) || ( ff == null )) 
-			throw new IllegalArgumentException("Invalid value of Fitness: " + value + ", Fitness: "
-					+ ff.getClass().getName());
-		}
+    /**
+     * Adds a fitness function with an associated fitness value
+     *
+     * @param ff
+     *            a fitness function
+     * @param fitnessValue
+     *            the fitness value for {@code ff}
+     */
+    public void addFitness(FitnessFunction<?> ff, double fitnessValue) {
+        this.addFitness(ff, fitnessValue, 0.0, 0);
+    }
 
-		if (!fitnessValues.containsKey(ff)) {
-			previousFitnessValues.put(ff, value);
-			fitnessValues.put(ff, value);
-		} else {
-			previousFitnessValues.put(ff, fitnessValues.get(ff));
-			fitnessValues.put(ff, value);
-		}
-	}
+    /**
+     * Adds a fitness function with an associated fitness value and coverage
+     * value
+     *
+     * @param ff
+     *            a fitness function
+     * @param fitnessValue
+     *            the fitness value for {@code ff}
+     * @param coverage
+     *            the coverage value for {@code ff}
+     */
+    public void addFitness(FitnessFunction<?> ff, double fitnessValue, double coverage) {
+        this.addFitness(ff, fitnessValue, coverage, 0);
+    }
 
-	public boolean hasFitnessChanged() {
-		for (FitnessFunction<?> ff : fitnessValues.keySet()) {
-			if (!fitnessValues.get(ff).equals(previousFitnessValues.get(ff))) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * Adds a fitness function with an associated fitness value, coverage value,
+     * and number of covered goals.
+     *
+     * @param ff
+     *            a fitness function
+     * @param fitnessValue
+     *            the fitness value for {@code ff}
+     * @param coverage
+     *            the coverage value for {@code ff}
+     * @param numCoveredGoals
+     *            the number of covered goals for {@code ff}
+     */
+    public void addFitness(FitnessFunction<?> ff, double fitnessValue, double coverage,
+                           int numCoveredGoals) {
+        this.fitnessValues.put(ff, fitnessValue);
+        this.previousFitnessValues.put(ff, fitnessValue);
+        this.coverageValues.put(ff, coverage);
+        this.numsCoveredGoals.put(ff, numCoveredGoals);
+        this.numsNotCoveredGoals.put(ff, -1);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Create a deep copy of the chromosome
-	 */
-	@Override
-	public abstract Chromosome clone();
+    /**
+     * Set new fitness value
+     *
+     * @param value
+     *            a double.
+     */
+    public void setFitness(FitnessFunction<?> ff, double value) throws IllegalArgumentException {
+        if ((Double.compare(value, Double.NaN) == 0) || (Double.isInfinite(value))) {
+//				 || ( value < 0 ) || ( ff == null ))
+            throw new IllegalArgumentException("Invalid value of Fitness: " + value + ", Fitness: "
+                    + ff.getClass().getName());
+        }
 
-	/** {@inheritDoc} */
-	@Override
-	public abstract boolean equals(Object obj);
+        if (!fitnessValues.containsKey(ff)) {
+            previousFitnessValues.put(ff, value);
+            fitnessValues.put(ff, value);
+        } else {
+            previousFitnessValues.put(ff, fitnessValues.get(ff));
+            fitnessValues.put(ff, value);
+        }
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public abstract int hashCode();
+    public boolean hasFitnessChanged() {
+        for (FitnessFunction<?> ff : fitnessValues.keySet()) {
+            if (!fitnessValues.get(ff).equals(previousFitnessValues.get(ff))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Determine relative ordering of this chromosome to another chromosome. If
-	 * the fitness values are equal, go through all secondary objectives and try
-	 * to find one where the two are not equal.
-	 */
-	@Override
-	public int compareTo(Chromosome c) {
-		int i = (int) Math.signum(this.getFitness() - c.getFitness());
-		if (i == 0){
-			return compareSecondaryObjective(c);
-		}else
-			return i;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * Create a deep copy of the chromosome
+     */
+    @Override
+    public abstract Chromosome clone();
 
-	/**
-	 * Secondary Objectives are specific to chromosome types
-	 * 
-	 * @param o
-	 *            a {@link org.evosuite.ga.Chromosome} object.
-	 * @return a int.
-	 */
-	public abstract <T extends Chromosome> int compareSecondaryObjective(T o);
+    /** {@inheritDoc} */
+    @Override
+    public abstract boolean equals(Object obj);
 
-	/**
-	 * Apply mutation
-	 */
-	public abstract void mutate();
+    /** {@inheritDoc} */
+    @Override
+    public abstract int hashCode();
 
-	/**
-	 * Fixed single point cross over
-	 * 
-	 * @param other
-	 *            a {@link org.evosuite.ga.Chromosome} object.
-	 * @param position
-	 *            a int.
-	 * @throws org.evosuite.ga.ConstructionFailedException
-	 *             if any.
-	 */
-	public void crossOver(Chromosome other, int position) throws ConstructionFailedException {
-		crossOver(other, position, position);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * Determine relative ordering of this chromosome to another chromosome. If
+     * the fitness values are equal, go through all secondary objectives and try
+     * to find one where the two are not equal.
+     */
+    @Override
+    public int compareTo(Chromosome c) {
+        int i = (int) Math.signum(this.getFitness() - c.getFitness());
+        if (i == 0){
+            return compareSecondaryObjective(c);
+        }else
+            return i;
+    }
 
-	/**
-	 * Single point cross over
-	 * 
-	 * @param other
-	 *            a {@link org.evosuite.ga.Chromosome} object.
-	 * @param position1
-	 *            a int.
-	 * @param position2
-	 *            a int.
-	 * @throws org.evosuite.ga.ConstructionFailedException
-	 *             if any.
-	 */
-	public abstract void crossOver(Chromosome other, int position1, int position2)
-			throws ConstructionFailedException;
+    /**
+     * Secondary Objectives are specific to chromosome types
+     *
+     * @param o
+     *            a {@link org.evosuite.ga.Chromosome} object.
+     * @return a int.
+     */
+    public abstract <T extends Chromosome> int compareSecondaryObjective(T o);
 
-	/**
-	 * Apply the local search
-	 * 
-	 * @param objective
-	 *            a {@link org.evosuite.ga.localsearch.LocalSearchObjective}
-	 *            object.
-	 */
-	public abstract boolean localSearch(LocalSearchObjective<? extends Chromosome> objective);
+    /**
+     * Apply mutation
+     */
+    public abstract void mutate();
 
-	/**
-	 * Apply the local search
-	 * 
-	 * @param objective
-	 *            a {@link org.evosuite.ga.LocalSearchObjective} object.
-	 */
-	// public void applyAdaptiveLocalSearch(LocalSearchObjective<? extends
-	// Chromosome> objective) {
-	// // No-op
-	// }
+    /**
+     * Fixed single point cross over
+     *
+     * @param other
+     *            a {@link org.evosuite.ga.Chromosome} object.
+     * @param position
+     *            a int.
+     * @throws org.evosuite.ga.ConstructionFailedException
+     *             if any.
+     */
+    public void crossOver(Chromosome other, int position) throws ConstructionFailedException {
+        crossOver(other, position, position);
+    }
 
-	/**
-	 * Apply DSE
-	 * 
-	 * @param algorithm
-	 *            a {@link org.evosuite.ga.GeneticAlgorithm} object.
-	 */
-	// public abstract boolean applyDSE(GeneticAlgorithm<?> algorithm);
+    /**
+     * Single point cross over
+     *
+     * @param other
+     *            a {@link org.evosuite.ga.Chromosome} object.
+     * @param position1
+     *            a int.
+     * @param position2
+     *            a int.
+     * @throws org.evosuite.ga.ConstructionFailedException
+     *             if any.
+     */
+    public abstract void crossOver(Chromosome other, int position1, int position2)
+            throws ConstructionFailedException;
 
-	/**
-	 * Return length of individual
-	 * 
-	 * @return a int.
-	 */
-	public abstract int size();
+    /**
+     * Apply the local search
+     *
+     * @param objective
+     *            a {@link org.evosuite.ga.localsearch.LocalSearchObjective}
+     *            object.
+     */
+    public abstract boolean localSearch(LocalSearchObjective<? extends Chromosome> objective);
 
-	/**
-	 * Return whether the chromosome has changed since the fitness value was
-	 * computed last
-	 * 
-	 * @return a boolean.
-	 */
-	public boolean isChanged() {
-		return changed;
-	}
+    /**
+     * Apply the local search
+     *
+     * @param objective
+     *            a {@link org.evosuite.ga.LocalSearchObjective} object.
+     */
+    // public void applyAdaptiveLocalSearch(LocalSearchObjective<? extends
+    // Chromosome> objective) {
+    // // No-op
+    // }
 
-	/**
-	 * Set changed status to @param changed
-	 * 
-	 * @param changed
-	 *            a boolean.
-	 */
-	public void setChanged(boolean changed) {
-		this.changed = changed;
-		// If it's changed, then that also implies LS is possible again
-		localSearchApplied = false;
-	}
-	
-	
-	public boolean hasLocalSearchBeenApplied() {
-		return localSearchApplied;
-	}
+    /**
+     * Apply DSE
+     *
+     * @param algorithm
+     *            a {@link org.evosuite.ga.GeneticAlgorithm} object.
+     */
+    // public abstract boolean applyDSE(GeneticAlgorithm<?> algorithm);
 
-	public void setLocalSearchApplied(boolean localSearchApplied) {
-		this.localSearchApplied = localSearchApplied;
-	}
+    /**
+     * Return length of individual
+     *
+     * @return a int.
+     */
+    public abstract int size();
 
-	/**
-	 * <p>
-	 * Getter for the field <code>coverage</code>.
-	 * </p>
-	 *
-	 * Returns a single coverage value calculated as the average of
-	 * coverage values for all fitness functions.
-	 *
-	 * @return a double.
-	 */
-	public double getCoverage() {
+    /**
+     * Return whether the chromosome has changed since the fitness value was
+     * computed last
+     *
+     * @return a boolean.
+     */
+    public boolean isChanged() {
+        return changed;
+    }
+
+    /**
+     * Set changed status to @param changed
+     *
+     * @param changed
+     *            a boolean.
+     */
+    public void setChanged(boolean changed) {
+        this.changed = changed;
+        // If it's changed, then that also implies LS is possible again
+        localSearchApplied = false;
+    }
+
+
+    public boolean hasLocalSearchBeenApplied() {
+        return localSearchApplied;
+    }
+
+    public void setLocalSearchApplied(boolean localSearchApplied) {
+        this.localSearchApplied = localSearchApplied;
+    }
+
+    /**
+     * <p>
+     * Getter for the field <code>coverage</code>.
+     * </p>
+     *
+     * Returns a single coverage value calculated as the average of
+     * coverage values for all fitness functions.
+     *
+     * @return a double.
+     */
+    public double getCoverage() {
         double sum = 0;
         for (FitnessFunction<?> fitnessFunction : coverageValues.keySet()) {
             sum += coverageValues.get(fitnessFunction);
@@ -392,15 +392,15 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         return cov;
     }
 
-	public int getNumOfCoveredGoals() {
+    public int getNumOfCoveredGoals() {
         int sum = 0;
         for (FitnessFunction<?> fitnessFunction : numsCoveredGoals.keySet()) {
             sum += numsCoveredGoals.get(fitnessFunction);
         }
         return sum;
     }
-	
-	public int getNumOfNotCoveredGoals() {
+
+    public int getNumOfNotCoveredGoals() {
         int sum = 0;
         for (FitnessFunction<?> fitnessFunction : numsNotCoveredGoals.keySet()) {
             sum += numsNotCoveredGoals.get(fitnessFunction);
@@ -408,231 +408,231 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         return sum;
     }
 
-	public void setNumsOfCoveredGoals(Map<FitnessFunction<?>, Integer> fits) {
-		this.numsCoveredGoals.clear();
-		this.numsCoveredGoals.putAll(fits);
-	}
+    public void setNumsOfCoveredGoals(Map<FitnessFunction<?>, Integer> fits) {
+        this.numsCoveredGoals.clear();
+        this.numsCoveredGoals.putAll(fits);
+    }
 
-	public void setNumsOfNotCoveredGoals(Map<FitnessFunction<?>, Integer> fits) {
-		this.numsNotCoveredGoals.clear();
-		this.numsNotCoveredGoals.putAll(fits);
-	}
-	public void setNumOfNotCoveredGoals(FitnessFunction<?> ff, int numCoveredGoals) {
-		this.numsNotCoveredGoals.put(ff, numCoveredGoals);
-	}
-	public Map<FitnessFunction<?>, Integer> getNumsOfCoveredGoals() {
-		return this.numsCoveredGoals;
-	}
-	
-	public LinkedHashMap<FitnessFunction<?>, Integer> getNumsNotCoveredGoals() {
-		return numsNotCoveredGoals;
-	}
-	
-	public Map<FitnessFunction<?>, Double> getCoverageValues() {
-		return this.coverageValues;
-	}
+    public void setNumsOfNotCoveredGoals(Map<FitnessFunction<?>, Integer> fits) {
+        this.numsNotCoveredGoals.clear();
+        this.numsNotCoveredGoals.putAll(fits);
+    }
+    public void setNumOfNotCoveredGoals(FitnessFunction<?> ff, int numCoveredGoals) {
+        this.numsNotCoveredGoals.put(ff, numCoveredGoals);
+    }
+    public Map<FitnessFunction<?>, Integer> getNumsOfCoveredGoals() {
+        return this.numsCoveredGoals;
+    }
 
-	public void setCoverageValues(Map<FitnessFunction<?>, Double> coverages) {
-		this.coverageValues.clear();
-		this.coverageValues.putAll(coverages);
-	}
+    public LinkedHashMap<FitnessFunction<?>, Integer> getNumsNotCoveredGoals() {
+        return numsNotCoveredGoals;
+    }
 
-	// public void setNumOfCoveredGoals(int numOfCoveredGoals) {
-	// this.numOfCoveredGoals = numOfCoveredGoals;
-	// }
+    public Map<FitnessFunction<?>, Double> getCoverageValues() {
+        return this.coverageValues;
+    }
 
-	/**
-	 * Gets the coverage value for a given fitness function
-	 *
-	 * @param ff
-	 *            a fitness function
-	 * @return the number of covered goals for {@code ff}
-	 */
-	public double getCoverage(FitnessFunction<?> ff) {
-		return coverageValues.containsKey(ff) ? coverageValues.get(ff) : 0.0;
-	}
+    public void setCoverageValues(Map<FitnessFunction<?>, Double> coverages) {
+        this.coverageValues.clear();
+        this.coverageValues.putAll(coverages);
+    }
 
-	/**
-	 * Sets the coverage value for a given fitness function
-	 *
-	 * @param ff
-	 *            a fitness function
-	 * @param coverage
-	 *            the coverage value
-	 */
-	public void setCoverage(FitnessFunction<?> ff, double coverage) {
-		this.coverageValues.put(ff, coverage);
-	}
+    // public void setNumOfCoveredGoals(int numOfCoveredGoals) {
+    // this.numOfCoveredGoals = numOfCoveredGoals;
+    // }
 
-	/**
-	 * Gets the number of covered goals for a given fitness function
-	 *
-	 * @param ff
-	 *            a fitness function
-	 * @return the number of covered goals for {@code ff}
-	 */
-	public int getNumOfCoveredGoals(FitnessFunction<?> ff) {
-		return numsCoveredGoals.containsKey(ff) ? numsCoveredGoals.get(ff) : 0;
-	}
-	
-	/**
-	 * Gets the number of not covered goals for a given fitness function
-	 *
-	 * @param ff
-	 *            a fitness function
-	 * @return the number of covered goals for {@code ff}
-	 */
-	public int getNumOfNotCoveredGoals(FitnessFunction<?> ff) {
-		return numsNotCoveredGoals.containsKey(ff) ? numsNotCoveredGoals.get(ff) : 0;
-	}
+    /**
+     * Gets the coverage value for a given fitness function
+     *
+     * @param ff
+     *            a fitness function
+     * @return the number of covered goals for {@code ff}
+     */
+    public double getCoverage(FitnessFunction<?> ff) {
+        return coverageValues.containsKey(ff) ? coverageValues.get(ff) : 0.0;
+    }
 
-	/**
-	 * Sets the number of covered goals for a given fitness function
-	 *
-	 * @param ff
-	 *            a fitness function
-	 * @param numCoveredGoals
-	 *            the number of covered goals
-	 */
-	public void setNumOfCoveredGoals(FitnessFunction<?> ff, int numCoveredGoals) {
-		this.numsCoveredGoals.put(ff, numCoveredGoals);
-	}
+    /**
+     * Sets the coverage value for a given fitness function
+     *
+     * @param ff
+     *            a fitness function
+     * @param coverage
+     *            the coverage value
+     */
+    public void setCoverage(FitnessFunction<?> ff, double coverage) {
+        this.coverageValues.put(ff, coverage);
+    }
 
-	public void updateAge(int generation) {
-		this.age = generation;
-	}
+    /**
+     * Gets the number of covered goals for a given fitness function
+     *
+     * @param ff
+     *            a fitness function
+     * @return the number of covered goals for {@code ff}
+     */
+    public int getNumOfCoveredGoals(FitnessFunction<?> ff) {
+        return numsCoveredGoals.containsKey(ff) ? numsCoveredGoals.get(ff) : 0;
+    }
 
-	public int getAge() {
-		return age;
-	}
+    /**
+     * Gets the number of not covered goals for a given fitness function
+     *
+     * @param ff
+     *            a fitness function
+     * @return the number of covered goals for {@code ff}
+     */
+    public int getNumOfNotCoveredGoals(FitnessFunction<?> ff) {
+        return numsNotCoveredGoals.containsKey(ff) ? numsNotCoveredGoals.get(ff) : 0;
+    }
 
-	public int getRank() {
-		return this.rank;
-	}
+    /**
+     * Sets the number of covered goals for a given fitness function
+     *
+     * @param ff
+     *            a fitness function
+     * @param numCoveredGoals
+     *            the number of covered goals
+     */
+    public void setNumOfCoveredGoals(FitnessFunction<?> ff, int numCoveredGoals) {
+        this.numsCoveredGoals.put(ff, numCoveredGoals);
+    }
 
-	public void setRank(int r) {
-		this.rank = r;
-	}
+    public void updateAge(int generation) {
+        this.age = generation;
+    }
 
-	public double getDistance() {
-		return this.distance;
-	}
+    public int getAge() {
+        return age;
+    }
 
-	public void setDistance(double d) {
-		this.distance = d;
-	}
+    public int getRank() {
+        return this.rank;
+    }
 
-	public double getFitnessInstanceOf(Class<?> clazz) {
-		for (FitnessFunction<?> fitnessFunction : fitnessValues.keySet()) {
-			if (clazz.isInstance(fitnessFunction))
-				return fitnessValues.get(fitnessFunction);
-		}
-		return 0.0;
-	}
+    public void setRank(int r) {
+        this.rank = r;
+    }
 
-	public double getCoverageInstanceOf(Class<?> clazz) {
-		for (FitnessFunction<?> fitnessFunction : coverageValues.keySet()) {
-			if (clazz.isInstance(fitnessFunction))
-				return coverageValues.get(fitnessFunction);
-		}
-		return 0.0;
-	}
+    public double getDistance() {
+        return this.distance;
+    }
 
-	/**
-	 * Increases by one the number of times this chromosome has been mutated
-	 */
-	public void increaseNumberOfMutations() {
-		this.numberOfMutations++;
-	}
+    public void setDistance(double d) {
+        this.distance = d;
+    }
 
-	/**
-	 * Return number of times this chromosome has been mutated
-	 */
-	public int getNumberOfMutations() {
-		return this.numberOfMutations;
-	}
+    public double getFitnessInstanceOf(Class<?> clazz) {
+        for (FitnessFunction<?> fitnessFunction : fitnessValues.keySet()) {
+            if (clazz.isInstance(fitnessFunction))
+                return fitnessValues.get(fitnessFunction);
+        }
+        return 0.0;
+    }
 
-	/**
-	 * Set number of times this chromosome has been mutated
-	 */
-	public void setNumberOfMutations(int numberOfMutations) {
-		this.numberOfMutations = numberOfMutations;
-	}
+    public double getCoverageInstanceOf(Class<?> clazz) {
+        for (FitnessFunction<?> fitnessFunction : coverageValues.keySet()) {
+            if (clazz.isInstance(fitnessFunction))
+                return coverageValues.get(fitnessFunction);
+        }
+        return 0.0;
+    }
 
-	/**
-	 * Increases by one the number of times this chromosome has been evaluated
-	 */
-	public void increaseNumberOfEvaluations() {
-		this.numberOfEvaluations++;
-	}
+    /**
+     * Increases by one the number of times this chromosome has been mutated
+     */
+    public void increaseNumberOfMutations() {
+        this.numberOfMutations++;
+    }
 
-	/**
-	 * Return number of times this chromosome has been evaluated
-	 */
-	public int getNumberOfEvaluations() {
-		return this.numberOfEvaluations;
-	}
+    /**
+     * Return number of times this chromosome has been mutated
+     */
+    public int getNumberOfMutations() {
+        return this.numberOfMutations;
+    }
 
-	/**
-	 * Set number of times this chromosome has been evaluated
-	 */
-	public void setNumberOfEvaluations(int numberOfEvaluations) {
-		this.numberOfEvaluations = numberOfEvaluations;
-	}
+    /**
+     * Set number of times this chromosome has been mutated
+     */
+    public void setNumberOfMutations(int numberOfMutations) {
+        this.numberOfMutations = numberOfMutations;
+    }
 
-	/**
-	 * Returns the tolerance of the system accepting a worse solution than the existing one. (Note:
-	 * method used by Chemical Reaction Optimization algorithms)
-	 * 
-	 * @return a double value
-	 */
-	public double getKineticEnergy() {
-		return this.kineticEnergy;
-	}
+    /**
+     * Increases by one the number of times this chromosome has been evaluated
+     */
+    public void increaseNumberOfEvaluations() {
+        this.numberOfEvaluations++;
+    }
 
-	/**
-	 * Sets the tolerance of the system accepting a worse solution than the existing one. (Note:
-	 * method used by Chemical Reaction Optimization algorithms)
-	 * 
-	 * @param kineticEnergy a double value
-	 */
-	public void setKineticEnergy(double kineticEnergy) {
-		this.kineticEnergy = kineticEnergy;
-	}
+    /**
+     * Return number of times this chromosome has been evaluated
+     */
+    public int getNumberOfEvaluations() {
+        return this.numberOfEvaluations;
+    }
 
-	/**
-	 * Returns the total number of collisions a chromosome (i.e., a molecule in a CRO scenario) has
-	 * taken. (Note: method used by Chemical Reaction Optimization algorithms)
-	 * 
-	 * @return a integer value
-	 */
-	public int getNumCollisions() {
-		return this.numCollisions;
-	}
+    /**
+     * Set number of times this chromosome has been evaluated
+     */
+    public void setNumberOfEvaluations(int numberOfEvaluations) {
+        this.numberOfEvaluations = numberOfEvaluations;
+    }
 
-	/**
-	 * Sets the total number of collisions of a chromosome (i.e., a molecule in a CRO scenario).
-	 * (Note: method used by Chemical Reaction Optimization algorithms)
-	 * 
-	 * @param numCollisions a integer value
-	 */
-	public void setNumCollisions(int numCollisions) {
-		this.numCollisions = numCollisions;
-	}
+    /**
+     * Returns the tolerance of the system accepting a worse solution than the existing one. (Note:
+     * method used by Chemical Reaction Optimization algorithms)
+     *
+     * @return a double value
+     */
+    public double getKineticEnergy() {
+        return this.kineticEnergy;
+    }
 
-	/**
-	 * Sets the total number of collisions of a chromosome (i.e., a molecule in a CRO scenario) to
-	 * zero. (Note: method used by Chemical Reaction Optimization algorithms)
-	 */
-	public void resetNumCollisions() {
-		this.numCollisions = 0;
-	}
+    /**
+     * Sets the tolerance of the system accepting a worse solution than the existing one. (Note:
+     * method used by Chemical Reaction Optimization algorithms)
+     *
+     * @param kineticEnergy a double value
+     */
+    public void setKineticEnergy(double kineticEnergy) {
+        this.kineticEnergy = kineticEnergy;
+    }
 
-	/**
-	 * Increases the total number of collisions of a chromosome (i.e., a molecule in a CRO scenario)
-	 * by one. (Note: method used by Chemical Reaction Optimization algorithms)
-	 */
-	public void increaseNumCollisionsByOne() {
-		this.numCollisions++;
-	}
+    /**
+     * Returns the total number of collisions a chromosome (i.e., a molecule in a CRO scenario) has
+     * taken. (Note: method used by Chemical Reaction Optimization algorithms)
+     *
+     * @return a integer value
+     */
+    public int getNumCollisions() {
+        return this.numCollisions;
+    }
+
+    /**
+     * Sets the total number of collisions of a chromosome (i.e., a molecule in a CRO scenario).
+     * (Note: method used by Chemical Reaction Optimization algorithms)
+     *
+     * @param numCollisions a integer value
+     */
+    public void setNumCollisions(int numCollisions) {
+        this.numCollisions = numCollisions;
+    }
+
+    /**
+     * Sets the total number of collisions of a chromosome (i.e., a molecule in a CRO scenario) to
+     * zero. (Note: method used by Chemical Reaction Optimization algorithms)
+     */
+    public void resetNumCollisions() {
+        this.numCollisions = 0;
+    }
+
+    /**
+     * Increases the total number of collisions of a chromosome (i.e., a molecule in a CRO scenario)
+     * by one. (Note: method used by Chemical Reaction Optimization algorithms)
+     */
+    public void increaseNumCollisionsByOne() {
+        this.numCollisions++;
+    }
 }
