@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Abstract superclass of genetic algorithms
- * 
+ *
  * @author Gordon Fraser
  */
 public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAlgorithm,
@@ -75,28 +75,28 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	private static final Logger logger = LoggerFactory.getLogger(GeneticAlgorithm.class);
 
 	/** Fitness function to rank individuals */
-	protected List<FitnessFunction<T>> fitnessFunctions = new ArrayList<FitnessFunction<T>>();
+	protected List<FitnessFunction<T>> fitnessFunctions = new ArrayList<>();
 
 	/** Selection function to select parents */
-	protected SelectionFunction<T> selectionFunction = new RankSelection<T>();
+	protected SelectionFunction<T> selectionFunction = new RankSelection<>();
 
 	/** CrossOver function */
 	protected CrossOverFunction crossoverFunction = new SinglePointCrossOver();
 
 	/** Current population */
-	protected List<T> population = new ArrayList<T>();
+	protected List<T> population = new ArrayList<>();
 
 	/** Generator for initial population */
 	protected ChromosomeFactory<T> chromosomeFactory;
 
 	/** Listeners */
-	protected transient Set<SearchListener> listeners = new HashSet<SearchListener>();
+	protected transient Set<SearchListener> listeners = new HashSet<>();
 
 	/** List of conditions on which to end the search */
-	protected transient Set<StoppingCondition> stoppingConditions = new HashSet<StoppingCondition>();
+	protected transient Set<StoppingCondition> stoppingConditions = new HashSet<>();
 
 	/** Bloat control, to avoid too long chromosomes */
-	protected Set<BloatControlFunction> bloatControl = new HashSet<BloatControlFunction>();
+	protected Set<BloatControlFunction> bloatControl = new HashSet<>();
 
 	/** Local search might need a different local objective */
 	protected LocalSearchObjective<T> localObjective = new DefaultLocalSearchObjective<>();
@@ -110,11 +110,11 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	protected double localSearchProbability = Properties.LOCAL_SEARCH_PROBABILITY;
 
 	/** Selected ranking strategy **/
-	protected RankingFunction<T> rankingFunction = new RankBasedPreferenceSorting<T>();
+	protected RankingFunction<T> rankingFunction = new RankBasedPreferenceSorting<>();
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param factory
 	 *            a {@link org.evosuite.ga.ChromosomeFactory} object.
 	 */
@@ -133,7 +133,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Local search is only applied every X generations
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	protected boolean shouldApplyLocalSearch() {
@@ -172,7 +172,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	/**
 	 * enable and disable secondary criteria according to the strategy defined
 	 * in the Properties file.
-	 * 
+	 *
 	 * @param starvationCounter
 	 */
 	protected void updateSecondaryCriterion(int starvationCounter) {
@@ -211,7 +211,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	/**
 	 * Apply local search, starting from the best individual and continue
 	 * applying it to all individuals until the local search budget is used up.
-	 * 
+	 *
 	 * The population list is re-ordered if needed.
 	 */
 	protected void applyLocalSearch() {
@@ -236,7 +236,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 				improvement = true;
 			}
 		}
-		
+
 		if (improvement) {
 			DSEStats.getInstance().reportNewIncrease();
 			updateProbability(true);
@@ -251,7 +251,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 			// If an improvement occurred to one of the individuals, it could
 			// be the case that the improvement was so good, that the individual
 			// has surpassed to the previous individual, which makes the population
-			// list not sorted any more. 
+			// list not sorted any more.
 			if (!populationIsSorted()) {
 				this.sortPopulation();
 			}
@@ -259,9 +259,9 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	}
 
 	/**
-	 * Returns true if the population is sorted according to the fitness 
+	 * Returns true if the population is sorted according to the fitness
 	 * values.
-	 * 
+	 *
 	 * @return true if the population is sorted (or empty)
 	 */
 	private boolean populationIsSorted() {
@@ -285,7 +285,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * It expects that all fitnessFunctions are minimising or maximising,
 	 * it cannot happen that minimization and maximization functions are
 	 * together.
-	 * 
+	 *
 	 * @return
 	 */
 	private boolean isMaximizationFunction() {
@@ -304,8 +304,8 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 		// 1.0 + ((1.0 - localSearchProbability) / localSearchProbability) *
 		// Math.exp(delta), -1.0);
 	}
-	
-	
+
+
 	/**
 	 * Apply dynamic symbolic execution
 	 */
@@ -313,15 +313,15 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * @Deprecated protected void applyDSE() {
 	 * logger.info("Applying DSE at generation " + currentIteration);
 	 * DSEBudget.DSEStarted();
-	 * 
+	 *
 	 * boolean success = false;
-	 * 
+	 *
 	 * for (Chromosome individual : population) { if (isFinished()) break;
-	 * 
+	 *
 	 * if (DSEBudget.isFinished()) break;
-	 * 
+	 *
 	 * boolean result = individual.applyDSE(this); if(result) success = true; }
-	 * 
+	 *
 	 * if(Properties.DSE_ADAPTIVE_PROBABILITY > 0.0) { if(success) {
 	 * Properties.DSE_ADAPTIVE_PROBABILITY *= Properties.DSE_ADAPTIVE_RATE;
 	 * Properties.DSE_ADAPTIVE_PROBABILITY =
@@ -340,7 +340,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Generate solution
 	 */
 	@Override
@@ -350,10 +350,10 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * Fills the population at first with recycled chromosomes - for more
 	 * information see recycleChromosomes() and ChromosomeRecycler - and after
 	 * that, the population is filled with random chromosomes.
-	 * 
+	 *
 	 * This method guarantees at least a proportion of
 	 * Properties.initially_enforeced_Randomness % of random chromosomes
-	 * 
+	 *
 	 * @param population_size
 	 *            a int.
 	 */
@@ -364,10 +364,10 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	/**
 	 * This method can be used to kick out chromosomes when the population is
 	 * possibly overcrowded
-	 * 
+	 *
 	 * Depending on the Property "starve_by_fitness" chromosome are either
 	 * kicked out randomly or according to their fitness
-	 * 
+	 *
 	 * @param limit
 	 *            a int.
 	 */
@@ -381,7 +381,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	/**
 	 * This method can be used to kick out random chromosomes in the current
 	 * population until the given limit is reached again.
-	 * 
+	 *
 	 * @param limit
 	 *            a int.
 	 */
@@ -395,7 +395,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	/**
 	 * This method can be used to kick out the worst chromosomes in the current
 	 * population until the given limit is reached again.
-	 * 
+	 *
 	 * @param limit
 	 *            a int.
 	 */
@@ -408,7 +408,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Generate random population of given size
-	 * 
+	 *
 	 * @param population_size
 	 *            a int.
 	 */
@@ -437,7 +437,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Add new fitness function (i.e., for new mutation)
-	 * 
+	 *
 	 * @param function
 	 *            a {@link org.evosuite.ga.FitnessFunction} object.
 	 */
@@ -453,7 +453,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Get currently used fitness function
-	 * 
+	 *
 	 * @return a {@link org.evosuite.ga.FitnessFunction} object.
 	 */
 	public FitnessFunction<T> getFitnessFunction() {
@@ -462,7 +462,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Get all used fitness function
-	 * 
+	 *
 	 * @return a {@link org.evosuite.ga.FitnessFunction} object.
 	 */
 	public List<FitnessFunction<T>> getFitnessFunctions() {
@@ -474,7 +474,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	}
 
 	/**
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -497,10 +497,10 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 		return str.toString();
 	}
 
-	
+
 	/**
 	 * Set new fitness function (i.e., for new mutation)
-	 * 
+	 *
 	 * @param function
 	 *            a
 	 *            {@link org.evosuite.ga.operators.selection.SelectionFunction}
@@ -512,7 +512,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Get currently used fitness function
-	 * 
+	 *
 	 * @return a {@link org.evosuite.ga.operators.selection.SelectionFunction}
 	 *         object.
 	 */
@@ -522,7 +522,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Set the new ranking function (only used by MOO algorithms)
-	 * 
+	 *
 	 * @param function a {@link org.evosuite.ga.operators.ranking.RankingFunction} object
 	 */
 	public void setRankingFunction(RankingFunction<T> function) {
@@ -531,7 +531,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Get currently used ranking function (only used by MOO algorithms)
-	 * 
+	 *
 	 * @return a {@link org.evosuite.ga.operators.ranking.RankingFunction} object
 	 */
 	public RankingFunction<T> getRankingFunction() {
@@ -540,7 +540,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Set new bloat control function
-	 * 
+	 *
 	 * @param bloat_control
 	 *            a {@link org.evosuite.ga.bloatcontrol.BloatControlFunction}
 	 *            object.
@@ -552,7 +552,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Set new bloat control function
-	 * 
+	 *
 	 * @param bloat_control
 	 *            a {@link org.evosuite.ga.bloatcontrol.BloatControlFunction}
 	 *            object.
@@ -563,7 +563,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Check whether individual is suitable according to bloat control functions
-	 * 
+	 *
 	 * @param chromosome
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 * @return a boolean.
@@ -578,7 +578,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Get number of iterations
-	 * 
+	 *
 	 * @return Number of iterations
 	 */
 	public int getAge() {
@@ -605,7 +605,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Calculate fitness for an individual
-	 * 
+	 *
 	 * @param c
 	 */
 	protected void calculateFitness(T c) {
@@ -628,7 +628,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * <p>
 	 * getPopulationSize
 	 * </p>
-	 * 
+	 *
 	 * @return a int.
 	 */
 	public int getPopulationSize() {
@@ -637,14 +637,14 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Copy best individuals
-	 * 
+	 *
 	 * @return a {@link java.util.List} object.
 	 */
 	@SuppressWarnings("unchecked")
 	protected List<T> elitism() {
 		logger.debug("Elitism with ELITE = " + Properties.ELITE);
 
-		List<T> elite = new ArrayList<T>();
+		List<T> elite = new ArrayList<>();
 
 		for (int i = 0; i < Properties.ELITE; i++) {
 			logger.trace("Copying individual " + i + " with fitness "
@@ -657,13 +657,13 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Create random individuals
-	 * 
+	 *
 	 * @return a {@link java.util.List} object.
 	 */
 	protected List<Chromosome> randomism() {
 		logger.debug("Randomism");
 
-		List<Chromosome> randoms = new ArrayList<Chromosome>();
+		List<Chromosome> randoms = new ArrayList<>();
 
 		for (int i = 0; i < Properties.ELITE; i++) {
 			randoms.add(chromosomeFactory.getChromosome());
@@ -696,7 +696,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Penalty if individual is not unique
-	 * 
+	 *
 	 * @param individual
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 * @param generation
@@ -705,15 +705,15 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	/*
 	 * protected void kinCompensation(Chromosome individual, List<Chromosome>
 	 * generation) {
-	 * 
+	 *
 	 * if (Properties.KINCOMPENSATION >= 1.0) return;
-	 * 
+	 *
 	 * boolean unique = true;
-	 * 
+	 *
 	 * for (Chromosome other : generation) { if (other == individual) continue;
-	 * 
+	 *
 	 * if (other.equals(individual)) { unique = false; break; } }
-	 * 
+	 *
 	 * if (!unique) { logger.debug("Applying kin compensation"); if
 	 * (fitnessFunction.isMaximizationFunction())
 	 * individual.setFitness(individual.getFitness()
@@ -724,7 +724,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Return the individual with the highest fitChromosomeess
-	 * 
+	 *
 	 * @return a {@link org.evosuite.ga.Chromosome} object.
 	 */
 	public T getBestIndividual() {
@@ -739,12 +739,12 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Return the individual(s) with the highest fitChromosomeess
-	 * 
+	 *
 	 * @return a list of {@link org.evosuite.ga.Chromosome} object(s).
 	 */
 	public List<T> getBestIndividuals() {
 
-		List<T> bestIndividuals = new ArrayList<T>();
+		List<T> bestIndividuals = new ArrayList<>();
 
 		if (this.population.isEmpty()) {
 			bestIndividuals.add(this.chromosomeFactory.getChromosome());
@@ -787,7 +787,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
         PrintWriter out = new PrintWriter(bw);
 
         // header
-        List<String> l_string = new ArrayList<String>();
+        List<String> l_string = new ArrayList<>();
 
         if (Properties.ALGORITHM == Algorithm.NSGAII) {
           l_string.add("rank");
@@ -829,7 +829,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Set a new factory method
-	 * 
+	 *
 	 * @param factory
 	 *            a {@link org.evosuite.ga.ChromosomeFactory} object.
 	 */
@@ -839,7 +839,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Set a new xover function
-	 * 
+	 *
 	 * @param crossover
 	 *            a
 	 *            {@link org.evosuite.ga.operators.crossover.CrossOverFunction}
@@ -851,7 +851,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Add a new search listener
-	 * 
+	 *
 	 * @param listener
 	 *            a {@link org.evosuite.ga.metaheuristics.SearchListener}
 	 *            object.
@@ -862,7 +862,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Remove a search listener
-	 * 
+	 *
 	 * @param listener
 	 *            a {@link org.evosuite.ga.metaheuristics.SearchListener}
 	 *            object.
@@ -900,7 +900,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Notify all search listeners of fitness evaluation
-	 * 
+	 *
 	 * @param chromosome
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 */
@@ -912,7 +912,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Notify all search listeners of a mutation
-	 * 
+	 *
 	 * @param chromosome
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 */
@@ -924,7 +924,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Sort the population by fitness
-	 * 
+	 *
 	 * WARN: used only with singular objective algorithms, multi-objective
 	 * algorithms should implement their own 'sort'
 	 */
@@ -941,7 +941,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Accessor for population Chromosome *
-	 * 
+	 *
 	 * @return a {@link java.util.List} object.
 	 */
 	public List<T> getPopulation() {
@@ -950,7 +950,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Determine if the next generation has reached its size limit
-	 * 
+	 *
 	 * @param nextGeneration
 	 *            a {@link java.util.List} object.
 	 * @return a boolean.
@@ -961,7 +961,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Set a new population limit function
-	 * 
+	 *
 	 * @param limit
 	 *            a {@link org.evosuite.ga.populationlimit.PopulationLimit}
 	 *            object.
@@ -972,7 +972,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Determine whether any of the stopping conditions hold
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean isFinished() {
@@ -989,7 +989,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * <p>
 	 * addStoppingCondition
 	 * </p>
-	 * 
+	 *
 	 * @param condition
 	 *            a {@link org.evosuite.ga.stoppingconditions.StoppingCondition}
 	 *            object.
@@ -1005,7 +1005,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 		stoppingConditions.add(condition);
 		addListener(condition);
 	}
-	
+
 	public Set<StoppingCondition> getStoppingConditions() {
 		return stoppingConditions;
 	}
@@ -1015,7 +1015,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * <p>
 	 * setStoppingCondition
 	 * </p>
-	 * 
+	 *
 	 * @param condition
 	 *            a {@link org.evosuite.ga.stoppingconditions.StoppingCondition}
 	 *            object.
@@ -1031,7 +1031,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * <p>
 	 * removeStoppingCondition
 	 * </p>
-	 * 
+	 *
 	 * @param condition
 	 *            a {@link org.evosuite.ga.stoppingconditions.StoppingCondition}
 	 *            object.
@@ -1061,7 +1061,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * <p>
 	 * setStoppingConditionLimit
 	 * </p>
-	 * 
+	 *
 	 * @param value
 	 *            a int.
 	 */
@@ -1089,9 +1089,9 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	}
 
 	/**
-	 * Returns true if the <code>chromosome1</code> is better or equal than 
+	 * Returns true if the <code>chromosome1</code> is better or equal than
 	 * <code>chromosome2</code> according to the compound fitness function.
-	 * 
+	 *
 	 * @param chromosome1
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 * @param chromosome2
@@ -1118,7 +1118,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * <p>
 	 * getBest
 	 * </p>
-	 * 
+	 *
 	 * @param chromosome1
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 * @param chromosome2
@@ -1133,7 +1133,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Prints out all information regarding this GAs stopping conditions
-	 * 
+	 *
 	 * So far only used for testing purposes in TestSuiteGenerator
 	 */
 	public void printBudget() {
@@ -1146,7 +1146,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * <p>
 	 * getBudgetString
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getBudgetString() {
@@ -1159,7 +1159,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 
 	/**
 	 * Returns the progress of the search.
-	 * 
+	 *
 	 * @return a value [0.0, 1.0]
 	 */
 	protected double progress() {
@@ -1183,13 +1183,13 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 * oos.writeObject(Boolean.TRUE); // Write/save additional fields
 	 * oos.writeObject(SearchStatistics.getInstance()); } else {
 	 * oos.defaultWriteObject(); oos.writeObject(Boolean.FALSE); } }
-	 * 
+	 *
 	 * // assumes "static java.util.Date aDate;" declared private void
 	 * readObject(ObjectInputStream ois) throws ClassNotFoundException,
 	 * IOException { ois.defaultReadObject(); listeners = new
 	 * HashSet<SearchListener>(); stoppingConditions = new
 	 * HashSet<StoppingCondition>();
-	 * 
+	 *
 	 * boolean addStatistics = (Boolean) ois.readObject(); if (addStatistics) {
 	 * SearchStatistics.setInstance((SearchStatistics) ois.readObject());
 	 * addListener(SearchStatistics.getInstance()); } }
