@@ -81,9 +81,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 	protected AbstractTestSuiteChromosome(AbstractTestSuiteChromosome<T> source) {
 		this(source.testChromosomeFactory);
 
-		for (T test : source.tests) {
-			addTest((T) test.clone());
-		}
+		source.tests.forEach(t -> addTest((T) t.clone()));
 
 		//this.setFitness(source.getFitness());
 		this.setFitnessValues(source.getFitnessValues());
@@ -260,10 +258,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 	 * @return Sum of the lengths of the test cases
 	 */
 	public int totalLengthOfTestCases() {
-		int length = 0;
-		for (T test : tests)
-			length += test.size();
-		return length;
+		return tests.stream().mapToInt(T::size).sum();
 	}
 
 	/** {@inheritDoc} */
@@ -300,7 +295,7 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 	}
 
 	public List<ExecutionResult> getLastExecutionResults() {
-		return tests.stream().map(ExecutableChromosome::getLastExecutionResult).collect(Collectors.toList());
+		return tests.stream().map(T::getLastExecutionResult).collect(Collectors.toList());
 	}
 
 	/**
