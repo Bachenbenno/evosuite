@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Implementation of the Many-Objective Sorting Algorithm (MOSA) described in the
  * paper "Reformulating branch coverage as a many-objective optimization problem".
- * 
+ *
  * @author Annibale Panichella, Fitsum M. Kifetew
  */
 public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
@@ -134,7 +134,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		// Remain is less than front(index).size, insert only the best one
 		if (remain > 0 && !front.isEmpty()) { // front contains individuals to insert
 			this.distance.fastEpsilonDominanceAssignment(front, uncoveredGoals);
-			Collections.sort(front, new OnlyCrowdingComparator());
+			front.sort(new OnlyCrowdingComparator());
 			for (int k = 0; k < remain; k++) {
 				this.population.add(front.get(k));
 			}
@@ -176,12 +176,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		Listener<Set<? extends Chromosome>> listener = null;
 		if (Properties.NUM_PARALLEL_CLIENTS > 1) {
-			listener = new Listener<Set<? extends Chromosome>>() {
-				@Override
-				public void receiveEvent(Set<? extends Chromosome> event) {
-					immigrants.add(new LinkedList<T>((Set<? extends T>) event));
-				}
-			};
+			listener = (Listener<Set<? extends Chromosome>>) event -> immigrants.add(new LinkedList<T>((Set<? extends T>) event));
 			ClientServices.getInstance().getClientNode().addListener(listener);
 		}
 
