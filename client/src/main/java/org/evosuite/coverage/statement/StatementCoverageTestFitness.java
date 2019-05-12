@@ -51,7 +51,7 @@ public class StatementCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Constructor for StatementCoverageTestFitness.
 	 * </p>
-	 * 
+	 *
 	 * @param goalInstruction
 	 *            a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 */
@@ -71,7 +71,7 @@ public class StatementCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Constructor for StatementCoverageTestFitness.
 	 * </p>
-	 * 
+	 *
 	 * @param className the class name
 	 * @param methodName the method name
 	 * @param instructionID the instruction identifier
@@ -118,12 +118,12 @@ public class StatementCoverageTestFitness extends TestFitnessFunction {
 		if (this.branchFitnesses.isEmpty())
             throw new IllegalStateException(
                     "expect to know at least one fitness for goalInstruction");
- 
+
         if (result.hasTimeout() || result.hasTestException()){
-            updateIndividual(this, individual, Double.MAX_VALUE);
+            updateIndividual(individual, Double.MAX_VALUE);
             return Double.MAX_VALUE;
         }
-        
+
         double r = Double.MAX_VALUE;
 
         // Deactivate coverage archive while measuring fitness, since BranchCoverage fitness
@@ -147,7 +147,7 @@ public class StatementCoverageTestFitness extends TestFitnessFunction {
 
         Properties.TEST_ARCHIVE = archive;
 
-        updateIndividual(this, individual, r);
+        updateIndividual(individual, r);
 
         if (r == 0.0) {
             individual.getTestCase().addCoveredGoal(this);

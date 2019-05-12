@@ -25,7 +25,7 @@ import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.execution.ExecutionResult;
 
 /**
- * 
+ *
  * @author gordon
  *
  */
@@ -36,7 +36,7 @@ public class OnlyMutationTestFitness extends MutationTestFitness {
 	public OnlyMutationTestFitness(Mutation m) {
 		super(m);
 	}
-	
+
 	@Override
 	public double getFitness(TestChromosome individual, ExecutionResult result) {
 		double fitness = 0.0;
@@ -49,7 +49,7 @@ public class OnlyMutationTestFitness extends MutationTestFitness {
 			logger.debug("Infection distance for mutation = " + fitness);
 		}
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		if (fitness == 0.0) {
 			individual.getTestCase().addCoveredGoal(this);
@@ -59,7 +59,7 @@ public class OnlyMutationTestFitness extends MutationTestFitness {
 			Archive.getArchiveInstance().updateArchive(this, individual, fitness);
 		}
 
-		return fitness;	
+		return fitness;
 	}
 
 

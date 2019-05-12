@@ -30,12 +30,12 @@ import org.evosuite.ga.variables.DoubleVariable;
 
 /**
  * SCH Problem
- * 
+ *
  * f1(x) = x^2
  * f2(x) = (x-2)^2
- * 
+ *
  * Optimal Solutions x E [0,2]
- * 
+ *
  * @author José Campos
  */
 @SuppressWarnings({ "rawtypes", "unchecked", "serial" })
@@ -59,7 +59,7 @@ public class SCH<T extends NSGAChromosome> implements Problem
 				double x = dv.getValue();
 				double fitness = x * x;
 
-				updateIndividual(this, individual, fitness);
+				updateIndividual(individual, fitness);
 				return fitness;
 			}
 			@Override
@@ -81,7 +81,7 @@ public class SCH<T extends NSGAChromosome> implements Problem
 				double x = dv.getValue();
 				double fitness = (x - 2) * (x - 2);
 
-				updateIndividual(this, individual, fitness);
+				updateIndividual(individual, fitness);
 				return fitness;
 			}
 			@Override

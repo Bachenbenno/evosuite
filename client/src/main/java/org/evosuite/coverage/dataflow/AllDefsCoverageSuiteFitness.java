@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.evosuite.Properties.Criterion;
-import org.evosuite.TestSuiteGenerator;
 import org.evosuite.coverage.FitnessFunctions;
 import org.evosuite.testcase.ExecutableChromosome;
 import org.evosuite.testcase.TestChromosome;
@@ -48,7 +47,7 @@ public class AllDefsCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.evosuite.ga.FitnessFunction#getFitness(org.
 	 * evosuite.ga.Chromosome)
@@ -88,7 +87,7 @@ public class AllDefsCoverageSuiteFitness extends TestSuiteFitnessFunction {
 			fitness += goalFitness;
 		}
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 		setSuiteCoverage(suite, coveredGoals);
 
 		return fitness;
@@ -101,7 +100,7 @@ public class AllDefsCoverageSuiteFitness extends TestSuiteFitnessFunction {
 			suite.setCoverage(this, coveredGoals.size() / (double) goals.size());
 		else
 			suite.setCoverage(this, 1.0);
-		
+
 		suite.setNumOfCoveredGoals(this, coveredGoals.size());
 	}
 }

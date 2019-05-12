@@ -18,7 +18,7 @@
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * 
+ *
  */
 package org.evosuite.coverage.ibranch;
 
@@ -35,10 +35,10 @@ import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
 
 /**
- * 
+ *
  * IBranch test fitness function.
  * @author mattia, Gordon Fraser
- * 
+ *
  */
 public class IBranchTestFitness extends TestFitnessFunction {
 
@@ -68,7 +68,7 @@ public class IBranchTestFitness extends TestFitnessFunction {
 	public BranchCoverageGoal getBranchGoal() {
 		return branchGoal;
 	}
-	
+
 	private double getMethodCallDistance(ExecutionResult result) {
 		String key = branchGoal.getClassName() + "." + branchGoal.getMethodName();
 		if (!result.getTrace().getMethodContextCount().containsKey(key)) {
@@ -82,7 +82,7 @@ public class IBranchTestFitness extends TestFitnessFunction {
 		}
 		return Double.MAX_VALUE;
 	}
-	
+
 	public int getGenericContextBranchIdentifier(){
 		final int prime = 31;
 		int result = 1;
@@ -90,7 +90,7 @@ public class IBranchTestFitness extends TestFitnessFunction {
 		result = prime * result + (context == null ? 0 : context.hashCode());
 		return result;
 	}
-	
+
 
 	private double getPredicateDistance(Map<Integer, Map<CallContext, Double>> distanceMap) {
 
@@ -124,7 +124,7 @@ public class IBranchTestFitness extends TestFitnessFunction {
 			fitness = getPredicateDistance(result.getTrace().getFalseDistancesContext());
 		}
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		if (fitness == 0.0) {
 			individual.getTestCase().addCoveredGoal(this);
@@ -137,8 +137,8 @@ public class IBranchTestFitness extends TestFitnessFunction {
 		return fitness;
 	}
 
-	
-	
+
+
 	/* (non-Javadoc)
 	 * @see org.evosuite.testcase.TestFitnessFunction#compareTo(org.evosuite.testcase.TestFitnessFunction)
 	 */
@@ -147,7 +147,7 @@ public class IBranchTestFitness extends TestFitnessFunction {
 		if (other instanceof IBranchTestFitness) {
 			IBranchTestFitness otherBranchFitness = (IBranchTestFitness) other;
 			return branchGoal.compareTo(otherBranchFitness.branchGoal);
-		} 
+		}
 		else if (other instanceof BranchCoverageTestFitness) {
 			BranchCoverageTestFitness otherBranchFitness = (BranchCoverageTestFitness) other;
 			return branchGoal.compareTo(otherBranchFitness.getBranchGoal());
@@ -181,7 +181,7 @@ public class IBranchTestFitness extends TestFitnessFunction {
 		return context.toString() + ":" + branchGoal;
 	}
 
-	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

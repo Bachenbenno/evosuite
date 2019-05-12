@@ -32,7 +32,7 @@ import org.evosuite.testsuite.AbstractTestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
 
 /**
- * 
+ *
  * @author José Campos
  */
 public class RhoCoverageSuiteFitness extends TestSuiteFitnessFunction {
@@ -107,7 +107,7 @@ public class RhoCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		}
 
 		if (updateFitness) {
-			updateIndividual(this, suite, fitness);
+			updateIndividual(suite, fitness);
 		}
 		return fitness;
 	}

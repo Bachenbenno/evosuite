@@ -33,7 +33,7 @@ import org.evosuite.testsuite.TestSuiteFitnessFunction;
 
 /**
  * Statement fitness function.
- * 
+ *
  * @author Gordon Fraser, José Campos
  */
 public class StatementCoverageSuiteFitness extends TestSuiteFitnessFunction {
@@ -87,7 +87,7 @@ public class StatementCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	/**
 	 * Iterate over all execution results and summarise statistics.
-	 * 
+	 *
 	 * @param results
 	 * @param coveredStatements
 	 * @return
@@ -152,7 +152,7 @@ public class StatementCoverageSuiteFitness extends TestSuiteFitnessFunction {
 			    + suite.getCoverage(this);
 		}
 
-		updateIndividual(this, suite, fitness);
+		updateIndividual(suite, fitness);
 
 		return fitness;
 	}

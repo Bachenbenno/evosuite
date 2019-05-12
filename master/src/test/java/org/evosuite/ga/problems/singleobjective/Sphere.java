@@ -30,7 +30,7 @@ import org.evosuite.ga.variables.DoubleVariable;
 
 /**
  * Sphere Problem
- * 
+ *
  * @author José Campos
  */
 @SuppressWarnings({ "rawtypes", "unchecked", "serial" })
@@ -53,7 +53,7 @@ public class Sphere<T extends NSGAChromosome> implements Problem
                 double x = ((DoubleVariable) individual.getVariables().get(0)).getValue();
 
                 double fitness = Math.pow(x, 2.0);
-                updateIndividual(this, individual, fitness);
+                updateIndividual(individual, fitness);
                 return fitness;
             }
             @Override

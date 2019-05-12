@@ -26,12 +26,12 @@ import org.evosuite.testsuite.TestSuiteFitnessFunction;
 public class ReadabilitySuiteFitness extends TestSuiteFitnessFunction {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 6243235746473531638L;
 
     /**
-     * 
+     *
      */
     @Override
     public double getFitness(AbstractTestSuiteChromosome<? extends ExecutableChromosome> suite)
@@ -44,12 +44,12 @@ public class ReadabilitySuiteFitness extends TestSuiteFitnessFunction {
 
         average /= suite.getTestChromosomes().size();
 
-        updateIndividual(this, suite, average);
+        updateIndividual(suite, average);
         return average;
     }
 
     /**
-     * 
+     *
      */
     public double getScore(String test)
     {
@@ -58,7 +58,7 @@ public class ReadabilitySuiteFitness extends TestSuiteFitnessFunction {
     }
 
     /**
-     * 
+     *
      */
     @Override
     public boolean isMaximizationFunction() {

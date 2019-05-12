@@ -31,7 +31,7 @@ import org.evosuite.utils.ArrayUtil;
 
 /**
  * Fitness function for a single test on a single branch
- * 
+ *
  * @author Gordon Fraser
  */
 public class BranchCoverageTestFitness extends TestFitnessFunction {
@@ -43,7 +43,7 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * Constructor - fitness is specific to a branch
-	 * 
+	 *
 	 * @param goal
 	 *            a {@link org.evosuite.coverage.branch.BranchCoverageGoal}
 	 *            object.
@@ -59,7 +59,7 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getBranch
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.coverage.branch.Branch} object.
 	 */
 	public Branch getBranch() {
@@ -78,7 +78,7 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getClassName
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getClassName() {
@@ -89,7 +89,7 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getMethod
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getMethod() {
@@ -100,7 +100,7 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getBranchExpressionValue
 	 * </p>
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean getBranchExpressionValue() {
@@ -111,7 +111,7 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getUnfitness
 	 * </p>
-	 * 
+	 *
 	 * @param individual
 	 *            a {@link org.evosuite.testcase.ExecutableChromosome} object.
 	 * @param result
@@ -154,7 +154,7 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Calculate approach level + branch distance
 	 */
 	@Override
@@ -168,7 +168,7 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 					+ " / branch distance = " + distance.getBranchDistance() + ", fitness = " + fitness);
 		}
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		if (fitness == 0.0) {
 			individual.getTestCase().addCoveredGoal(this);

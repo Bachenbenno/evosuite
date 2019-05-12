@@ -64,7 +64,7 @@ import org.evosuite.utils.ArrayUtil;
  * didn't turn out too well. you have to consider all passed definitions //
  * separately as described in (3) and (4) after all - see for example
  * MeanTestClass.mean()
- * 
+ *
  * // Other things one could/should do: (TODO-list) // - display local variable
  * names as in source code // - take different methodIds into account! // -
  * inter.method and inter.class data flow analysis - want to drop intra-part //
@@ -88,7 +88,7 @@ import org.evosuite.utils.ArrayUtil;
  * all. they don't need special treatment - TODO: clean up TestSuiteGenerator! -
  * DONE: At least check for all remaining uncovered goals if they are covered by
  * the test that just covered a goal
- * 
+ *
  * - DONE: Kick out ControlDependencyTestClass-loops that take forever! - handle
  * timeouts in tests - refactor: separate DefUseCoverageGoal and
  * DefUseCoverageTestFitness - implement hashCode() functions? -
@@ -111,14 +111,14 @@ import org.evosuite.utils.ArrayUtil;
  * goal is covered: - color lines differently depending on goal one hovers his
  * mouse above in the covered goal description - ... i could go on but i guess
  * one gets the point
- * 
+ *
  * - in order to do all that SearchStatistics should be get a complete
  * refactor-marathon-overhaul: - make distinction between HTML-generation and
  * statistics part, interlink them via .csv-files - maybe don't generate any
  * HTML at all but rather just put all relevant data in .csv-files together with
  * plots in a special directory which in turn can be visualized in all kinds of
  * ways. out the top of my head i'd say PHP would be very suited for that
- * 
+ *
  * - maybe encapsulate different HTML-generation-parts in separate classes like
  * one for Code, one for plots etc. - well just come up with a nice class model
  * is all i'm trying to say i guess - srsly though, this SearchStatistcs class
@@ -131,8 +131,8 @@ import org.evosuite.utils.ArrayUtil;
  * analysis takes minutes on bigger CUTs! - look at
  * MultipleControlDependeciesTestClass.test(): respect that a CFGVertex can have
  * multiple branches it is control dependent on
- * 
- * 
+ *
+ *
  * things to write about: - DefUse is just awesome! - better chance of passing
  * hard branches (?) - more thorough tests - #times each branch is executed -
  * infeasible path problem - extract future work from unfinished ToDo-list ;) -
@@ -142,7 +142,7 @@ import org.evosuite.utils.ArrayUtil;
  * harder than branch coverage - chromosomes more valuable! - see part above
  * about chromosome pool and initial population and stuff - so it makes sense to
  * recycle chromosomes - which leads to difficulty and preordering
- * 
+ *
  * Questions: - BranchCoverageGoal also treats root branches with expression
  * value true!
  */
@@ -150,9 +150,9 @@ import org.evosuite.utils.ArrayUtil;
 /**
  * Evaluate fitness of a single test case with respect to one Definition-Use
  * pair
- * 
+ *
  * For more information look at the comment from method getDistance()
- * 
+ *
  * @author Andre Mis
  */
 public class DefUseCoverageTestFitness extends TestFitnessFunction {
@@ -189,7 +189,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * Creates a Definition-Use-Coverage goal for the given Definition and Use
-	 * 
+	 *
 	 * @param def
 	 *            a {@link org.evosuite.coverage.dataflow.Definition} object.
 	 * @param use
@@ -212,9 +212,9 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * Used for Parameter-Uses
-	 * 
+	 *
 	 * Creates a goal that tries to cover the given Use
-	 * 
+	 *
 	 * @param use
 	 *            a {@link org.evosuite.coverage.dataflow.Use} object.
 	 */
@@ -258,9 +258,9 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Calculates the DefUseCoverage test fitness for this goal
-	 * 
+	 *
 	 * Look at DefUseCoverageCalculations.calculateDUFitness() for more
 	 * information
 	 */
@@ -289,18 +289,18 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 
 		singleFitnessTime += System.currentTimeMillis() - start;
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		return fitness;
 	}
 
 	/**
 	 * Used by DefUseCoverageSuiteFitness
-	 * 
+	 *
 	 * Simply call getFitness(TestChromosome,ExecutionResult) with a dummy
 	 * TestChromosome The chromosome is used only for updateIndividual()
 	 * anyways.
-	 * 
+	 *
 	 * @param result
 	 *            a {@link org.evosuite.testcase.execution.ExecutionResult} object.
 	 * @return a double.
@@ -318,7 +318,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	/**
 	 * Returns the definitions to the goalVaraible coming after the
 	 * goalDefinition and before the goalUse in their respective methods
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<BytecodeInstruction> getPotentialOverwritingDefinitions() {
@@ -334,15 +334,15 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	/**
 	 * Return a set containing all CFGVertices that occur in the complete CFG
 	 * after the goalDefinition and before the goalUse.
-	 * 
+	 *
 	 * It's pretty much the union of getInstructionsAfterGoalDefinition() and
 	 * getInstructionsBeforeGoalUse(), except if the DU is in one method and the
 	 * goalDefinition comes before the goalUse, then the intersection of the two
 	 * sets is returned.
-	 * 
+	 *
 	 * If the goalDefinition is a Parameter-Definition only the CFGVertices
 	 * before the goalUse are considered.
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<BytecodeInstruction> getInstructionsInBetweenDU() {
@@ -364,9 +364,9 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	/**
 	 * Returns a set containing all CFGVertices in the goal definition method
 	 * that come after the definition.
-	 * 
+	 *
 	 * Look at ControlFlowGraph.getLaterInstructionInMethod() for details
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<BytecodeInstruction> getInstructionsAfterGoalDefinition() {
@@ -384,9 +384,9 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	/**
 	 * Returns a set containing all CFGVertices in the goal use method that come
 	 * before the goal use.
-	 * 
+	 *
 	 * Look at ControlFlowGraph.getPreviousInstructionInMethod() for details
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<BytecodeInstruction> getInstructionsBeforeGoalUse() {
@@ -407,7 +407,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * setCovered
 	 * </p>
-	 * 
+	 *
 	 * @param individual
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 * @param trace
@@ -422,7 +422,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 			logger.debug("==============================================================");
 		}
 		this.coveringObjectId = objectId;
-		updateIndividual(this, individual, 0);
+		updateIndividual(individual, 0);
 
 		if (DEBUG)
 			if (!DefUseFitnessCalculator.traceCoversGoal(this, individual, trace))
@@ -461,7 +461,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Getter for the field <code>coveringTrace</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.execution.ExecutionTrace} object.
 	 */
 	public ExecutionTrace getCoveringTrace() {
@@ -472,7 +472,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Getter for the field <code>goalVariable</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getGoalVariable() {
@@ -483,7 +483,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Getter for the field <code>coveringObjectId</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a int.
 	 */
 	public int getCoveringObjectId() {
@@ -494,7 +494,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Getter for the field <code>goalDefinition</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.coverage.dataflow.Definition} object.
 	 */
 	public Definition getGoalDefinition() {
@@ -505,7 +505,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Getter for the field <code>goalUse</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.coverage.dataflow.Use} object.
 	 */
 	public Use getGoalUse() {
@@ -516,7 +516,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Getter for the field <code>goalUseFitness</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.TestFitnessFunction} object.
 	 */
 	public TestFitnessFunction getGoalUseFitness() {
@@ -527,7 +527,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Getter for the field <code>goalDefinitionFitness</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.TestFitnessFunction} object.
 	 */
 	public TestFitnessFunction getGoalDefinitionFitness() {
@@ -538,7 +538,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * isInterMethodPair
 	 * </p>
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean isInterMethodPair() {
@@ -549,7 +549,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * isIntraClassPair
 	 * </p>
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean isIntraClassPair() {
@@ -560,7 +560,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * Getter for the field <code>type</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a
 	 *         {@link org.evosuite.coverage.dataflow.DefUseCoverageTestFitness.DefUsePairType}
 	 *         object.
@@ -573,7 +573,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * isParameterGoal
 	 * </p>
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean isParameterGoal() {
@@ -712,7 +712,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * Serialize, but need to abstract classloader away
-	 * 
+	 *
 	 * @param oos
 	 * @throws IOException
 	 */

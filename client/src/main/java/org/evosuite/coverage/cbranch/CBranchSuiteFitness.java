@@ -18,7 +18,7 @@
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * 
+ *
  */
 package org.evosuite.coverage.cbranch;
 
@@ -42,9 +42,9 @@ import org.evosuite.testsuite.TestSuiteFitnessFunction;
  * Context Branch criterion, force the generation of test cases that directly
  * invoke the method where the branch is, i.e., do not consider covered a branch
  * if it is covered by invoking other methods.
- * 
+ *
  * @author Gordon Fraser, mattia
- * 
+ *
  */
 
 // TODO: Archive handling could be improved to use branchIds and thus reduce
@@ -162,7 +162,7 @@ public class CBranchSuiteFitness extends TestSuiteFitnessFunction {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.evosuite.ga.FitnessFunction#getFitness(org.evosuite.ga.Chromosome)
 	 */
@@ -215,7 +215,7 @@ public class CBranchSuiteFitness extends TestSuiteFitnessFunction {
 						Archive.getArchiveInstance().updateArchive(goalT, test, distanceT);
 					}
 				}
-				
+
 				for (CallContext context : falseMap.keySet()) {
 					CBranchTestFitness goalF = getContextGoal(branchId, context, false);
 					if (goalF == null)
@@ -323,11 +323,11 @@ public class CBranchSuiteFitness extends TestSuiteFitnessFunction {
 		}
 		suite.setNumOfCoveredGoals(this, numCoveredGoals);
 		suite.setNumOfNotCoveredGoals(this, branchGoals.size() - numCoveredGoals);
-		updateIndividual(this, suite, fitness);
+		updateIndividual(suite, fitness);
 
 		return fitness;
 	}
-	
+
 	@Override
 	public boolean updateCoveredGoals() {
 		if (!Properties.TEST_ARCHIVE) {

@@ -57,7 +57,7 @@ public class OnlyLineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		String prefix = Properties.TARGET_CLASS_PREFIX;
 
 		/* TODO: Would be nice to use a prefix here */
-//		for(String className : LinePool.getKnownClasses()) {		
+//		for(String className : LinePool.getKnownClasses()) {
 //			lines.addAll(LinePool.getLines(className));
 //		}
 //		logger.info("Total line coverage goals: " + lines);
@@ -94,10 +94,10 @@ public class OnlyLineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		return true;
 	}
-	
+
 	/**
 	 * Iterate over all execution results and summarize statistics
-	 * 
+	 *
 	 * @param results
 	 * @param coveredLines
 	 * @return
@@ -133,7 +133,7 @@ public class OnlyLineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Execute all tests and count covered branches
 	 */
 	@Override
@@ -144,16 +144,16 @@ public class OnlyLineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		List<ExecutionResult> results = runTestSuite(suite);
 
-		// Collect stats in the traces 
+		// Collect stats in the traces
 		Set<Integer> coveredLines = new LinkedHashSet<Integer>();
 		boolean hasTimeoutOrTestException = analyzeTraces(results, coveredLines);
 
 		int totalLines = this.numLines;
 		int numCoveredLines = coveredLines.size() + this.removedLines.size();
-		
+
 		logger.debug("Covered " + numCoveredLines + " out of " + totalLines + " lines, "+removedLines.size() +" in archive");
 		fitness += normalize(totalLines - numCoveredLines);
-		
+
 		printStatusMessages(suite, numCoveredLines, fitness);
 
 		if (totalLines > 0)
@@ -162,14 +162,14 @@ public class OnlyLineCoverageSuiteFitness extends TestSuiteFitnessFunction {
             suite.setCoverage(this, 1.0);
 
 		suite.setNumOfCoveredGoals(this, numCoveredLines);
-		
+
 		if (hasTimeoutOrTestException) {
 			logger.info("Test suite has timed out, setting fitness to max value " + totalLines);
 			fitness = totalLines;
 			//suite.setCoverage(0.0);
 		}
 
-		updateIndividual(this, suite, fitness);
+		updateIndividual(suite, fitness);
 
 		assert (numCoveredLines <= totalLines) : "Covered " + numCoveredLines + " vs total goals " + totalLines;
 		assert (fitness >= 0.0);
@@ -183,7 +183,7 @@ public class OnlyLineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	/**
 	 * Some useful debug information
-	 * 
+	 *
 	 * @param coveredLines
 	 * @param fitness
 	 */

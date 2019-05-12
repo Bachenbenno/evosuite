@@ -30,7 +30,7 @@ import org.evosuite.ga.variables.DoubleVariable;
 
 /**
  * Booth's Problem
- * 
+ *
  * @author José Campos
  */
 @SuppressWarnings({ "rawtypes", "unchecked", "serial" })
@@ -54,7 +54,7 @@ public class Booths<T extends NSGAChromosome> implements Problem
                 double y = ((DoubleVariable) individual.getVariables().get(1)).getValue();
 
                 double fitness = Math.pow(x + 2.0 * y - 7.0, 2.0) + Math.pow(2.0 * x + y - 5.0, 2.0);
-                updateIndividual(this, individual, fitness);
+                updateIndividual(individual, fitness);
                 return fitness;
             }
             @Override

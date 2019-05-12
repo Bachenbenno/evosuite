@@ -28,7 +28,7 @@ import org.evosuite.testcase.execution.ExecutionResult;
 
 /**
  * Fitness function for a single test on a single branch
- * 
+ *
  * @author Gordon Fraser, Jose Miguel Rojas
  */
 public class OnlyBranchCoverageTestFitness extends TestFitnessFunction {
@@ -41,7 +41,7 @@ public class OnlyBranchCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * Constructor - fitness is specific to a branch
-	 * 
+	 *
 	 * @param goal
 	 *            a {@link org.evosuite.coverage.branch.BranchCoverageGoal}
 	 *            object.
@@ -57,7 +57,7 @@ public class OnlyBranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getBranch
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.coverage.branch.Branch} object.
 	 */
 	public Branch getBranch() {
@@ -76,7 +76,7 @@ public class OnlyBranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getClassName
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getClassName() {
@@ -87,7 +87,7 @@ public class OnlyBranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getMethod
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getMethod() {
@@ -98,7 +98,7 @@ public class OnlyBranchCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getBranchExpressionValue
 	 * </p>
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean getBranchExpressionValue() {
@@ -107,7 +107,7 @@ public class OnlyBranchCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Calculate approach level + branch distance
 	 */
 	@Override
@@ -124,7 +124,7 @@ public class OnlyBranchCoverageTestFitness extends TestFitnessFunction {
 		        + " / branch distance: " + distance.getBranchDistance() + ", fitness = "
 		        + fitness);
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		if (fitness == 0.0) {
 			individual.getTestCase().addCoveredGoal(this);

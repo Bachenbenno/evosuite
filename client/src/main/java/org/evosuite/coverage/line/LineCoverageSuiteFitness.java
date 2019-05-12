@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Fitness function for a whole test suite for all branches
- * 
+ *
  * @author Gordon Fraser, Jose Miguel Rojas
  */
 public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
@@ -106,10 +106,10 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		return true;
 	}
-	
+
 	/**
 	 * Iterate over all execution results and summarize statistics
-	 * 
+	 *
 	 * @param results
 	 * @param coveredLines
 	 * @return
@@ -145,7 +145,7 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Execute all tests and count covered branches
 	 */
 	@Override
@@ -163,10 +163,10 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		int totalLines = this.numLines;
 		int numCoveredLines = coveredLines.size() + this.removedLines.size();
-		
+
 		logger.debug("Covered " + numCoveredLines + " out of " + totalLines + " lines, "+removedLines.size() +" in archive");
 		fitness += normalize(totalLines - numCoveredLines);
-		
+
 		printStatusMessages(suite, numCoveredLines, fitness);
 
 		if (totalLines > 0)
@@ -175,14 +175,14 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
             suite.setCoverage(this, 1.0);
 
 		suite.setNumOfCoveredGoals(this, numCoveredLines);
-		
+
 		if (hasTimeoutOrTestException) {
 			logger.info("Test suite has timed out, setting fitness to max value " + totalLines);
 			fitness = totalLines;
 			//suite.setCoverage(0.0);
 		}
 
-		updateIndividual(this, suite, fitness);
+		updateIndividual(suite, fitness);
 
 		assert (numCoveredLines <= totalLines) : "Covered " + numCoveredLines + " vs total goals " + totalLines;
 		assert (fitness >= 0.0);
@@ -196,7 +196,7 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	/**
 	 * Some useful debug information
-	 * 
+	 *
 	 * @param coveredLines
 	 * @param fitness
 	 */
@@ -220,13 +220,13 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		}
 	}
-	
+
 	/**
 	 * Add guidance to the fitness function by including branch distances on
 	 * all control dependencies
 	 */
 	private void initializeControlDependencies() {
-		// In case we target more than one class (context, or inner classes) 
+		// In case we target more than one class (context, or inner classes)
 		Set<String> targetClasses = new LinkedHashSet<>();
 		for(TestFitnessFunction ff : lineGoals.values()) {
 			targetClasses.add(ff.getTargetClass());
@@ -261,7 +261,7 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		branchesToCoverBoth.retainAll(branchesToCoverFalse);
 		branchesToCoverTrue.removeAll(branchesToCoverBoth);
 		branchesToCoverFalse.removeAll(branchesToCoverBoth);
-		
+
 		logger.info("Covering branches true: "+branchesToCoverTrue);
 		logger.info("Covering branches false: "+branchesToCoverFalse);
 		logger.info("Covering branches both: "+branchesToCoverBoth);
@@ -304,7 +304,7 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 				}
 			}
 		}
-		
+
 		double distance = 0.0;
 
 		for(Integer branchId : branchesToCoverBoth) {
@@ -317,7 +317,7 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 				distance += normalize(falseDistance.get(branchId));
 			}
 		}
-		
+
 		for(Integer branchId : branchesToCoverTrue) {
 			if(!trueDistance.containsKey(branchId)) {
 				distance += 1;
@@ -333,7 +333,7 @@ public class LineCoverageSuiteFitness extends TestSuiteFitnessFunction {
 				distance += normalize(falseDistance.get(branchId));
 			}
 		}
-		
+
 		return distance;
 	}
 

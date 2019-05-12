@@ -27,7 +27,7 @@ import org.evosuite.testcase.execution.ExecutionResult;
 
 /**
  * Fitness function for a single test on a single method.
- * 
+ *
  * @author Gordon Fraser, Jose Miguel Rojas
  */
 public class MethodTraceCoverageTestFitness extends TestFitnessFunction {
@@ -56,7 +56,7 @@ public class MethodTraceCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getClassName
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getClassName() {
@@ -67,7 +67,7 @@ public class MethodTraceCoverageTestFitness extends TestFitnessFunction {
 	 * <p>
 	 * getMethod
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getMethod() {
@@ -76,9 +76,9 @@ public class MethodTraceCoverageTestFitness extends TestFitnessFunction {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Calculate fitness
-	 * 
+	 *
 	 * @param individual
 	 *            a {@link org.evosuite.testcase.ExecutableChromosome} object.
 	 * @param result
@@ -97,7 +97,7 @@ public class MethodTraceCoverageTestFitness extends TestFitnessFunction {
 			}
 		}
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		if (fitness == 0.0) {
 		  individual.getTestCase().addCoveredGoal(this);
@@ -120,7 +120,7 @@ public class MethodTraceCoverageTestFitness extends TestFitnessFunction {
 	@Override
 	public int hashCode() {
 		int iConst = 13;
-		return 51 * iConst + className.hashCode() * iConst + methodName.hashCode();        
+		return 51 * iConst + className.hashCode() * iConst + methodName.hashCode();
 	}
 
 	/** {@inheritDoc} */

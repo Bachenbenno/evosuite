@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Fitness function for a whole test suite for all branches
- * 
+ *
  * @author Gordon Fraser, Jose Miguel Rojas
  */
 public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
@@ -52,7 +52,7 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 	public int totalBranches;
 	public int totalGoals;
 	private final Set<Integer> branchesId;
-	
+
 	// Some stuff for debug output
 	public int maxCoveredBranches = 0;
 	public double bestFitness = Double.MAX_VALUE;
@@ -63,12 +63,12 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	private final Set<Integer> toRemoveBranchesT = new LinkedHashSet<>();
 	private final Set<Integer> toRemoveBranchesF = new LinkedHashSet<>();
-	
+
 	private final Set<Integer> removedBranchesT = new LinkedHashSet<>();
 	private final Set<Integer> removedBranchesF = new LinkedHashSet<>();
-	
-	
-	
+
+
+
 	/**
 	 * <p>
 	 * Constructor for OnlyBranchCoverageSuiteFitness.
@@ -77,7 +77,7 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 	public OnlyBranchCoverageSuiteFitness() {
 
 		String prefix = Properties.TARGET_CLASS_PREFIX;
-		
+
 		if (prefix.isEmpty()) {
 			prefix = Properties.TARGET_CLASS;
 		}
@@ -117,10 +117,10 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		}
 	}
 
-	
+
 	/**
 	 * Iterate over all execution results and summarize statistics
-	 * 
+	 *
 	 * @param results
 	 * @param predicateCount
 	 * @param callCount
@@ -129,12 +129,12 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 	 * @return
 	 */
 	private boolean analyzeTraces( AbstractTestSuiteChromosome<? extends ExecutableChromosome> suite, List<ExecutionResult> results,
-	        Map<Integer, Integer> predicateCount, 
+	        Map<Integer, Integer> predicateCount,
 	        Map<Integer, Double> trueDistance, Map<Integer, Double> falseDistance) {
-		
+
 		boolean hasTimeoutOrTestException = false;
 		for (ExecutionResult result : results) {
-			if (result.hasTimeout() || result.hasTestException()) {			
+			if (result.hasTimeout() || result.hasTestException()) {
 				hasTimeoutOrTestException = true;
 				continue;
 			}
@@ -196,13 +196,13 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		}
 		return hasTimeoutOrTestException;
 	}
-	
+
 	@Override
 	public boolean updateCoveredGoals() {
 		if (!Properties.TEST_ARCHIVE) {
 			return false;
 		}
-		
+
 		for (Integer branch : toRemoveBranchesT) {
 			TestFitnessFunction f = branchCoverageTrueMap.remove(branch);
 			if (f != null) {
@@ -231,17 +231,17 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 				throw new IllegalStateException("goal to remove not found");
 			}
 		}
-		
+
 		toRemoveBranchesF.clear();
 		toRemoveBranchesT.clear();
 		logger.info("Current state of archive: " + Archive.getArchiveInstance().toString());
-		
+
 		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Execute all tests and count covered branches
 	 */
 	@Override
@@ -255,7 +255,7 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		Map<Integer, Double> falseDistance = new LinkedHashMap<Integer, Double>();
 		Map<Integer, Integer> predicateCount = new LinkedHashMap<Integer, Integer>();
 
-		// Collect stats in the traces 
+		// Collect stats in the traces
 		boolean hasTimeoutOrTestException = analyzeTraces(suite, results, predicateCount,
 		                                                  trueDistance,
 		                                                  falseDistance);
@@ -264,23 +264,23 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		int numCoveredBranches = 0;
 
 		for (Integer key : predicateCount.keySet()) {
-			
+
 			double df = 0.0;
 			double dt = 0.0;
 			int numExecuted = predicateCount.get(key);
-			
+
 			if(removedBranchesT.contains(key))
 				numExecuted++;
 			if(removedBranchesF.contains(key))
 				numExecuted++;
-			
+
 			if (trueDistance.containsKey(key)) {
 				dt =  trueDistance.get(key);
 			}
 			if(falseDistance.containsKey(key)){
 				df = falseDistance.get(key);
 			}
-			// If the branch predicate was only executed once, then add 1 
+			// If the branch predicate was only executed once, then add 1
 			if (numExecuted == 1) {
 				fitness += 1.0;
 			} else {
@@ -293,7 +293,7 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 			if (trueDistance.containsKey(key)&&(Double.compare(dt, 0.0) == 0))
 				numCoveredBranches++;
 		}
-		
+
 		// +1 for every branch that was not executed
 		fitness += 2 * (totalBranches - predicateCount.size());
 
@@ -303,8 +303,8 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		int coverage = numCoveredBranches;
 
 		coverage +=removedBranchesF.size();
-		coverage +=removedBranchesT.size();	
- 		
+		coverage +=removedBranchesT.size();
+
 		if (totalGoals > 0)
 			suite.setCoverage(this, (double) coverage / (double) totalGoals);
         else
@@ -312,7 +312,7 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		suite.setNumOfCoveredGoals(this, coverage);
 		suite.setNumOfNotCoveredGoals(this, totalGoals-coverage);
-		
+
 		if (hasTimeoutOrTestException) {
 			logger.info("Test suite has timed out, setting fitness to max value "
 			        + (totalBranches * 2));
@@ -320,7 +320,7 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 			//suite.setCoverage(0.0);
 		}
 
-		updateIndividual(this, suite, fitness);
+		updateIndividual(suite, fitness);
 
 		assert (coverage <= totalGoals) : "Covered " + coverage + " vs total goals "
 		        + totalGoals;
@@ -328,13 +328,13 @@ public class OnlyBranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		assert (fitness != 0.0 || coverage == totalGoals) : "Fitness: " + fitness + ", "
 		        + "coverage: " + coverage + "/" + totalGoals;
 		assert (suite.getCoverage(this) <= 1.0) && (suite.getCoverage(this) >= 0.0) : "Wrong coverage value "
-		        + suite.getCoverage(this); 
+		        + suite.getCoverage(this);
 		return fitness;
 	}
 
 	/**
 	 * Some useful debug information
-	 * 
+	 *
 	 * @param coveredBranches
 	 * @param coveredMethods
 	 * @param fitness

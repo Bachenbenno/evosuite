@@ -41,12 +41,12 @@ import org.evosuite.utils.LoggingUtils;
 
 /**
  * Evaluate fitness of a test suite with respect to all of its def-use pairs
- * 
+ *
  * First simple and naive idea: Just take each DUGoal, calculate the minimal
  * fitness over all results in the suite once a goal is covered don't check for
  * it again in the end sum up all those fitness and that is s the resulting
  * suite-fitness
- * 
+ *
  * @author Andre Mis
  */
 public class DefUseCoverageSuiteFitness extends TestSuiteFitnessFunction {
@@ -133,7 +133,7 @@ public class DefUseCoverageSuiteFitness extends TestSuiteFitnessFunction {
 			if (result.hasTimeout()) {
 				logger.debug("Skipping test with timeout");
 				double fitness = goals.size() * 100;
-				updateIndividual(this, individual, fitness);
+				updateIndividual(individual, fitness);
 				suite.setCoverage(this, 0.0);
 				logger.debug("Test case has timed out, setting fitness to max value "
 				        + fitness);
@@ -271,7 +271,7 @@ public class DefUseCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		countCoveredGoals(coveredGoalsSet);
 		trackCoverageStatistics(suite);
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		int coveredGoalCount = countCoveredGoals();
 		int totalGoalCount = countTotalGoals();
@@ -307,7 +307,7 @@ public class DefUseCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.evosuite.ga.FitnessFunction#getFitness(org.
 	 * evosuite.ga.Chromosome)
@@ -359,7 +359,7 @@ public class DefUseCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		countCoveredGoals(coveredGoalsSet);
 		trackCoverageStatistics(suite);
-		updateIndividual(this, suite, fitness);
+		updateIndividual(suite, fitness);
 
 		int coveredGoalCount = countCoveredGoals();
 		int totalGoalCount = countTotalGoals();
@@ -404,7 +404,7 @@ public class DefUseCoverageSuiteFitness extends TestSuiteFitnessFunction {
 	 * <p>
 	 * countMostCoveredGoals
 	 * </p>
-	 * 
+	 *
 	 * @return a int.
 	 */
 	public static int countMostCoveredGoals() {
@@ -490,7 +490,7 @@ public class DefUseCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 	/**
 	 * Returns a list of du pairs of the specific type.
-	 * 
+	 *
 	 * @param type
 	 *            the type of pairs. See
 	 *            DefUseCoverageTestFitness.DefUsePairType

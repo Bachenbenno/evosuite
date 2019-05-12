@@ -57,7 +57,7 @@ public class OnlyMutationSuiteFitness extends MutationSuiteFitness {
 		 * e.g. classes with only static constructors
 		 */
 		if (this.numMutants == 0) {
-			updateIndividual(this, individual, 0.0);
+			updateIndividual(individual, 0.0);
 			((TestSuiteChromosome) individual).setCoverage(this, 1.0);
 			((TestSuiteChromosome) individual).setNumOfCoveredGoals(this, 0);
 			return 0.0;
@@ -136,11 +136,11 @@ public class OnlyMutationSuiteFitness extends MutationSuiteFitness {
 			if (distance == 0.0)
 				covered++;
 		}
-		
-		updateIndividual(this, individual, fitness);
+
+		updateIndividual(individual, fitness);
 		((TestSuiteChromosome) individual).setCoverage(this, (double) covered / (double) this.numMutants);
 		((TestSuiteChromosome) individual).setNumOfCoveredGoals(this, covered);
-		
+
 		return fitness;
 	}
 }

@@ -34,7 +34,7 @@ import org.evosuite.testsuite.AbstractTestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
 
 /**
- * 
+ *
  * @author José Campos
  */
 public class AmbiguityCoverageSuiteFitness extends TestSuiteFitnessFunction {
@@ -42,12 +42,12 @@ public class AmbiguityCoverageSuiteFitness extends TestSuiteFitnessFunction {
 	private static final long serialVersionUID = -2721073655092419390L;
 
 	/**
-	 * 
+	 *
 	 */
 	private final Set<Integer> goals;
 
 	/**
-	 * 
+	 *
 	 */
 	public AmbiguityCoverageSuiteFitness() {
 
@@ -97,7 +97,7 @@ public class AmbiguityCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		//double fitness = AmbiguityCoverageFactory.getAmbiguity(this.goals.size(), groups) * 1.0 / AmbiguityCoverageFactory.getMaxAmbiguityScore();
 		double fitness = TestFitnessFunction.normalize(AmbiguityCoverageFactory.getAmbiguity(this.goals.size(), groups));
-		updateIndividual(this, suite, fitness);
+		updateIndividual(suite, fitness);
 
 		return fitness;
 	}

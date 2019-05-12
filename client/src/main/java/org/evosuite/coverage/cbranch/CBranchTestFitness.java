@@ -18,7 +18,7 @@
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * 
+ *
  */
 package org.evosuite.coverage.cbranch;
 
@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import org.evosuite.Properties;
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.coverage.branch.BranchCoverageGoal;
-import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.ga.archive.Archive;
 import org.evosuite.setup.CallContext;
 import org.evosuite.testcase.TestChromosome;
@@ -36,7 +35,7 @@ import org.evosuite.testcase.execution.ExecutionResult;
 
 /**
  * @author Gordon Fraser, mattia
- * 
+ *
  */
 public class CBranchTestFitness extends TestFitnessFunction {
 
@@ -66,7 +65,7 @@ public class CBranchTestFitness extends TestFitnessFunction {
 	public BranchCoverageGoal getBranchGoal() {
 		return branchGoal;
 	}
-	
+
 	public int getGenericContextBranchIdentifier(){
 		final int prime = 31;
 		int result = 1;
@@ -74,7 +73,7 @@ public class CBranchTestFitness extends TestFitnessFunction {
 		result = prime * result + (context == null ? 0 : context.hashCode());
 		return result;
 	}
-	
+
 	private double getMethodCallDistance(ExecutionResult result) {
 		String key = branchGoal.getClassName() + "." + branchGoal.getMethodName();
 		if (!result.getTrace().getMethodContextCount().containsKey(key)) {
@@ -121,7 +120,7 @@ public class CBranchTestFitness extends TestFitnessFunction {
 			fitness = getPredicateDistance(result.getTrace().getFalseDistancesContext());
 		}
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		if (fitness == 0.0) {
 			individual.getTestCase().addCoveredGoal(this);
@@ -134,8 +133,8 @@ public class CBranchTestFitness extends TestFitnessFunction {
 		return fitness;
 	}
 
-	
-	
+
+
 	/* (non-Javadoc)
 	 * @see org.evosuite.testcase.TestFitnessFunction#compareTo(org.evosuite.testcase.TestFitnessFunction)
 	 */
@@ -185,7 +184,7 @@ public class CBranchTestFitness extends TestFitnessFunction {
 		return context.toString() + ":" + branchGoal;
 	}
 
-	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

@@ -18,7 +18,7 @@
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * 
+ *
  */
 package org.evosuite.coverage.mutation;
 
@@ -31,7 +31,7 @@ import org.evosuite.testcase.execution.ExecutionResult;
  * <p>
  * WeakMutationTestFitness class.
  * </p>
- * 
+ *
  * @author fraser
  */
 public class WeakMutationTestFitness extends MutationTestFitness {
@@ -42,7 +42,7 @@ public class WeakMutationTestFitness extends MutationTestFitness {
 	 * <p>
 	 * Constructor for WeakMutationTestFitness.
 	 * </p>
-	 * 
+	 *
 	 * @param mutation
 	 *            a {@link org.evosuite.coverage.mutation.Mutation} object.
 	 */
@@ -88,7 +88,7 @@ public class WeakMutationTestFitness extends MutationTestFitness {
 		logger.debug("Individual fitness: " + " + " + infectionDistance + " + "
 		        + executionDistance + " = " + fitness);
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 
 		if (fitness == 0.0) {
 			individual.getTestCase().addCoveredGoal(this);

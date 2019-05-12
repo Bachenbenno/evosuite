@@ -18,7 +18,7 @@
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * 
+ *
  */
 package org.evosuite.coverage.mutation;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * <p>
  * StrongMutationTestFitness class.
  * </p>
- * 
+ *
  * @author fraser
  */
 public class StrongMutationTestFitness extends MutationTestFitness {
@@ -65,7 +65,7 @@ public class StrongMutationTestFitness extends MutationTestFitness {
 	 * <p>
 	 * Constructor for StrongMutationTestFitness.
 	 * </p>
-	 * 
+	 *
 	 * @param mutation
 	 *            a {@link org.evosuite.coverage.mutation.Mutation} object.
 	 */
@@ -206,7 +206,7 @@ public class StrongMutationTestFitness extends MutationTestFitness {
 
 	/**
 	 * Compare two coverage maps
-	 * 
+	 *
 	 * @param orig
 	 * @param mutant
 	 * @return unique number of methods with coverage difference
@@ -336,7 +336,7 @@ public class StrongMutationTestFitness extends MutationTestFitness {
 			logger.debug("Infection distance for mutation = " + infectionDistance);
 
 			// Don't re-execute on the mutant if we believe the mutant causes timeouts
-			if (MutationTimeoutStoppingCondition.isDisabled(mutation) && infectionDistance <= 0) { 
+			if (MutationTimeoutStoppingCondition.isDisabled(mutation) && infectionDistance <= 0) {
 				impactDistance = 0.0;
 			}
 			// If infected check if it is also killed
@@ -344,7 +344,7 @@ public class StrongMutationTestFitness extends MutationTestFitness {
 
 				// If the trace was generated without observers, we need to re-execute
 				ensureExecutionResultHasTraces(individual, result);
-				
+
 				logger.debug("Running test on mutant " + mutation.getId());
 				MutationExecutionResult mutationResult = individual.getLastExecutionResult(mutation);
 
@@ -391,7 +391,7 @@ public class StrongMutationTestFitness extends MutationTestFitness {
 		//	                         individual.getLastExecutionResult(mutation)) > 0);
 		//}
 
-		updateIndividual(this, individual, fitness);
+		updateIndividual(individual, fitness);
 		if (fitness == 0.0) {
 			individual.getTestCase().addCoveredGoal(this);
 			//assert(isCovered(individual, result));

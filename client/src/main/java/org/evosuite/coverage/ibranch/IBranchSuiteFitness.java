@@ -41,9 +41,9 @@ import org.evosuite.testsuite.TestSuiteFitnessFunction;
  * We don't remember what the I of IBranch stands for. Anyway, this fitness
  * function targets all the branches (of all classes) that is possible to reach
  * from the class under test.
- * 
+ *
  * @author Gordon Fraser, mattia
- * 
+ *
  */
 public class IBranchSuiteFitness extends TestSuiteFitnessFunction {
 
@@ -260,14 +260,14 @@ public class IBranchSuiteFitness extends TestSuiteFitnessFunction {
 			}
 			suite.setNumOfCoveredGoals(this, numCoveredGoals);
 			suite.setNumOfNotCoveredGoals(this, totGoals - numCoveredGoals);
-			updateIndividual(this, suite, fitness);
+			updateIndividual(suite, fitness);
 		}
 		return fitness;
-	}	
-	
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.evosuite.ga.FitnessFunction#getFitness(org.evosuite.ga.Chromosome)
 	 */

@@ -181,7 +181,7 @@ public class RegressionSuiteFitness extends TestSuiteFitnessFunction {
 
   /*
    * Get fitness value for individual
-   * 
+   *
    * @see org.evosuite.ga.FitnessFunction#getFitness(org.evosuite.ga.Chromosome)
    */
   @Override
@@ -309,7 +309,7 @@ public class RegressionSuiteFitness extends TestSuiteFitnessFunction {
     }
 
     individual.setCoverage(this, (bcFitness.totalCovered + bcFitnessRegression.totalCovered) / 2.0);
-    updateIndividual(this, individual, fitness);
+    updateIndividual(individual, fitness);
 
     if (fitness < bestFitness) {
       bestFitness = fitness;
@@ -352,19 +352,19 @@ public class RegressionSuiteFitness extends TestSuiteFitnessFunction {
 
   /*
    * Get the distance of two branches given two method calls
-   * 
+   *
    * @deprecated This function isn't in use anymore...
    */
   private void getBranchDistance(List<MethodCall> methodCallsOrig,
       List<MethodCall> methodCallsReg) {
     /*
      * Here's how this method works:
-     * 
+     *
      * It takes two pointers i and j, and two lists of method calls
-     * 
+     *
      * Then for each of the equal methods: - it takes two sets of branch traces and two pointers k
      * and l - it then compares the branch distances
-     * 
+     *
      * The pointers skip forward if one side is not equal to the other (possibly to skip new code
      * that was added)
      */
@@ -530,7 +530,7 @@ public class RegressionSuiteFitness extends TestSuiteFitnessFunction {
 
   /*
    * This is a minimizing fitness function
-   * 
+   *
    * @see org.evosuite.ga.FitnessFunction#isMaximizationFunction()
    */
   @Override
