@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class for MOSA or variants of MOSA.
- * 
+ *
  * @author Annibale Panichella, Fitsum M. Kifetew
  */
 public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorithm<T> {
@@ -81,13 +81,13 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param factory a {@link org.evosuite.ga.ChromosomeFactory} object
 	 */
 	public AbstractMOSA(ChromosomeFactory<T> factory) {
 		super(factory);
 
-		this.suiteFitnessFunctions = new LinkedHashMap<TestSuiteFitnessFunction, Class<?>>();
+		this.suiteFitnessFunctions = new LinkedHashMap<>();
 		for (Properties.Criterion criterion : Properties.CRITERION) {
 			TestSuiteFitnessFunction suiteFit = FitnessFunctions.getFitnessFunction(criterion);
 			Class<?> testFit = FitnessFunctions.getTestFitnessFunctionClass(criterion);
@@ -111,12 +111,12 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	/**
 	 * This method is used to generate new individuals (offsprings) from
 	 * the current population.
-	 * 
+	 *
 	 * @return offspring population
 	 */
 	@SuppressWarnings("unchecked")
 	protected List<T> breedNextGeneration() {
-		List<T> offspringPopulation = new ArrayList<T>(Properties.POPULATION);
+		List<T> offspringPopulation = new ArrayList<>(Properties.POPULATION);
 		// we apply only Properties.POPULATION/2 iterations since in each generation
 		// we generate two offsprings
 		for (int i = 0; i < Properties.POPULATION / 2 && !this.isFinished(); i++) {
@@ -178,7 +178,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
 	/**
 	 * Method used to mutate an offspring.
-	 * 
+	 *
 	 * @param offspring
 	 * @param parent
 	 */
@@ -193,9 +193,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			tch.setTestCase(((TestChromosome) parent).getTestCase().clone());
 			boolean changed = tch.mutationInsert();
 			if (changed) {
-				for (Statement s : tch.getTestCase()) {
-					s.isValid();
-				}
+				tch.getTestCase().forEach(Statement::isValid);
 			}
 			offspring.setChanged(changed);
 		}
@@ -206,7 +204,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	 * This method checks whether the test has only primitive type statements. Indeed,
 	 * crossover and mutation can lead to tests with no method calls (methods or constructors
 	 * call), thus, when executed they will never cover something in the class under test.
-	 * 
+	 *
 	 * @param test to check
 	 * @return true if the test has at least one method or constructor call (i.e., the test may
 	 * cover something when executed; false otherwise
@@ -237,7 +235,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	 * This method clears the cached results for a specific chromosome (e.g., fitness function
 	 * values computed in previous generations). Since a test case is changed via crossover
 	 * and/or mutation, previous data must be recomputed.
-	 * 
+	 *
 	 * @param chromosome TestChromosome to clean
 	 */
 	private void clearCachedResults(T chromosome) {
@@ -251,15 +249,15 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	 * When a test case is changed via crossover and/or mutation, it can contains some
 	 * primitive variables that are not used as input (or to store the output) of method calls.
 	 * Thus, this method removes all these "trash" statements.
-	 * 
+	 *
 	 * @param chromosome
 	 * @return true or false depending on whether "unused variables" are removed
 	 */
 	private boolean removeUnusedVariables(T chromosome) {
 		int sizeBefore = chromosome.size();
 		TestCase t = ((TestChromosome) chromosome).getTestCase();
-		List<Integer> to_delete = new ArrayList<Integer>(chromosome.size());
-		boolean has_deleted = false;
+		List<Integer> toDelete = new ArrayList<>(chromosome.size());
+		boolean hasDeleted = false;
 
 		int num = 0;
 		for (Statement s : t) {
@@ -269,36 +267,36 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			delete = delete || s instanceof ArrayStatement;
 			delete = delete || s instanceof StringPrimitiveStatement;
 			if (!t.hasReferences(var) && delete) {
-				to_delete.add(num);
-				has_deleted = true;
+				toDelete.add(num);
+				hasDeleted = true;
 			}
 			num++;
 		}
-		Collections.sort(to_delete, Collections.reverseOrder());
-		for (Integer position : to_delete) {
+		toDelete.sort(Collections.reverseOrder());
+		for (Integer position : toDelete) {
 			t.remove(position);
 		}
 		int sizeAfter = chromosome.size();
-		if (has_deleted) {
+		if (hasDeleted) {
 			logger.debug("Removed {} unused statements", (sizeBefore - sizeAfter));
 		}
-		return has_deleted;
+		return hasDeleted;
 	}
 
 	/**
 	 * This method extracts non-dominated solutions (tests) according to all covered goal
 	 * (e.g., branches).
-	 * 
+	 *
 	 * @param solutions list of test cases to analyze with the "dominance" relationship
 	 * @return the non-dominated set of test cases
 	 */
 	private List<T> getNonDominatedSolutions(List<T> solutions) {
-		DominanceComparator<T> comparator = new DominanceComparator<T>(this.getCoveredGoals());
-		List<T> next_front = new ArrayList<T>(solutions.size());
+		DominanceComparator<T> comparator = new DominanceComparator<>(this.getCoveredGoals());
+		List<T> next_front = new ArrayList<>(solutions.size());
 		boolean isDominated;
 		for (T p : solutions) {
 			isDominated = false;
-			List<T> dominatedSolutions = new ArrayList<T>(solutions.size());
+			List<T> dominatedSolutions = new ArrayList<>(solutions.size());
 			for (T best : next_front) {
 				int flag = comparator.compare(p, best);
 				if (flag == -1) {
@@ -318,7 +316,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 		return next_front;
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -338,12 +336,12 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
     /**
      * Returns the goals that have been covered by the test cases stored in the archive.
-     * 
+     *
      * @return
      */
     @SuppressWarnings("unchecked")
     protected Set<FitnessFunction<T>> getCoveredGoals() {
-      Set<FitnessFunction<T>> coveredGoals = new LinkedHashSet<FitnessFunction<T>>();
+      Set<FitnessFunction<T>> coveredGoals = new LinkedHashSet<>();
       Archive.getArchiveInstance().getCoveredTargets()
           .forEach(ff -> coveredGoals.add((FitnessFunction<T>) ff));
       return coveredGoals;
@@ -351,7 +349,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
     /**
      * Returns the number of goals that have been covered by the test cases stored in the archive.
-     * 
+     *
      * @return
      */
     protected int getNumberOfCoveredGoals() {
@@ -364,12 +362,12 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
     /**
      * Returns the goals that have not been covered by the test cases stored in the archive.
-     * 
+     *
      * @return
      */
     @SuppressWarnings("unchecked")
     protected Set<FitnessFunction<T>> getUncoveredGoals() {
-      Set<FitnessFunction<T>> uncoveredGoals = new LinkedHashSet<FitnessFunction<T>>();
+      Set<FitnessFunction<T>> uncoveredGoals = new LinkedHashSet<>();
       Archive.getArchiveInstance().getUncoveredTargets()
           .forEach(ff -> uncoveredGoals.add((FitnessFunction<T>) ff));
       return uncoveredGoals;
@@ -377,7 +375,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
     /**
      * Returns the goals that have not been covered by the test cases stored in the archive.
-     * 
+     *
      * @return
      */
     protected int getNumberOfUncoveredGoals() {
@@ -386,7 +384,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
     /**
      * Returns the total number of goals, i.e., number of covered goals + number of uncovered goals.
-     * 
+     *
      * @return
      */
     protected int getTotalNumberOfGoals() {
@@ -395,12 +393,12 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
     /**
      * Return the test cases in the archive as a list.
-     * 
+     *
      * @return
      */
     @SuppressWarnings("unchecked")
     protected List<T> getSolutions() {
-      List<T> solutions = new ArrayList<T>();
+      List<T> solutions = new ArrayList<>();
       Archive.getArchiveInstance().getSolutions().forEach(test -> solutions.add((T) test));
       return solutions;
     }
@@ -408,7 +406,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
     /**
      * Generates a {@link org.evosuite.testsuite.TestSuiteChromosome} object with all test cases
      * in the archive.
-     * 
+     *
      * @return
      */
     protected TestSuiteChromosome generateSuite() {
@@ -425,12 +423,12 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	 * evolves {@link org.evosuite.testsuite.TestChromosome} objects. Therefore, we must override
 	 * those methods and create a {@link org.evosuite.testsuite.TestSuiteChromosome} object with all
 	 * the evolved {@link org.evosuite.testsuite.TestChromosome} objects (either in the population or
-	 * in the {@link org.evosuite.ga.archive.Archive).
+	 * in the {@link org.evosuite.ga.archive.Archive}.
 	 */
 
 	/**
      * Notify all search listeners but ProgressMonitor of fitness evaluation.
-     * 
+     *
      * @param chromosome a {@link org.evosuite.ga.Chromosome} object.
      */
     @Override
@@ -445,7 +443,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
     /**
      * Notify all search listeners but ProgressMonitor of a mutation.
-     * 
+     *
      * @param chromosome a {@link org.evosuite.ga.Chromosome} object.
      */
     @Override
@@ -470,7 +468,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
         if (ArrayUtil.contains(Properties.CRITERION, Properties.Criterion.EXCEPTION)) {
           TestChromosome testChromosome = (TestChromosome) c;
           ExceptionCoverageSuiteFitness.calculateExceptionInfo(
-              Arrays.asList(testChromosome.getLastExecutionResult()),
+				  Collections.singletonList(testChromosome.getLastExecutionResult()),
               new HashMap<>(), new HashMap<>(), new HashMap<>(), new ExceptionCoverageSuiteFitness());
         }
 
@@ -496,7 +494,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
         // compute overall fitness and coverage
         this.computeCoverageAndFitness(bestTestCases);
 
-        List<T> bests = new ArrayList<T>(1);
+        List<T> bests = new ArrayList<>(1);
         bests.add((T) bestTestCases);
 
         return bests;
@@ -504,15 +502,15 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>This method is used by the Progress Monitor at the and of each generation to show the total coverage reached by the algorithm.
      * Since the Progress Monitor requires a {@link org.evosuite.testsuite.TestSuiteChromosome} object, this method artificially creates
      * a {@link org.evosuite.testsuite.TestSuiteChromosome} object as the union of all solutions stored in the {@link
      * org.evosuite.ga.archive.Archive}.</p>
-     * 
+     *
      * <p>The coverage score of the {@link org.evosuite.testsuite.TestSuiteChromosome} object is given by the percentage of targets marked
      * as covered in the archive.</p>
-     * 
+     *
      * @return a {@link org.evosuite.testsuite.TestSuiteChromosome} object to be consumable by the Progress Monitor.
      */
     @SuppressWarnings("unchecked")
