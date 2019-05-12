@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Archive.
- * 
+ *
  * @author José Campos
  */
 public abstract class Archive<F extends TestFitnessFunction, T extends TestChromosome>
@@ -64,8 +64,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
    * Map used to store all targets (values of the map) of each method (here represented by its name,
    * keys of the map)
    */
-  protected final Map<String, Set<F>> nonCoveredTargetsOfEachMethod =
-      new LinkedHashMap<String, Set<F>>();
+  protected final Map<String, Set<F>> nonCoveredTargetsOfEachMethod = new LinkedHashMap<>();
 
   /**
    * Has this archive been updated with new candidate solutions?
@@ -74,7 +73,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Register a target.
-   * 
+   *
    * @param target
    */
   public void addTarget(F target) {
@@ -92,14 +91,12 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
    * @param targets
    */
   public void addTargets(Collection<F> targets) {
-    for (F target : targets) {
-      this.addTarget(target);
-    }
+    targets.forEach(this::addTarget);
   }
 
   /**
    * Register a non-covered target of a method.
-   * 
+   *
    * @param target
    */
   protected void registerNonCoveredTargetOfAMethod(F target) {
@@ -112,7 +109,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Removes a specific covered target from the list of non-covered targets of a method.
-   * 
+   *
    * @param target
    */
   protected void removeNonCoveredTargetOfAMethod(F target) {
@@ -136,7 +133,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   /**
    * Updates the archive by adding a chromosome solution that covers a target, or by replacing an
    * existing solution if the new one is better.
-   * 
+   *
    * @param target
    * @param solution
    * @param fitnessValue
@@ -155,7 +152,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Checks whether a candidate solution is better than an existing one.
-   * 
+   *
    * @param currentSolution
    * @param candidateSolution
    * @return true if a candidate solution is better than an existing one, false otherwise
@@ -209,21 +206,21 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Returns false if there is not any solution in the archive, true otherwise.
-   * 
+   *
    * @return
    */
   public abstract boolean isArchiveEmpty();
 
   /**
    * Return the total number of targets (either covered by any solution or not).
-   * 
+   *
    * @return
    */
   public abstract int getNumberOfTargets();
 
   /**
    * Returns the total number of targets covered by all solutions in the archive.
-   * 
+   *
    * @return
    */
   public abstract int getNumberOfCoveredTargets();
@@ -231,7 +228,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   /**
    * Returns the total number of targets (of a specific type) covered by all solutions in the
    * archive.
-   * 
+   *
    * @param targetClass
    * @return
    */
@@ -239,14 +236,14 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Returns the union of all targets covered by all solutions in the archive.
-   * 
+   *
    * @return
    */
   public abstract Set<F> getCoveredTargets();
 
   /**
    * Returns the total number of targets that have not been covered by any solution.
-   * 
+   *
    * @return
    */
   public abstract int getNumberOfUncoveredTargets();
@@ -254,7 +251,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   /**
    * Returns the total number of targets (of a specific type) that have not been covered by any
    * solution.
-   * 
+   *
    * @param targetClass
    * @return
    */
@@ -262,14 +259,14 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Returns a set of all targets that have not been covered by any solution.
-   * 
+   *
    * @return
    */
   public abstract Set<F> getUncoveredTargets();
 
   /**
    * Returns true if the archive contains the specific target, false otherwise
-   * 
+   *
    * @param target
    * @return
    */
@@ -277,14 +274,14 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Returns the number of unique solutions in the archive.
-   * 
+   *
    * @return
    */
   public abstract int getNumberOfSolutions();
 
   /**
    * Returns the union of all solutions in the archive.
-   * 
+   *
    * @return
    */
   public abstract Set<T> getSolutions();
@@ -292,14 +289,14 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   /**
    * Returns a particular solution in the archive. The underline algorithm to select a solution
    * depends on the type of archive.
-   * 
+   *
    * @return
    */
   public abstract T getSolution();
 
   /**
    * Returns the solution that covers a particular target.
-   * 
+   *
    * @param target
    * @return
    */
@@ -307,8 +304,8 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Returns true if the archive has a solution for the specific target, false otherwise.
-   * 
-   * 
+   *
+   *
    * @param target
    * @return
    */
@@ -316,13 +313,13 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Returns the clone of a solution selected at random.
-   * 
+   *
    * @return
    */
   public abstract T getRandomSolution();
 
   /**
-   * 
+   *
    * @param solution
    * @return
    */
@@ -331,7 +328,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   }
 
   /**
-   * 
+   *
    * @param solution
    * @return
    */
@@ -339,7 +336,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Creates a solution based on the best solutions in the archive and the parameter solution.
-   * 
+   *
    * @param solution a {@link org.evosuite.testsuite.TestSuiteChromosome} object.
    * @return a {@link org.evosuite.testsuite.TestSuiteChromosome} object.
    */
@@ -356,7 +353,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   }
 
   /**
-   * 
+   *
    * @param size
    */
   public abstract void shrinkSolutions(int size);
@@ -365,7 +362,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
    * Informs {@link org.evosuite.setup.TestCluster} that a particular method of a particular class
    * has been fully covered, and therefore no need to generate any solution to cover any of its
    * targets.
-   * 
+   *
    * @param className name of the class which contains the method that has been fully covered and
    *        can be ignored
    * @param methodName name of the method that has been fully covered and can be ignored
@@ -463,7 +460,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   /**
    * Returns the concatenation of the name of the class and the name of the method to which a target
    * belongs.
-   * 
+   *
    * @param target
    * @return
    */
@@ -481,7 +478,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Reports whether a method has or has not been fully covered.
-   * 
+   *
    * @param methodFullName
    * @return true if a method has been fully covered, false otherwise
    */
@@ -494,7 +491,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Returns the number of targets of a method remaining to be covered.
-   * 
+   *
    * @param methodFullName
    * @return
    */
@@ -519,7 +516,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Returns true if the archive has been updated with new instances, false otherwise
-   * 
+   *
    * @return
    */
   public boolean hasBeenUpdated() {
@@ -528,7 +525,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
 
   /**
    * Sets the status (update or not update) of the archive
-   * 
+   *
    * @param b
    */
   public void setHasBeenUpdated(boolean b) {
@@ -536,7 +533,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   }
 
   /**
-   * 
+   *
    * @return
    */
   public static final Archive<TestFitnessFunction, TestChromosome> getArchiveInstance() {
