@@ -346,9 +346,8 @@ public class TestChromosome extends ExecutableChromosome {
 			setChanged(true);
 			test.clearCoveredGoals();
 		}
-		for (Statement s : test) {
-			s.isValid();
-		}
+
+		test.forEach(Statement::isValid);
 
 		// be sure that mutation did not break any constraint.
 		// if it happens, it means a bug in EvoSuite
