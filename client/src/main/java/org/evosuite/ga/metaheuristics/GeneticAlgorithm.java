@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.evosuite.Properties;
 import org.evosuite.Properties.Algorithm;
@@ -447,8 +448,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
     }
 
     public void addFitnessFunctions(List<FitnessFunction<T>> functions) {
-        for (FitnessFunction<T> function : functions)
-            this.addFitnessFunction(function);
+        functions.forEach(this::addFitnessFunction);
     }
 
     /**
@@ -675,9 +675,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
      * update archive fitness functions
      */
     public void updateFitnessFunctionsAndValues() {
-        for (FitnessFunction<T> f : fitnessFunctions) {
-            f.updateCoveredGoals();
-        }
+         fitnessFunctions.forEach(FitnessFunction::updateCoveredGoals);
 
         // Do we actually have to perform yet another fitness evaluation?
         // Yes, if ARCHIVE has been updated, No otherwise.
@@ -875,27 +873,21 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
      * Notify all search listeners of search start
      */
     protected void notifySearchStarted() {
-        for (SearchListener listener : listeners) {
-            listener.searchStarted(this);
-        }
+        listeners.forEach(listener -> listener.searchStarted(this));
     }
 
     /**
      * Notify all search listeners of search end
      */
     protected void notifySearchFinished() {
-        for (SearchListener listener : listeners) {
-            listener.searchFinished(this);
-        }
+        listeners.forEach(l -> l.searchFinished(this));
     }
 
     /**
      * Notify all search listeners of iteration
      */
     protected void notifyIteration() {
-        for (SearchListener listener : listeners) {
-            listener.iteration(this);
-        }
+        listeners.forEach(listener -> listener.iteration(this));
     }
 
     /**
@@ -905,9 +897,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
      *            a {@link org.evosuite.ga.Chromosome} object.
      */
     protected void notifyEvaluation(Chromosome chromosome) {
-        for (SearchListener listener : listeners) {
-            listener.fitnessEvaluation(chromosome);
-        }
+        listeners.forEach(l -> l.fitnessEvaluation(chromosome));
     }
 
     /**
@@ -917,9 +907,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
      *            a {@link org.evosuite.ga.Chromosome} object.
      */
     protected void notifyMutation(Chromosome chromosome) {
-        for (SearchListener listener : listeners) {
-            listener.modification(chromosome);
-        }
+        listeners.forEach(l -> l.modification(chromosome));
     }
 
     /**
@@ -933,7 +921,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
             Randomness.shuffle(population);
 
         if (isMaximizationFunction()) {
-            Collections.sort(population, Collections.reverseOrder());
+            population.sort(Collections.reverseOrder());
         } else {
             Collections.sort(population);
         }
@@ -976,12 +964,8 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
      * @return a boolean.
      */
     public boolean isFinished() {
-        for (StoppingCondition c : stoppingConditions) {
-            // logger.error(c + " "+ c.getCurrentValue());
-            if (c.isFinished())
-                return true;
-        }
-        return false;
+        // logger.error(c + " "+ c.getCurrentValue());
+        return stoppingConditions.stream().anyMatch(StoppingCondition::isFinished);
     }
 
     // TODO: Override equals method in StoppingCondition
@@ -1052,9 +1036,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
      * </p>
      */
     public void resetStoppingConditions() {
-        for (StoppingCondition c : stoppingConditions) {
-            c.reset();
-        }
+        stoppingConditions.forEach(StoppingCondition::reset);
     }
 
     /**
@@ -1066,9 +1048,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
      *            a int.
      */
     public void setStoppingConditionLimit(int value) {
-        for (StoppingCondition c : stoppingConditions) {
-            c.setLimit(value);
-        }
+        stoppingConditions.forEach(c -> c.setLimit(value));
     }
 
     protected void updateBestIndividualFromArchive() {
