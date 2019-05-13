@@ -61,15 +61,15 @@ public class TestGeneration {
             strategy = Strategy.EVOSUITE;
         }
 
-        List<List<TestGenerationResult>> results = new ArrayList<List<TestGenerationResult>>();
+        List<List<TestGenerationResult>> results = new ArrayList<>();
 
-        if(line.getOptions().length == 0) {
+        if (line.getOptions().length == 0) {
             Help.execute(options);
             return results;
         }
 
         String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-        if(cp==null || cp.isEmpty()){
+        if (cp == null || cp.isEmpty()) {
             LoggingUtils.getEvoLogger().error("No classpath has been defined for the target project.\nOn the command line you can set it with the -projectCP option\n");
             Help.execute(options);
             return results;
@@ -97,7 +97,7 @@ public class TestGeneration {
 
     private static List<List<TestGenerationResult>> generateTestsLegacy(Properties.Strategy strategy,
             List<String> args) {
-        List<List<TestGenerationResult>> results = new ArrayList<List<TestGenerationResult>>();
+        List<List<TestGenerationResult>> results = new ArrayList<>();
 
         ClassPathHandler.getInstance().getTargetProjectClasspath();
         LoggingUtils.getEvoLogger().info("* Using .task files in "
@@ -156,10 +156,10 @@ public class TestGeneration {
 
     private static List<List<TestGenerationResult>> generateTestsPrefix(Properties.Strategy strategy, String prefix,
             List<String> args) {
-        List<List<TestGenerationResult>> results = new ArrayList<List<TestGenerationResult>>();
+        List<List<TestGenerationResult>> results = new ArrayList<>();
 
         String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-        Set<String> classes = new HashSet<String>();
+        Set<String> classes = new HashSet<>();
 
         for (String classPathElement : cp.split(File.pathSeparator)) {
             classes.addAll(ResourceList.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getAllClasses(classPathElement, prefix, false));
@@ -215,7 +215,7 @@ public class TestGeneration {
         LoggingUtils.getEvoLogger().info("* Going to generate test cases for class: "+target);
 
         if (!findTargetClass(target)) {
-            return Arrays.asList(Arrays.asList(new TestGenerationResult[]{TestGenerationResultBuilder.buildErrorResult("Could not find target class") }));
+            return Collections.singletonList(Collections.singletonList(TestGenerationResultBuilder.buildErrorResult("Could not find target class")));
         }
 
 
@@ -255,7 +255,7 @@ public class TestGeneration {
 
         cmdLine.add("-Dprocess_communication_port=" + port);
         cmdLine.add("-Dinline=true");
-        if(Properties.HEADLESS_MODE == true) {
+        if (Properties.HEADLESS_MODE) {
             cmdLine.add("-Djava.awt.headless=true");
         }
         cmdLine.add("-Dlogback.configurationFile="+LoggingUtils.getLogbackFileName());
@@ -490,7 +490,7 @@ public class TestGeneration {
             Set<ClientNodeRemote> clients = null;
             try {
                 //FIXME: timeout here should be handled by TimeController
-                clients = new CopyOnWriteArraySet<ClientNodeRemote>(MasterServices.getInstance().getMasterNode()
+                clients = new CopyOnWriteArraySet<>(MasterServices.getInstance().getMasterNode()
                         .getClientsOnceAllConnected(60000).values());
             } catch (InterruptedException e) {
             }
@@ -567,7 +567,7 @@ public class TestGeneration {
         if(hasFailed){
             logger.error("failed to write statistics data");
             //note: cannot throw exception because would require refactoring of many SystemTests
-            return new ArrayList<List<TestGenerationResult>>();
+            return new ArrayList<>();
         }
 
         return results;
@@ -601,7 +601,7 @@ public class TestGeneration {
 
     private static List<List<TestGenerationResult>> generateTestsTarget(Properties.Strategy strategy, String target,
             List<String> args) {
-        List<List<TestGenerationResult>> results = new ArrayList<List<TestGenerationResult>>();
+        List<List<TestGenerationResult>> results = new ArrayList<>();
         String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
 
         Set<String> classes = ResourceList.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getAllClasses(target, false);
