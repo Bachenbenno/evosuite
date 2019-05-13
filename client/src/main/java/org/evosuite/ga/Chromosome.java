@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -105,13 +105,17 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
      * @return a double.
      */
     public double getFitness() {
-        // Note: fitnessValues.keySet.stream().map(fitnessValues::get) contains the same entries as
-        //       fitnessValues.values.stream()
-        Stream<Double> values = fitnessValues.values().stream();
-        DoubleStream ds = values.mapToDouble(Double::doubleValue);
-        return ds.sum();
+        return fitnessValues.values().stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
     }
 
+    /**
+     * Returns the fitness of this chromosome as computed by the given fitness function {@code ff}.
+     *
+     * @param ff the fitness function
+     * @return the fitness of this chromosome
+     */
     public <T extends Chromosome> double getFitness(FitnessFunction<T> ff) {
         return fitnessValues.getOrDefault(ff, ff.getFitness((T) this)); // Calculate new value if non is cached
     }
@@ -226,12 +230,12 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
     }
 
     public boolean hasFitnessChanged() {
-        Stream<FitnessFunction<?>> fitnessFunctions = fitnessValues.keySet().stream();
-        return fitnessFunctions.anyMatch(ff -> {
-            final double currentValue = fitnessValues.get(ff);
-            final double previousValue = previousFitnessValues.get(ff);
-            return currentValue != previousValue;
-        });
+        return fitnessValues.keySet().stream()
+                .anyMatch(ff -> {
+                    final double currentValue = fitnessValues.get(ff);
+                    final double previousValue = previousFitnessValues.get(ff);
+                    return currentValue != previousValue;
+                });
     }
 
     /**
@@ -260,9 +264,9 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
     @Override
     public int compareTo(Chromosome c) {
         int i = (int) Math.signum(this.getFitness() - c.getFitness());
-        if (i == 0){
+        if (i == 0) {
             return compareSecondaryObjective(c);
-        }else
+        } else
             return i;
     }
 
@@ -395,13 +399,15 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
     }
 
     public int getNumOfCoveredGoals() {
-        IntStream coveredGoals = numsCoveredGoals.values().stream().mapToInt(Integer::intValue);
-        return coveredGoals.sum();
+        return numsCoveredGoals.values().stream()
+                .mapToInt(Integer::intValue)
+                .sum();
     }
 
     public int getNumOfNotCoveredGoals() {
-        IntStream notCovGoals = numsNotCoveredGoals.values().stream().mapToInt(Integer::intValue);
-        return notCovGoals.sum();
+        return numsNotCoveredGoals.values().stream()
+                .mapToInt(Integer::intValue)
+                .sum();
     }
 
     public void setNumsOfCoveredGoals(Map<FitnessFunction<?>, Integer> fits) {
@@ -519,14 +525,16 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
     }
 
     public double getFitnessInstanceOf(Class<?> clazz) {
-        Stream<FitnessFunction<?>> fitnessFunctions = fitnessValues.keySet().stream();
-        Optional<FitnessFunction<?>> ff = fitnessFunctions.filter(clazz::isInstance).findFirst();
+        Optional<FitnessFunction<?>> ff = fitnessValues.keySet().stream()
+                .filter(clazz::isInstance)
+                .findFirst();
         return ff.map(fitnessValues::get).orElse(0.0);
     }
 
     public double getCoverageInstanceOf(Class<?> clazz) {
-        Stream<FitnessFunction<?>> fitnessFunctions = coverageValues.keySet().stream();
-        Optional<FitnessFunction<?>> ff = fitnessFunctions.filter(clazz::isInstance).findFirst();
+        Optional<FitnessFunction<?>> ff = coverageValues.keySet().stream()
+                .filter(clazz::isInstance)
+                .findFirst();
         return ff.map(coverageValues::get).orElse(0.0);
     }
 
