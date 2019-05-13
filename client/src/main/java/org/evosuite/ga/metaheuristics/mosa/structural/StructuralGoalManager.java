@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,23 +19,20 @@
  */
 package org.evosuite.ga.metaheuristics.mosa.structural;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.archive.Archive;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
- * 
- * 
+ *
+ *
  * @author Annibale Panichella
  */
 public abstract class StructuralGoalManager<T extends Chromosome> implements Serializable {
@@ -49,7 +46,7 @@ public abstract class StructuralGoalManager<T extends Chromosome> implements Ser
 	protected Archive archive;
 
 	protected StructuralGoalManager(List<FitnessFunction<T>> fitnessFunctions){
-		currentGoals = new HashSet<FitnessFunction<T>>(fitnessFunctions.size());
+		currentGoals = new HashSet<>(fitnessFunctions.size());
 		archive = Archive.getArchiveInstance();
 
 		// initialize uncovered goals
