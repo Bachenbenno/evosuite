@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -25,21 +25,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class StructuredTestCase extends DefaultTestCase {
 
 	private static final long serialVersionUID = -1896651382970358963L;
 
-	private final Set<TestFitnessFunction> primaryTargets = new HashSet<TestFitnessFunction>();
+	private final Set<TestFitnessFunction> primaryTargets = new HashSet<>();
 
-	private final Set<TestFitnessFunction> secondaryTargets = new HashSet<TestFitnessFunction>();
+	private final Set<TestFitnessFunction> secondaryTargets = new HashSet<>();
 
-	private final Set<Integer> targetStatements = new HashSet<Integer>();
+	private final Set<Integer> targetStatements = new HashSet<>();
 
 	public StructuredTestCase(TestCase test) {
-		for (Statement statement : test) {
-			addStatement(statement.clone(this));
-		}
+		test.forEach(statement -> addStatement(statement.clone(this)));
 	}
 
 	public void addPrimaryGoal(TestFitnessFunction goal) {
@@ -48,20 +47,18 @@ public class StructuredTestCase extends DefaultTestCase {
 
 	/**
 	 * Determine the set of methods this test case is exercising
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<String> getTargetMethods() {
-		Set<String> targetMethods = new HashSet<String>();
-		for (TestFitnessFunction goal : primaryTargets) {
-			targetMethods.add(goal.getTargetMethod());
-		}
-		return targetMethods;
+		return primaryTargets.stream()
+				.map(TestFitnessFunction::getTargetMethod)
+				.collect(Collectors.toSet());
 	}
 
 	/**
 	 * Determine the class that is exercised by this test case
-	 * 
+	 *
 	 * @return
 	 */
 	public String getTargetClass() {
@@ -71,7 +68,7 @@ public class StructuredTestCase extends DefaultTestCase {
 
 	/**
 	 * Determine if the given statement is part of the setup code
-	 * 
+	 *
 	 * @param position
 	 * @return
 	 */
@@ -83,7 +80,7 @@ public class StructuredTestCase extends DefaultTestCase {
 
 	/**
 	 * Determine if the given statement is part of the exercised code
-	 * 
+	 *
 	 * @param position
 	 * @return
 	 */
@@ -93,7 +90,7 @@ public class StructuredTestCase extends DefaultTestCase {
 
 	/**
 	 * Return the first statement that is not setup code
-	 * 
+	 *
 	 * @return
 	 */
 	public int getFirstExerciseStatement() {
@@ -102,7 +99,7 @@ public class StructuredTestCase extends DefaultTestCase {
 
 	/**
 	 * Tag a new statement as exercising statement
-	 * 
+	 *
 	 * @param position
 	 */
 	public void setExerciseStatement(int position) {
@@ -111,7 +108,7 @@ public class StructuredTestCase extends DefaultTestCase {
 
 	/**
 	 * Return the first statement that is not exercise code
-	 * 
+	 *
 	 * @return
 	 */
 	public int getFirstCheckingStatement() {
