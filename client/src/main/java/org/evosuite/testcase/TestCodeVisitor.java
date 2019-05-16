@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,23 +19,8 @@
  */
 package org.evosuite.testcase;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
-import java.net.URLClassLoader;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.googlecode.gentyref.CaptureType;
+import com.googlecode.gentyref.GenericTypeReflector;
 import dk.brics.automaton.RegExp;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -48,26 +33,29 @@ import org.evosuite.assertion.*;
 import org.evosuite.classpath.ResourceList;
 import org.evosuite.parameterize.InputVariable;
 import org.evosuite.runtime.TooManyResourcesException;
+import org.evosuite.runtime.ViolatedAssumptionAnswer;
 import org.evosuite.runtime.mock.EvoSuiteMock;
 import org.evosuite.testcase.fm.MethodDescriptor;
-import org.evosuite.runtime.ViolatedAssumptionAnswer;
 import org.evosuite.testcase.statements.*;
 import org.evosuite.testcase.statements.environment.EnvironmentDataStatement;
 import org.evosuite.testcase.variable.*;
-import org.evosuite.utils.*;
-
-import com.googlecode.gentyref.CaptureType;
-import com.googlecode.gentyref.GenericTypeReflector;
+import org.evosuite.utils.NumberFormatter;
+import org.evosuite.utils.StringUtil;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericField;
 import org.evosuite.utils.generic.GenericMethod;
 
+import java.lang.reflect.*;
+import java.net.URLClassLoader;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * The TestCodeVisitor is a visitor that produces a String representation of a
  * test case. This is the preferred way to produce executable code from EvoSuite
  * tests.
- * 
+ *
  * @author Gordon Fraser
  */
 public class TestCodeVisitor extends TestVisitor {
@@ -76,21 +64,21 @@ public class TestCodeVisitor extends TestVisitor {
 
     protected static final String NEWLINE = System.getProperty("line.separator");
 
-	protected final Map<Integer, Throwable> exceptions = new HashMap<Integer, Throwable>();
+	protected final Map<Integer, Throwable> exceptions = new HashMap<>();
 
 	protected TestCase test = null;
 
-	protected final Map<VariableReference, String> variableNames = new HashMap<VariableReference, String>();
+	protected final Map<VariableReference, String> variableNames = new HashMap<>();
 
-	protected final Map<Class<?>, String> classNames = new HashMap<Class<?>, String>();
+	protected final Map<Class<?>, String> classNames = new HashMap<>();
 
-	protected final Map<String, Integer> nextIndices = new HashMap<String, Integer>();
+	protected final Map<String, Integer> nextIndices = new HashMap<>();
 
 	/**
 	 * <p>
 	 * getCode
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getCode() {
@@ -100,20 +88,15 @@ public class TestCodeVisitor extends TestVisitor {
 	/**
 	 * Retrieve a list of classes that need to be imported to make this unit
 	 * test compile
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<Class<?>> getImports() {
-		Set<Class<?>> imports = new HashSet<Class<?>>();
-		for (Class<?> clazz : classNames.keySet()) {
-			String name = classNames.get(clazz);
-			// If there's a dot in the name, then we assume this is the
-			// fully qualified name and we don't need to import
-			if (!name.contains(".")) {
-				imports.add(clazz);
-			}
-		}
-		return imports;
+		return classNames.keySet().stream()
+				// If there's a dot in the name, then we assume this is the
+				// fully qualified name and we don't need to import
+				.filter(clazz -> !classNames.get(clazz).contains("."))
+				.collect(Collectors.toSet());
 	}
 
 	/**
@@ -129,7 +112,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * Setter for the field <code>exceptions</code>.
 	 * </p>
-	 * 
+	 *
 	 * @param exceptions
 	 *            a {@link java.util.Map} object.
 	 */
@@ -141,7 +124,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * setException
 	 * </p>
-	 * 
+	 *
 	 * @param statement
 	 *            a {@link org.evosuite.testcase.statements.Statement} object.
 	 * @param exception
@@ -155,23 +138,20 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * getException
 	 * </p>
-	 * 
+	 *
 	 * @param statement
 	 *            a {@link org.evosuite.testcase.statements.Statement} object.
 	 * @return a {@link java.lang.Throwable} object.
 	 */
 	protected Throwable getException(Statement statement) {
-		if (exceptions != null && exceptions.containsKey(statement.getPosition()))
-			return exceptions.get(statement.getPosition());
-
-		return null;
+		return exceptions.getOrDefault(statement.getPosition(), null);
 	}
 
 	/**
 	 * <p>
 	 * getClassName
 	 * </p>
-	 * 
+	 *
 	 * @param var
 	 *            a {@link org.evosuite.testcase.variable.VariableReference} object.
 	 * @return a {@link java.lang.String} object.
@@ -280,7 +260,6 @@ public class TestCodeVisitor extends TestVisitor {
 	}
 
 	public String getTypeName(VariableReference var) {
-
 		GenericClass clazz = var.getGenericClass();
 		return getTypeName(clazz.getType());
 	}
@@ -289,7 +268,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * getClassName
 	 * </p>
-	 * 
+	 *
 	 * @param clazz
 	 *            a {@link java.lang.Class} object.
 	 * @return a {@link java.lang.String} object.
@@ -319,7 +298,7 @@ public class TestCodeVisitor extends TestVisitor {
 						name = clazz.getCanonicalName();
 					}
 				} catch(IllegalArgumentException e) {
-					// If the classpath is not correct, then we just don't check 
+					// If the classpath is not correct, then we just don't check
 					// because that cannot happen in regular EvoSuite use, only
 					// from test cases
 				}
@@ -342,7 +321,7 @@ public class TestCodeVisitor extends TestVisitor {
 			getClassName(declaringClass);
         }
 
-		// We can't use "Test" because of JUnit 
+		// We can't use "Test" because of JUnit
 		if (name.equals("Test")) {
 			name = clazz.getCanonicalName();
 		}
@@ -355,7 +334,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * getVariableName
 	 * </p>
-	 * 
+	 *
 	 * @param var
 	 *            a {@link org.evosuite.testcase.variable.VariableReference} object.
 	 * @return a {@link java.lang.String} object.
@@ -473,7 +452,7 @@ public class TestCodeVisitor extends TestVisitor {
 
 	/**
 	 * Retrieve the names of all known variables
-	 * 
+	 *
 	 * @return
 	 */
 	public Collection<String> getVariableNames() {
@@ -482,7 +461,7 @@ public class TestCodeVisitor extends TestVisitor {
 
 	/**
 	 * Retrieve the names of all known classes
-	 * 
+	 *
 	 * @return
 	 */
 	public Collection<String> getClassNames() {
@@ -491,7 +470,7 @@ public class TestCodeVisitor extends TestVisitor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.TestVisitor#visitTestCase(org.evosuite.testcase.TestCase)
 	 */
 	/** {@inheritDoc} */
@@ -507,7 +486,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * visitPrimitiveAssertion
 	 * </p>
-	 * 
+	 *
 	 * @param assertion
 	 *            a {@link org.evosuite.assertion.PrimitiveAssertion} object.
 	 */
@@ -516,7 +495,7 @@ public class TestCodeVisitor extends TestVisitor {
 		Object value = assertion.getValue();
 
 		String stmt = "";
-		
+
 		if (value == null) {
 			stmt += "assertNull(" + getVariableName(source) + ");";
 		} else if (source.getVariableClass().equals(float.class)) {
@@ -556,18 +535,18 @@ public class TestCodeVisitor extends TestVisitor {
 			stmt += "assertEquals(" + NumberFormatter.getNumberString(value, this) + ", "
 			        + getVariableName(source) + ");";
 		}
-						
-		testCode += stmt; 
+
+		testCode += stmt;
 	}
 
 
-	
+
 	protected void visitArrayEqualsAssertion(ArrayEqualsAssertion assertion) {
 		VariableReference source = assertion.getSource();
 		Object[] value = (Object[]) assertion.getValue();
 
 		String stmt = "";
-		
+
 		if(source.getComponentClass().equals(Boolean.class) || source.getComponentClass().equals(boolean.class)) {
 			stmt += "assertTrue(Arrays.equals(";
 			// Make sure that the Arrays class is imported
@@ -595,7 +574,7 @@ public class TestCodeVisitor extends TestVisitor {
 			stmt += "));";
 		else
 			stmt += ");";
-		
+
 		testCode += stmt;
 	}
 
@@ -616,7 +595,7 @@ public class TestCodeVisitor extends TestVisitor {
 		Boolean contains = (Boolean)assertion.getValue();
 
 		String stmt = "";
-		if(contains.booleanValue()) {
+		if(contains) {
 			stmt += "assertTrue(";
 		} else {
 			stmt += "assertFalse(";
@@ -630,7 +609,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * visitPrimitiveFieldAssertion
 	 * </p>
-	 * 
+	 *
 	 * @param assertion
 	 *            a {@link org.evosuite.assertion.PrimitiveFieldAssertion}
 	 *            object.
@@ -646,7 +625,7 @@ public class TestCodeVisitor extends TestVisitor {
 		} else {
 			target = getVariableName(source) + "." + field.getName();
 		}
-		
+
 		if (value == null) {
 			testCode += "assertNull(" + target
 			        + ");";
@@ -688,7 +667,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * visitInspectorAssertion
 	 * </p>
-	 * 
+	 *
 	 * @param assertion
 	 *            a {@link org.evosuite.assertion.InspectorAssertion} object.
 	 */
@@ -740,11 +719,11 @@ public class TestCodeVisitor extends TestVisitor {
 		} else if (value.getClass().isEnum() || value instanceof Enum) {
 			testCode += "assertEquals(" + NumberFormatter.getNumberString(value, this) + ", "
 			        + getVariableName(source) + "." + inspector.getMethodCall() + "());";
-			// Make sure the enum is imported in the JUnit test			
+			// Make sure the enum is imported in the JUnit test
 			getClassName(value.getClass());
 
 		} else if (value.getClass().equals(boolean.class) || value.getClass().equals(Boolean.class)) {
-			if (((Boolean) value).booleanValue())
+			if ((Boolean) value)
 				testCode += "assertTrue(" + getVariableName(source) + "."
 				        + inspector.getMethodCall() + "());";
 			else
@@ -760,14 +739,14 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * visitNullAssertion
 	 * </p>
-	 * 
+	 *
 	 * @param assertion
 	 *            a {@link org.evosuite.assertion.NullAssertion} object.
 	 */
 	protected void visitNullAssertion(NullAssertion assertion) {
 		VariableReference source = assertion.getSource();
 		Boolean value = (Boolean) assertion.getValue();
-		if (value.booleanValue()) {
+		if (value) {
 			testCode += "assertNull(" + getVariableName(source) + ");";
 		} else
 			testCode += "assertNotNull(" + getVariableName(source) + ");";
@@ -777,7 +756,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * visitCompareAssertion
 	 * </p>
-	 * 
+	 *
 	 * @param assertion
 	 *            a {@link org.evosuite.assertion.CompareAssertion} object.
 	 */
@@ -807,7 +786,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * visitEqualsAssertion
 	 * </p>
-	 * 
+	 *
 	 * @param assertion
 	 *            a {@link org.evosuite.assertion.EqualsAssertion} object.
 	 */
@@ -818,49 +797,49 @@ public class TestCodeVisitor extends TestVisitor {
 
 		if (source.isPrimitive() || source.isWrapperType()) {
 			if (source.getVariableClass().equals(float.class)) {
-				if (((Boolean) value).booleanValue())
+				if ((Boolean) value)
 					testCode += "assertEquals(" + getVariableName(source) + ", "
 							+ getVariableName(dest) + ", " + NumberFormatter.getNumberString(Properties.FLOAT_PRECISION, this) + ");";
 				else
 					testCode += "assertNotEquals(" + getVariableName(source) + ", "
 							+ getVariableName(dest) + ", " + NumberFormatter.getNumberString(Properties.FLOAT_PRECISION, this) + ");";
 			} else if (source.getVariableClass().equals(Float.class)) {
-					if (((Boolean) value).booleanValue())
+					if ((Boolean) value)
 						testCode += "assertEquals((float)" + getVariableName(source) + ", (float)"
 								+ getVariableName(dest) + ", " + NumberFormatter.getNumberString(Properties.FLOAT_PRECISION, this) + ");";
 					else
 						testCode += "assertNotEquals((float)" + getVariableName(source) + ", (float)"
 								+ getVariableName(dest) + ", " + NumberFormatter.getNumberString(Properties.FLOAT_PRECISION, this) + ");";
 			} else if (source.getVariableClass().equals(double.class)) {
-                if (((Boolean) value).booleanValue())
+                if ((Boolean) value)
                     testCode += "assertEquals(" + getVariableName(source) + ", "
                             + getVariableName(dest) + ", " + NumberFormatter.getNumberString(Properties.DOUBLE_PRECISION, this) + ");";
                 else
                     testCode += "assertNotEquals(" + getVariableName(source) + ", "
                             + getVariableName(dest) + ", " + NumberFormatter.getNumberString(Properties.DOUBLE_PRECISION, this) + ");";
 			} else if (source.getVariableClass().equals(Double.class)) {
-				if (((Boolean) value).booleanValue())
+				if ((Boolean) value)
 					testCode += "assertEquals((double)" + getVariableName(source) + ", (double)"
 							+ getVariableName(dest) + ", " + NumberFormatter.getNumberString(Properties.DOUBLE_PRECISION, this) + ");";
 				else
 					testCode += "assertNotEquals((double)" + getVariableName(source) + ", (double)"
 							+ getVariableName(dest) + ", " + NumberFormatter.getNumberString(Properties.DOUBLE_PRECISION, this) + ");";
             } else if(source.isWrapperType()) {
-                if (((Boolean) value).booleanValue())
+                if ((Boolean) value)
                     testCode += "assertTrue(" + getVariableName(source) + ".equals((" + this.getClassName(Object.class) +")"
                             + getVariableName(dest) + "));";
                 else
                     testCode += "assertFalse(" + getVariableName(source) + ".equals((" + this.getClassName(Object.class) +")"
                             + getVariableName(dest) + "));";
             } else if(dest.isWrapperType()) {
-                if (((Boolean) value).booleanValue())
+                if ((Boolean) value)
                     testCode += "assertTrue(" + getVariableName(dest) + ".equals((" + this.getClassName(Object.class) +")"
                             + getVariableName(source) + "));";
                 else
                     testCode += "assertFalse(" + getVariableName(dest) + ".equals((" + this.getClassName(Object.class) +")"
                             + getVariableName(source) + "));";
             } else {
-				if (((Boolean) value).booleanValue())
+				if ((Boolean) value)
 					testCode += "assertTrue(" + getVariableName(source) + " == "
 							+ getVariableName(dest) + ");";
 				else
@@ -868,7 +847,7 @@ public class TestCodeVisitor extends TestVisitor {
 							+ getVariableName(dest) + ");";
 			}
 		} else {
-			if (((Boolean) value).booleanValue())
+			if ((Boolean) value)
 				testCode += "assertTrue(" + getVariableName(source) + ".equals((" + this.getClassName(Object.class) +")"
 				        + getVariableName(dest) + "));";
 			else
@@ -881,7 +860,7 @@ public class TestCodeVisitor extends TestVisitor {
 	 * <p>
 	 * visitSameAssertion
 	 * </p>
-	 * 
+	 *
 	 * @param assertion
 	 *            a {@link org.evosuite.assertion.SameAssertion} object.
 	 */
@@ -890,7 +869,7 @@ public class TestCodeVisitor extends TestVisitor {
 		VariableReference dest = assertion.getDest();
 		Object value = assertion.getValue();
 
-		if (((Boolean) value).booleanValue())
+		if ((Boolean) value)
 			testCode += "assertSame(" + getVariableName(source) + ", "
 			        + getVariableName(dest) + ");";
 		else
@@ -901,21 +880,21 @@ public class TestCodeVisitor extends TestVisitor {
 	private String getUnstableTestComment(){
 		return " // Unstable assertion";
 	}
-	
+
 	private boolean isTestUnstable() {
 		return test!=null && test.isUnstable();
 	}
 
-		
+
 	protected void visitAssertion(Assertion assertion) {
-		
+
 		if(isTestUnstable()){
 			/*
-			 * if the current test is unstable, then comment out all of its assertions.		
+			 * if the current test is unstable, then comment out all of its assertions.
 			 */
 			testCode  += "// "+getUnstableTestComment()+": ";
 		}
-		
+
 		if (assertion instanceof PrimitiveAssertion) {
 			visitPrimitiveAssertion((PrimitiveAssertion) assertion);
 		} else if (assertion instanceof PrimitiveFieldAssertion) {
@@ -998,10 +977,10 @@ public class TestCodeVisitor extends TestVisitor {
 	}
 
 
-	
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.TestVisitor#visitPrimitiveStatement(org.evosuite.testcase.PrimitiveStatement)
 	 */
 	/** {@inheritDoc} */
@@ -1061,7 +1040,7 @@ public class TestCodeVisitor extends TestVisitor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.TestVisitor#visitFieldStatement(org.evosuite.testcase.FieldStatement)
 	 */
 	/** {@inheritDoc} */
@@ -1393,14 +1372,14 @@ public class TestCodeVisitor extends TestVisitor {
 		}
 
 
-		return parameterString; 
+		return parameterString;
 	}
 
 
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.TestVisitor#visitMethodStatement(org.evosuite.testcase.MethodStatement)
 	 */
 	/** {@inheritDoc} */
@@ -1474,7 +1453,7 @@ public class TestCodeVisitor extends TestVisitor {
 					try {
 						// If the concrete callee class has that method then it's ok
 						callee.getVariableClass().getDeclaredMethod(method.getName(), method.getRawParameterTypes());
-						callee_str += getVariableName(callee);						
+						callee_str += getVariableName(callee);
 					} catch(NoSuchMethodException e) {
 						// If not we need to cast to the subtype
 						callee_str += "((" + getTypeName(method.getMethod().getDeclaringClass()) + ") " + getVariableName(callee) + ")";
@@ -1587,7 +1566,7 @@ public class TestCodeVisitor extends TestVisitor {
 				//from class EvoAssertions
 				result += "   verifyException(\"" + sourceClass + "\", e);" + NEWLINE;
 		}
-		
+
 		// Add assertion on the message (feel free to remove the isRegression() Condition)
 		if (Properties.isRegression() && exception.getMessage() != null) {
 			result += "   assertTrue(e.getMessage().equals(\"" + StringEscapeUtils.escapeJava(exceptionMessage) + "\"));";
@@ -1653,7 +1632,7 @@ public class TestCodeVisitor extends TestVisitor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.TestVisitor#visitConstructorStatement(org.evosuite.testcase.ConstructorStatement)
 	 */
 	/** {@inheritDoc} */
@@ -1740,20 +1719,20 @@ public class TestCodeVisitor extends TestVisitor {
 		// if (isExpected)
 
         String stmt =  " fail(\"Expecting exception: " + getClassName(ex) + "\");" + NEWLINE;
-		
+
 		if(isTestUnstable()){
 			/*
-			 * if the current test is unstable, then comment out all of its assertions.		
+			 * if the current test is unstable, then comment out all of its assertions.
 			 */
 			stmt = "// "+stmt +getUnstableTestComment();
 		}
-		
+
 		return NEWLINE + " "+stmt;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.TestVisitor#visitArrayStatement(org.evosuite.testcase.ArrayStatement)
 	 */
 	/** {@inheritDoc} */
@@ -1803,7 +1782,7 @@ public class TestCodeVisitor extends TestVisitor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.TestVisitor#visitAssignmentStatement(org.evosuite.testcase.AssignmentStatement)
 	 */
 	/** {@inheritDoc} */
@@ -1845,7 +1824,7 @@ public class TestCodeVisitor extends TestVisitor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.TestVisitor#visitNullStatement(org.evosuite.testcase.NullStatement)
 	 */
 	/** {@inheritDoc} */
