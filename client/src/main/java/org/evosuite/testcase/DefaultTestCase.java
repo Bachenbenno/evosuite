@@ -113,9 +113,8 @@ public class DefaultTestCase implements TestCase, Serializable {
 	public void addAssertions(TestCase other) {
 		for (int i = 0; i < statements.size() && i < other.size(); i++) {
 			for (Assertion a : other.getStatement(i).getAssertions()) {
-				if (!statements.get(i).getAssertions().contains(a))
-					if (a != null)
-						statements.get(i).getAssertions().add(a.clone(this));
+				if (!statements.get(i).getAssertions().contains(a) && a != null)
+					statements.get(i).getAssertions().add(a.clone(this));
 			}
 		}
 	}
