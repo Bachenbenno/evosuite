@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -16,9 +16,6 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
- */
-/**
- * 
  */
 package org.evosuite.contracts;
 
@@ -45,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * ContractViolation class.
  * </p>
- * 
+ *
  * @author Gordon Fraser
  */
 public class ContractViolation {
@@ -68,7 +65,7 @@ public class ContractViolation {
 	/**
 	 * List of all variables involved in the contract violation
 	 */
-	private final List<VariableReference> variables = new ArrayList<VariableReference>();
+	private final List<VariableReference> variables = new ArrayList<>();
 
 	private boolean isMinimized = false;
 
@@ -76,7 +73,7 @@ public class ContractViolation {
 	 * <p>
 	 * Constructor for ContractViolation.
 	 * </p>
-	 * 
+	 *
 	 * @param contract
 	 *            a {@link org.evosuite.contracts.Contract} object.
 	 * @param statement
@@ -103,7 +100,7 @@ public class ContractViolation {
 
 	/**
 	 * Getter for test case
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.TestCase} object.
 	 */
 	public TestCase getTestCase() {
@@ -112,7 +109,7 @@ public class ContractViolation {
 
 	/**
 	 * Getter for contract that was violated
-	 * 
+	 *
 	 * @return a {@link org.evosuite.contracts.Contract} object.
 	 */
 	public Contract getContract() {
@@ -224,7 +221,7 @@ public class ContractViolation {
 
 	/**
 	 * Determine if we have already seen an instance of this violation
-	 * 
+	 *
 	 * @param other
 	 *            a {@link org.evosuite.contracts.ContractViolation} object.
 	 * @return a boolean.
