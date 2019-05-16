@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -33,7 +33,7 @@ import java.util.*;
 public class ExecutionResult implements Cloneable {
 
 	private static final Logger logger = LoggerFactory.getLogger(ExecutionResult.class);
-	
+
 	/** Test case that produced this execution result */
 	public TestCase test;
 
@@ -41,14 +41,14 @@ public class ExecutionResult implements Cloneable {
 	public Mutation mutation;
 
 	/** Map statement number to raised exception */
-	protected Map<Integer, Throwable> exceptions = new HashMap<Integer, Throwable>();
+	protected Map<Integer, Throwable> exceptions = new HashMap<>();
 
-	/** Record for each exception if it was explicitly thrown 
-	 * 
+	/** Record for each exception if it was explicitly thrown
+	 *
 	 * <p>
 	 * FIXME: internal data structures should never be null...
 	 * */
-	public Map<Integer, Boolean> explicitExceptions = new HashMap<Integer, Boolean>();
+	public Map<Integer, Boolean> explicitExceptions = new HashMap<>();
 
 	/** Trace recorded during execution */
 	protected ExecutionTrace trace;
@@ -64,17 +64,17 @@ public class ExecutionResult implements Cloneable {
 
 	/** Set of System properties that were read during test execution */
 	protected Set<String> readProperties;
-	
+
 	/**
 	 * Keep track of whether any System property was written
 	 */
 	protected boolean wasAnyPropertyWritten;
-	
+
 	/*
 	 * Regression Object Distance
 	 */
 	public double regressionObjectDistance = 0;
-	
+
 	/**
 	 * @return the executedStatements
 	 */
@@ -91,7 +91,7 @@ public class ExecutionResult implements Cloneable {
 	}
 
 	/** Output traces produced by observers */
-	protected final Map<Class<?>, OutputTrace<?>> traces = new HashMap<Class<?>, OutputTrace<?>>();
+	protected final Map<Class<?>, OutputTrace<?>> traces = new HashMap<>();
 
     private Map<Integer, Set<InputCoverageGoal>> inputGoals = new LinkedHashMap<>();
 
@@ -102,7 +102,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Default constructor when executing without mutation
-	 * 
+	 *
 	 * @param t
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 */
@@ -116,7 +116,7 @@ public class ExecutionResult implements Cloneable {
 	 * <p>
 	 * Copy the input map data into internal structures
 	 * </p>
-	 * 
+	 *
 	 * @param data
 	 *            a {@link java.util.Map} object. It has a mapping from test
 	 *            sequence position toward thrown exception
@@ -128,12 +128,12 @@ public class ExecutionResult implements Cloneable {
 		}
 	}
 
-	
+
 	/**
 	 * <p>
 	 * getFirstPositionOfThrownException
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.Integer} object.
 	 */
 	public Integer getFirstPositionOfThrownException() {
@@ -150,7 +150,7 @@ public class ExecutionResult implements Cloneable {
 	 * <p>
 	 * reportNewThrownException
 	 * </p>
-	 * 
+	 *
 	 * @param position
 	 *            a {@link java.lang.Integer} object.
 	 * @param t
@@ -164,7 +164,7 @@ public class ExecutionResult implements Cloneable {
 	 * <p>
 	 * getPositionsWhereExceptionsWereThrown
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<Integer> getPositionsWhereExceptionsWereThrown() {
@@ -175,7 +175,7 @@ public class ExecutionResult implements Cloneable {
 	 * <p>
 	 * getAllThrownExceptions
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.Collection} object.
 	 */
 	public Collection<Throwable> getAllThrownExceptions() {
@@ -186,7 +186,7 @@ public class ExecutionResult implements Cloneable {
 	 * <p>
 	 * isThereAnExceptionAtPosition
 	 * </p>
-	 * 
+	 *
 	 * @param position
 	 *            a {@link java.lang.Integer} object.
 	 * @return a boolean.
@@ -199,7 +199,7 @@ public class ExecutionResult implements Cloneable {
 	 * <p>
 	 * noThrownExceptions
 	 * </p>
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean noThrownExceptions() {
@@ -210,7 +210,7 @@ public class ExecutionResult implements Cloneable {
 	 * <p>
 	 * getExceptionThrownAtPosition
 	 * </p>
-	 * 
+	 *
 	 * @param position
 	 *            a {@link java.lang.Integer} object.
 	 * @return a {@link java.lang.Throwable} object.
@@ -223,7 +223,7 @@ public class ExecutionResult implements Cloneable {
 	 * <p>
 	 * getNumberOfThrownExceptions
 	 * </p>
-	 * 
+	 *
 	 * @return a int.
 	 */
 	public int getNumberOfThrownExceptions() {
@@ -232,7 +232,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * shouldn't be used
-	 * 
+	 *
 	 * @return a {@link java.util.Map} object.
 	 */
 	@Deprecated
@@ -241,18 +241,16 @@ public class ExecutionResult implements Cloneable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return Mapping of statement indexes and thrown exceptions.
 	 */
 	public Map<Integer, Throwable> getCopyOfExceptionMapping() {
-		Map<Integer, Throwable> copy = new HashMap<Integer, Throwable>();
-		copy.putAll(exceptions);
-		return copy;
+		return new HashMap<>(exceptions);
 	}
 
 	/**
 	 * Constructor when executing with mutation
-	 * 
+	 *
 	 * @param t
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param m
@@ -266,7 +264,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Accessor to the execution trace
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.execution.ExecutionTrace} object.
 	 */
 	public ExecutionTrace getTrace() {
@@ -275,7 +273,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Set execution trace to different value
-	 * 
+	 *
 	 * @param trace
 	 *            a {@link org.evosuite.testcase.execution.ExecutionTrace} object.
 	 */
@@ -288,7 +286,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Store a new output trace
-	 * 
+	 *
 	 * @param trace
 	 *            a {@link org.evosuite.assertion.OutputTrace} object.
 	 * @param clazz
@@ -300,7 +298,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Accessor for output trace produced by an observer of a particular class
-	 * 
+	 *
 	 * @param clazz
 	 *            a {@link java.lang.Class} object.
 	 * @return a {@link org.evosuite.assertion.OutputTrace} object.
@@ -311,7 +309,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Accessor for the output traces produced by observers
-	 * 
+	 *
 	 * @return a {@link java.util.Collection} object.
 	 */
 	public Collection<OutputTrace<?>> getTraces() {
@@ -320,7 +318,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Was the reason for termination a timeout?
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean hasTimeout() {
@@ -339,7 +337,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Does the test contain an exception caused in the test itself?
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean hasTestException() {
@@ -356,7 +354,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * Is there an undeclared exception in the trace?
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean hasUndeclaredException() {
@@ -369,7 +367,7 @@ public class ExecutionResult implements Cloneable {
 			assert i>=0 && i<=test.size() : "Exception "+t+" at position "+i+" in test of length "+test.size()+": "+test.toCode(exceptions);
 			if(i >= test.size())
 				continue;
-			
+
 			if (!test.getStatement(i).getDeclaredExceptions().contains(t.getClass()))
 				return true;
 		}
@@ -396,7 +394,7 @@ public class ExecutionResult implements Cloneable {
 
 	/**
 	 * check if the test case threw any security exception
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean hasSecurityException() {
@@ -438,7 +436,7 @@ public class ExecutionResult implements Cloneable {
 			copy.traces.put(clazz, traces.get(clazz).clone());
 		}
 		if(readProperties!=null){
-			copy.readProperties = new LinkedHashSet<String>();
+			copy.readProperties = new LinkedHashSet<>();
 			copy.readProperties.addAll(readProperties);
 		}
 		copy.wasAnyPropertyWritten = wasAnyPropertyWritten;
