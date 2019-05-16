@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -34,7 +34,7 @@ public abstract class ExecutableChromosome extends Chromosome {
 
 	protected transient ExecutionResult lastExecutionResult = null;
 
-	protected transient Map<Mutation, MutationExecutionResult> lastMutationResult = new HashMap<Mutation, MutationExecutionResult>();
+	protected transient Map<Mutation, MutationExecutionResult> lastMutationResult = new HashMap<>();
 
 	/**
 	 * <p>Constructor for ExecutableChromosome.</p>
@@ -60,7 +60,7 @@ public abstract class ExecutableChromosome extends Chromosome {
 	public ExecutionResult getLastExecutionResult() {
 		return lastExecutionResult;
 	}
-	
+
 	/**
 	 * <p>Setter for the field <code>lastExecutionResult</code>.</p>
 	 *
@@ -81,7 +81,7 @@ public abstract class ExecutableChromosome extends Chromosome {
 	public MutationExecutionResult getLastExecutionResult(Mutation mutation) {
 		return lastMutationResult.get(mutation);
 	}
-	
+
 
 	/**
 	 * <p>clearCachedResults</p>
@@ -113,11 +113,11 @@ public abstract class ExecutableChromosome extends Chromosome {
 	 */
 	abstract public ExecutionResult executeForFitnessFunction(
 	        TestSuiteFitnessFunction testSuiteFitnessFunction);
-	
+
 	private void readObject(ObjectInputStream ois) throws ClassNotFoundException,
     IOException {
 		ois.defaultReadObject();
 		lastExecutionResult = null;
-		lastMutationResult = new HashMap<Mutation, MutationExecutionResult>();
+		lastMutationResult = new HashMap<>();
 	}
 }
