@@ -123,9 +123,7 @@ public class ExecutionResult implements Cloneable {
 	 */
 	public void setThrownExceptions(Map<Integer, Throwable> data) {
 		exceptions.clear();
-		for (Integer position : data.keySet()) {
-			reportNewThrownException(position, data.get(position));
-		}
+		data.forEach(this::reportNewThrownException);
 	}
 
 
@@ -137,13 +135,7 @@ public class ExecutionResult implements Cloneable {
 	 * @return a {@link java.lang.Integer} object.
 	 */
 	public Integer getFirstPositionOfThrownException() {
-		Integer min = null;
-		for (Integer position : exceptions.keySet()) {
-			if (min == null || position < min) {
-				min = position;
-			}
-		}
-		return min;
+		return exceptions.keySet().stream().min(Comparator.naturalOrder()).orElse(null);
 	}
 
 	/**
@@ -325,14 +317,8 @@ public class ExecutionResult implements Cloneable {
 		if (test == null)
 			return false;
 
-		int size = test.size();
-		if (exceptions.containsKey(size)) {
-			if (exceptions.get(size) instanceof TestCaseExecutor.TimeoutExceeded) {
-				return true;
-			}
-		}
-
-		return false;
+		final int size = test.size();
+		return exceptions.containsKey(size) && exceptions.get(size) instanceof TestCaseExecutor.TimeoutExceeded;
 	}
 
 	/**
@@ -344,12 +330,7 @@ public class ExecutionResult implements Cloneable {
 		if (test == null)
 			return false;
 
-		for (Throwable t : exceptions.values()) {
-			if (t instanceof CodeUnderTestException)
-				return true;
-		}
-
-		return false;
+		return exceptions.values().stream().anyMatch(t -> t instanceof CodeUnderTestException);
 	}
 
 	/**
@@ -361,7 +342,7 @@ public class ExecutionResult implements Cloneable {
 		if (test == null)
 			return false;
 
-		for (Integer i : exceptions.keySet()) {
+		for (int i : exceptions.keySet()) {
 			Throwable t = exceptions.get(i);
 			// Exceptions can be placed at test.size(), e.g. for timeouts
 			assert i>=0 && i<=test.size() : "Exception "+t+" at position "+i+" in test of length "+test.size()+": "+test.toCode(exceptions);
