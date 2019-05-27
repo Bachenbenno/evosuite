@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.coverage.branch.BranchPool;
@@ -42,11 +43,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents the complete CFG of a method
- * 
+ *
  * Essentially this is a graph containing all BytecodeInstrucions of a method as
  * nodes. From each such instruction there is an edge to each possible
  * instruction the control flow can reach immediately after that instruction.
- * 
+ *
  * @author Andre Mis
  */
 public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
@@ -66,7 +67,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * <p>
 	 * Constructor for RawControlFlowGraph.
 	 * </p>
-	 * 
+	 *
 	 * @param className
 	 *            a {@link java.lang.String} object.
 	 * @param methodName
@@ -86,19 +87,16 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	/** {@inheritDoc} */
 	@Override
 	public boolean containsInstruction(BytecodeInstruction instruction) {
-
 		return containsVertex(instruction);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public BytecodeInstruction getInstruction(int instructionId) {
-		for (BytecodeInstruction v : vertexSet()) {
-			if (v.getInstructionId() == instructionId) {
-				return v;
-			}
-		}
-		return null;
+		return vertexSet().stream()
+				.filter(v -> v.getInstructionId() == instructionId)
+				.findFirst()
+				.orElse(null);
 	}
 
 	// @Override
@@ -115,7 +113,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * <p>
 	 * addEdge
 	 * </p>
-	 * 
+	 *
 	 * @param src
 	 *            a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 * @param target
@@ -250,7 +248,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * <p>
 	 * determineBasicBlockFor
 	 * </p>
-	 * 
+	 *
 	 * @param instruction
 	 *            a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 * @return a {@link org.evosuite.graphs.cfg.BasicBlock} object.
@@ -263,13 +261,13 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 
 		logger.debug("creating basic block for " + instruction.toString());
 
-		List<BytecodeInstruction> blockNodes = new ArrayList<BytecodeInstruction>();
+		List<BytecodeInstruction> blockNodes = new ArrayList<>();
 		blockNodes.add(instruction);
 
-		Set<BytecodeInstruction> handledChildren = new HashSet<BytecodeInstruction>();
-		Set<BytecodeInstruction> handledParents = new HashSet<BytecodeInstruction>();
+		Set<BytecodeInstruction> handledChildren = new HashSet<>();
+		Set<BytecodeInstruction> handledParents = new HashSet<>();
 
-		Queue<BytecodeInstruction> queue = new LinkedList<BytecodeInstruction>();
+		Queue<BytecodeInstruction> queue = new LinkedList<>();
 		queue.add(instruction);
 		while (!queue.isEmpty()) {
 			BytecodeInstruction current = queue.poll();
@@ -361,37 +359,26 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * <p>
 	 * getInstructionWithSmallestId
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 */
 	public BytecodeInstruction getInstructionWithSmallestId() {
-
-		BytecodeInstruction r = null;
-
-		for (BytecodeInstruction ins : vertexSet()) {
-			if (r == null || r.getInstructionId() > ins.getInstructionId())
-				r = ins;
-		}
-
-		return r;
+		return vertexSet().stream()
+				.min(Comparator.comparingInt(BytecodeInstruction::getInstructionId))
+				.orElse(null);
 	}
 
 	/**
 	 * <p>
 	 * getInstructionWithBiggestId
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 */
 	public BytecodeInstruction getInstructionWithBiggestId() {
-		BytecodeInstruction r = null;
-
-		for (BytecodeInstruction ins : vertexSet()) {
-			if (r == null || r.getInstructionId() < ins.getInstructionId())
-				r = ins;
-		}
-
-		return r;
+		return vertexSet().stream()
+				.max(Comparator.comparingInt(BytecodeInstruction::getInstructionId))
+				.orElse(null);
 	}
 
 	/**
@@ -399,7 +386,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * completely empty try-catch-finally. Since these nodes are not reachable
 	 * but cause trouble when determining the entry point of a CFG they get
 	 * removed.
-	 * 
+	 *
 	 * @return a int.
 	 */
 	public int removeIsolatedNodes() {
@@ -409,11 +396,9 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 		if (candidates.size() > 1) {
 
 			for (BytecodeInstruction instruction : candidates) {
-				if (outDegreeOf(instruction) == 0) {
-					if (graph.removeVertex(instruction)) {
-						removed++;
-						BytecodeInstructionPool.getInstance(classLoader).forgetInstruction(instruction);
-					}
+				if (outDegreeOf(instruction) == 0 && graph.removeVertex(instruction)) {
+					removed++;
+					BytecodeInstructionPool.getInstance(classLoader).forgetInstruction(instruction);
 				}
 			}
 
@@ -427,15 +412,15 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * Returns the Set of BytecodeInstructions that can potentially be executed
 	 * from entering the method of this CFG until the given BytecodeInstruction
 	 * is reached.
-	 * 
+	 *
 	 * @param v
 	 *            a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<BytecodeInstruction> getPreviousInstructionsInMethod(BytecodeInstruction v) {
-		Set<BytecodeInstruction> visited = new HashSet<BytecodeInstruction>();
-		PriorityQueue<BytecodeInstruction> queue = new PriorityQueue<BytecodeInstruction>(
-		        graph.vertexSet().size(), new BytecodeInstructionIdComparator());
+		Set<BytecodeInstruction> visited = new HashSet<>();
+		PriorityQueue<BytecodeInstruction> queue = new PriorityQueue<>(
+				graph.vertexSet().size(), new BytecodeInstructionIdComparator());
 		queue.add(v);
 		while (queue.peek() != null) {
 			BytecodeInstruction current = queue.poll();
@@ -457,17 +442,17 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * Returns the Set of BytecodeInstructions that can potentially be executed
 	 * from passing the given BytecodeInstruction until the end of the method of
 	 * this CFG is reached.
-	 * 
+	 *
 	 * @param v
 	 *            a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<BytecodeInstruction> getLaterInstructionsInMethod(BytecodeInstruction v) {
-		Set<BytecodeInstruction> visited = new HashSet<BytecodeInstruction>();
-		Comparator<BytecodeInstruction> reverseComp = new ReverseComparator<BytecodeInstruction>(
-		        new BytecodeInstructionIdComparator());
-		PriorityQueue<BytecodeInstruction> queue = new PriorityQueue<BytecodeInstruction>(
-		        graph.vertexSet().size(), reverseComp);
+		Set<BytecodeInstruction> visited = new HashSet<>();
+		Comparator<BytecodeInstruction> reverseComp = new ReverseComparator<>(
+				new BytecodeInstructionIdComparator());
+		PriorityQueue<BytecodeInstruction> queue = new PriorityQueue<>(
+				graph.vertexSet().size(), reverseComp);
 		queue.add(v);
 		while (queue.peek() != null) {
 			BytecodeInstruction current = queue.poll();
@@ -491,7 +476,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * <p>
 	 * getUsesForDef
 	 * </p>
-	 * 
+	 *
 	 * @param def
 	 *            a {@link org.evosuite.coverage.dataflow.Definition} object.
 	 * @return a {@link java.util.Set} object.
@@ -500,7 +485,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 		if (!graph.containsVertex(def))
 			throw new IllegalArgumentException("unknown Definition");
 
-		return getUsesForDef(def, def, new HashSet<BytecodeInstruction>());
+		return getUsesForDef(def, def, new HashSet<>());
 	}
 
 	private Set<Use> getUsesForDef(Definition targetDef,
@@ -508,7 +493,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 		if (!graph.containsVertex(currentInstruction))
 			throw new IllegalArgumentException("vertex not in graph");
 
-		Set<Use> r = new HashSet<Use>();
+		Set<Use> r = new HashSet<>();
 
 		if (handled.contains(currentInstruction))
 			return r;
@@ -534,7 +519,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * <p>
 	 * hasDefClearPathToMethodExit
 	 * </p>
-	 * 
+	 *
 	 * @param duVertex
 	 *            a {@link org.evosuite.coverage.dataflow.Definition} object.
 	 * @return a boolean.
@@ -546,14 +531,14 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 			return false;
 
 		return hasDefClearPathToMethodExit(duVertex, duVertex,
-		                                   new HashSet<BytecodeInstruction>());
+				new HashSet<>());
 	}
 
 	/**
 	 * <p>
 	 * hasDefClearPathFromMethodEntry
 	 * </p>
-	 * 
+	 *
 	 * @param duVertex
 	 *            a {@link org.evosuite.coverage.dataflow.Use} object.
 	 * @return a boolean.
@@ -565,7 +550,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 			return false;
 
 		return hasDefClearPathFromMethodEntry(duVertex, duVertex,
-		                                      new HashSet<BytecodeInstruction>());
+				new HashSet<>());
 	}
 
 	private boolean hasDefClearPathToMethodExit(Definition targetDefUse,
@@ -614,7 +599,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 			BytecodeInstruction edgeStart = graph.getEdgeSource(e);
 
 			// skip edges coming from a def for the same field
-			if (canOverwriteDU(targetDefUse, edgeStart, new HashSet<String>()))
+			if (canOverwriteDU(targetDefUse, edgeStart, new HashSet<>()))
 				continue;
 
 			// if (edgeTarget.getInstructionId() >
@@ -660,7 +645,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	/**
 	 * Checks if the given DefUse has a definition-clear path to its methods
 	 * exit
-	 * 
+	 *
 	 * @param targetDU
 	 *            a {@link org.evosuite.coverage.dataflow.DefUse} object.
 	 * @param handle
@@ -713,8 +698,7 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	}
 
 	private boolean canOverwriteDU(Definition targetDefUse, BytecodeInstruction edgeTarget) {
-
-		return canOverwriteDU(targetDefUse, edgeTarget, new HashSet<String>());
+		return canOverwriteDU(targetDefUse, edgeTarget, new HashSet<>());
 	}
 
 	private boolean canOverwriteDU(DefUse targetDefUse, BytecodeInstruction edgeTarget,
@@ -762,28 +746,24 @@ public class RawControlFlowGraph extends ControlFlowGraph<BytecodeInstruction> {
 	 * <p>
 	 * determineMethodCalls
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.List} object.
 	 */
 	public List<BytecodeInstruction> determineMethodCalls() {
-		List<BytecodeInstruction> calls = new ArrayList<BytecodeInstruction>();
-		for (BytecodeInstruction ins : graph.vertexSet()) {
-			if (ins.isMethodCall()) {
-				calls.add(ins);
-			}
-		}
-		return calls;
+		return graph.vertexSet().stream()
+				.filter(ASMWrapper::isMethodCall)
+				.collect(Collectors.toList());
 	}
 
 	/**
 	 * <p>
 	 * determineMethodCallsToOwnClass
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.List} object.
 	 */
 	public List<BytecodeInstruction> determineMethodCallsToOwnClass() {
-		List<BytecodeInstruction> calls = new ArrayList<BytecodeInstruction>();
+		List<BytecodeInstruction> calls = new ArrayList<>();
 		for (BytecodeInstruction ins : determineMethodCalls())
 			if (ins.isMethodCallForClass(className)) {
 
