@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,18 +19,6 @@
  */
 package org.evosuite.testcase.execution;
 
-import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.ga.stoppingconditions.MaxStatementsStoppingCondition;
@@ -48,17 +36,23 @@ import org.evosuite.testcase.execution.reset.ClassReInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.*;
+
 /**
  * <p>
  * The test case executor manages thread creation/deletion to execute a test
  * case
  * </p>
- * 
+ *
  * <p>
  * WARNING: never give "privileged" rights in MSecurityManager to any of the
  * threads generated here
  * </p>
- * 
+ *
  * @author Gordon Fraser
  */
 public class TestCaseExecutor implements ThreadFactory {
@@ -91,7 +85,7 @@ public class TestCaseExecutor implements ThreadFactory {
 
 	private Set<ExecutionObserver> observers;
 
-	private final Set<Thread> stalledThreads = new HashSet<Thread>();
+	private final Set<Thread> stalledThreads = new HashSet<>();
 
 	/** Constant <code>timeExecuted=0</code> */
 	public static long timeExecuted = 0;
@@ -112,7 +106,7 @@ public class TestCaseExecutor implements ThreadFactory {
 	 * <p>
 	 * Getter for the field <code>instance</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.execution.TestCaseExecutor}
 	 *         object.
 	 */
@@ -125,7 +119,7 @@ public class TestCaseExecutor implements ThreadFactory {
 
 	/**
 	 * Execute a test case
-	 * 
+	 *
 	 * @param test
 	 *            The test case to execute
 	 * @return Result of the execution
@@ -201,7 +195,7 @@ public class TestCaseExecutor implements ThreadFactory {
 	 * <p>
 	 * addObserver
 	 * </p>
-	 * 
+	 *
 	 * @param observer
 	 *            a {@link org.evosuite.testcase.execution.ExecutionObserver}
 	 *            object.
@@ -222,7 +216,7 @@ public class TestCaseExecutor implements ThreadFactory {
 	 * <p>
 	 * removeObserver
 	 * </p>
-	 * 
+	 *
 	 * @param observer
 	 *            a {@link org.evosuite.testcase.execution.ExecutionObserver}
 	 *            object.
@@ -244,7 +238,7 @@ public class TestCaseExecutor implements ThreadFactory {
 	}
 
 	public Set<ExecutionObserver> getExecutionObservers() {
-		return new LinkedHashSet<ExecutionObserver>(observers);
+		return new LinkedHashSet<>(observers);
 	}
 
 	private void resetObservers() {
@@ -255,7 +249,7 @@ public class TestCaseExecutor implements ThreadFactory {
 
 	/**
 	 * Execute a test case on a new scope
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @return a {@link org.evosuite.testcase.execution.ExecutionResult} object.
@@ -267,7 +261,7 @@ public class TestCaseExecutor implements ThreadFactory {
 
 	/**
 	 * Execute a test case on a new scope
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @return a {@link org.evosuite.testcase.execution.ExecutionResult} object.
@@ -285,7 +279,7 @@ public class TestCaseExecutor implements ThreadFactory {
 
 	/**
 	 * Execute a test case on an existing scope
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param scope
@@ -304,7 +298,7 @@ public class TestCaseExecutor implements ThreadFactory {
 
 		long startTime = System.currentTimeMillis();
 
-		TimeoutHandler<ExecutionResult> handler = new TimeoutHandler<ExecutionResult>();
+		TimeoutHandler<ExecutionResult> handler = new TimeoutHandler<>();
 
 		// #TODO steenbuck could be nicer (TestRunnable should be an interface
 		TestRunnable callable = new TestRunnable(tc, scope, observers);
@@ -519,17 +513,11 @@ public class TestCaseExecutor implements ThreadFactory {
 	 * <p>
 	 * getNumStalledThreads
 	 * </p>
-	 * 
+	 *
 	 * @return a int.
 	 */
 	public int getNumStalledThreads() {
-		Iterator<Thread> iterator = stalledThreads.iterator();
-		while (iterator.hasNext()) {
-			Thread t = iterator.next();
-			if (!t.isAlive()) {
-				iterator.remove();
-			}
-		}
+		stalledThreads.removeIf(t -> !t.isAlive());
 		return stalledThreads.size();
 	}
 
