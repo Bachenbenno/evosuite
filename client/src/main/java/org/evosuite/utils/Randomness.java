@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Unique random number accessor
- * 
+ *
  * @author Gordon Fraser
  */
 public class Randomness implements Serializable {
@@ -62,7 +62,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * Getter for the field <code>instance</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.utils.Randomness} object.
 	 */
 	public static Randomness getInstance() {
@@ -76,7 +76,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextBoolean
 	 * </p>
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public static boolean nextBoolean() {
@@ -87,7 +87,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextInt
 	 * </p>
-	 * 
+	 *
 	 * @param max
 	 *            a int.
 	 * @return a int.
@@ -99,12 +99,12 @@ public class Randomness implements Serializable {
 	public static double nextGaussian() {
 		return random.nextGaussian();
 	}
-	
+
 	/**
 	 * <p>
 	 * nextInt
 	 * </p>
-	 * 
+	 *
 	 * @param min
 	 *            a int.
 	 * @param max
@@ -119,7 +119,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextInt
 	 * </p>
-	 * 
+	 *
 	 * @return a int.
 	 */
 	public static int nextInt() {
@@ -130,7 +130,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextChar
 	 * </p>
-	 * 
+	 *
 	 * @return a char.
 	 */
 	public static char nextChar() {
@@ -142,7 +142,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextShort
 	 * </p>
-	 * 
+	 *
 	 * @return a short.
 	 */
 	public static short nextShort() {
@@ -153,7 +153,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextLong
 	 * </p>
-	 * 
+	 *
 	 * @return a long.
 	 */
 	public static long nextLong() {
@@ -164,7 +164,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextByte
 	 * </p>
-	 * 
+	 *
 	 * @return a byte.
 	 */
 	public static byte nextByte() {
@@ -175,7 +175,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * returns a randomly generated double in the range [0,1]
 	 * </p>
-	 * 
+	 *
 	 * @return a double between 0.0 and 1.0
 	 */
 	public static double nextDouble() {
@@ -186,7 +186,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextDouble
 	 * </p>
-	 * 
+	 *
 	 * @param min
 	 *            a double.
 	 * @param max
@@ -201,7 +201,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextFloat
 	 * </p>
-	 * 
+	 *
 	 * @return a float.
 	 */
 	public static float nextFloat() {
@@ -212,7 +212,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * Setter for the field <code>seed</code>.
 	 * </p>
-	 * 
+	 *
 	 * @param seed
 	 *            a long.
 	 */
@@ -225,7 +225,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * Getter for the field <code>seed</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a long.
 	 */
 	public static long getSeed() {
@@ -236,7 +236,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * choice
 	 * </p>
-	 * 
+	 *
 	 * @param list
 	 *            a {@link java.util.List} object.
 	 * @param <T>
@@ -255,7 +255,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * choice
 	 * </p>
-	 * 
+	 *
 	 * @param set
 	 *            a {@link java.util.Collection} object.
 	 * @param <T>
@@ -275,7 +275,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * choice
 	 * </p>
-	 * 
+	 *
 	 * @param elements
 	 *            a T object.
 	 * @param <T>
@@ -294,7 +294,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * shuffle
 	 * </p>
-	 * 
+	 *
 	 * @param list
 	 *            a {@link java.util.List} object.
 	 */
@@ -306,7 +306,7 @@ public class Randomness implements Serializable {
 	 * <p>
 	 * nextString
 	 * </p>
-	 * 
+	 *
 	 * @param length
 	 *            a int.
 	 * @return a {@link java.lang.String} object.

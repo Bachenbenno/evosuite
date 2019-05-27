@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -187,7 +187,7 @@ public abstract class ControlFlowGraph<V> extends
 
 		return diameter;
 	}
-	
+
 	public int getCyclomaticComplexity() {
 		// E = the number of edges of the graph.
 		// N = the number of nodes of the graph.

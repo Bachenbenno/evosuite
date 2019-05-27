@@ -1,4 +1,4 @@
-/**
+/*
  *
  * This file is part of EvoSuite.
  *
@@ -27,7 +27,7 @@ import org.evosuite.ga.FitnessFunction;
  * This class implements a <code>Comparator</code> (a method for comparing <code>Chromosomes</code>
  * objects) based on the fitness value of two chromosome objects and considering the specified test
  * goals only.
- * 
+ *
  * @author Annibale Panichella
  */
 public class PreferenceSortingComparator<T extends Chromosome> implements Comparator<Object>, Serializable {
@@ -47,7 +47,7 @@ public class PreferenceSortingComparator<T extends Chromosome> implements Compar
 
 	/**
 	 * Compare the fitness value of two chromosome objects focusing only on one goal.
-	 * 
+	 *
 	 * @param object1 a {@link org.evosuite.ga.Chromosome} object
 	 * @param object2 a {@link org.evosuite.ga.Chromosome} object
 	 * @return -1 if fitness value of object1 is lower than the fitness value of object2, 0 if the fitness

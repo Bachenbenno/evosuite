@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -27,7 +27,7 @@ import org.evosuite.ga.Chromosome;
 /**
  * This class implements a <code>Comparator</code> (a method for comparing <code>Chromosomes</code>
  * objects) based on the dominance test, as in NSGA-II.
- * 
+ *
  * @author José Campos
  */
 public class RankAndCrowdingDistanceComparator<T extends Chromosome> implements Comparator<T>, Serializable {
@@ -46,7 +46,7 @@ public class RankAndCrowdingDistanceComparator<T extends Chromosome> implements 
 
     /**
      * Compares two solutions.
-     * 
+     *
      * @param c1 Object representing the first <code>Solution</code>.
      * @param c2 Object representing the second <code>Solution</code>.
      * @return -1, or 0, or 1 according to the non-dominated ranks
@@ -88,7 +88,7 @@ public class RankAndCrowdingDistanceComparator<T extends Chromosome> implements 
 
     /**
      * Are we maximizing or minimizing fitness?
-     * 
+     *
      * @param max a boolean.
      */
     public void setMaximize(boolean max) {
