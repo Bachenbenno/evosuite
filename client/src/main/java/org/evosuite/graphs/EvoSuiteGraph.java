@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.evosuite.utils.LoggingUtils;
 import org.jgrapht.DirectedGraph;
@@ -90,7 +91,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 */
 	protected EvoSuiteGraph(Class<E> edgeClass) {
 
-		graph = new DefaultDirectedGraph<V, E>(edgeClass);
+		graph = new DefaultDirectedGraph<>(edgeClass);
 		this.edgeClass = edgeClass;
 
 		setId();
@@ -156,7 +157,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 			throw new IllegalArgumentException(
 					"node not contained in this graph");
 		// TODO hash set? can't be sure E implements hash correctly
-		return new LinkedHashSet<E>(graph.outgoingEdgesOf(node));
+		return new LinkedHashSet<>(graph.outgoingEdgesOf(node));
 	}
 
 	/**
@@ -169,7 +170,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 		if (!containsVertex(node)) // should this just return null?
 			throw new IllegalArgumentException("node not contained in this graph ");
 		// TODO hash set? can't be sure E implements hash correctly
-		return new LinkedHashSet<E>(graph.incomingEdgesOf(node));
+		return new LinkedHashSet<>(graph.incomingEdgesOf(node));
 	}
 
 	/**
@@ -187,9 +188,9 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 		//	throw new IllegalArgumentException(
 		//			"node not contained in this graph");
 		// TODO hash set? can't be sure V implements hash correctly
-		Set<V> r = new LinkedHashSet<V>();
-		for (E e : outgoingEdgesOf(node))
-			r.add(getEdgeTarget(e));
+		Set<V> r = outgoingEdgesOf(node).stream()
+				.map(this::getEdgeTarget)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 
 		// sanity check
 		if (r.size() != outDegreeOf(node))
@@ -210,9 +211,9 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 			throw new IllegalArgumentException(
 					"node not contained in this graph");
 		// TODO hash set? can't be sure V implements hash correctly
-		Set<V> r = new LinkedHashSet<V>();
-		for (E e : incomingEdgesOf(node))
-			r.add(getEdgeSource(e));
+		Set<V> r = incomingEdgesOf(node).stream()
+				.map(this::getEdgeSource)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 
 		// sanity check
 		if (r.size() != inDegreeOf(node))
@@ -229,12 +230,12 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 */
 	public Set<V> vertexSet() {
 		// TODO hash set? can't be sure V implements hash correctly
-		return new LinkedHashSet<V>(graph.vertexSet());
+		return new LinkedHashSet<>(graph.vertexSet());
 		/*
 		 * Set<V> r = new HashSet<V>();
-		 * 
+		 *
 		 * for (V v : graph.vertexSet()) r.add(v);
-		 * 
+		 *
 		 * return r;
 		 */
 	}
@@ -246,13 +247,13 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 */
 	public Set<E> edgeSet() {
 		// TODO hash set? can't be sure E implements hash correctly
-		return new LinkedHashSet<E>(graph.edgeSet());
+		return new LinkedHashSet<>(graph.edgeSet());
 
 		/*
 		 * Set<E> r = new HashSet<E>();
-		 * 
+		 *
 		 * for (E e : graph.edgeSet()) r.add(e);
-		 * 
+		 *
 		 * return r;
 		 */
 	}
@@ -361,10 +362,8 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 		if (!redirectIncomingEdges(from, newStart))
 			return false;
 
-		if (!redirectOutgoingEdges(from, newEnd))
-			return false;
+		return redirectOutgoingEdges(from, newEnd);
 
-		return true;
 	}
 
 	/**
@@ -377,12 +376,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 */
 	protected boolean redirectIncomingEdges(V oldNode, V newNode) {
 		Set<E> incomings = incomingEdgesOf(oldNode);
-		for (E incomingEdge : incomings) {
-			if (!redirectEdgeTarget(incomingEdge, newNode))
-				return false;
-		}
-
-		return true;
+		return incomings.stream().allMatch(incomingEdge -> redirectEdgeTarget(incomingEdge, newNode));
 	}
 
 	/**
@@ -395,12 +389,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 */
 	protected boolean redirectOutgoingEdges(V oldNode, V newNode) {
 		Set<E> outgoings = outgoingEdgesOf(oldNode);
-		for (E outgoingEdge : outgoings) {
-			if (!redirectEdgeSource(outgoingEdge, newNode))
-				return false;
-		}
-
-		return true;
+		return outgoings.stream().allMatch(outgoingEdge -> redirectEdgeSource(outgoingEdge, newNode));
 	}
 
 	/**
@@ -420,10 +409,8 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 		V edgeSource = graph.getEdgeSource(edge);
 		if (!graph.removeEdge(edge))
 			return false;
-		if (!addEdge(edgeSource, node, edge))
-			return false;
 
-		return true;
+		return addEdge(edgeSource, node, edge);
 	}
 
 	/**
@@ -443,10 +430,8 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 		V edgeTarget = graph.getEdgeTarget(edge);
 		if (!graph.removeEdge(edge))
 			return false;
-		if (!addEdge(node, edgeTarget, edge))
-			return false;
 
-		return true;
+		return addEdge(node, edgeTarget, edge);
 	}
 
 	// different counts
@@ -572,7 +557,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 * @return Set containing all nodes with in degree 0
 	 */
 	public Set<V> determineEntryPoints() {
-		Set<V> r = new LinkedHashSet<V>();
+		Set<V> r = new LinkedHashSet<>();
 
 		for (V instruction : vertexSet())
 			if (inDegreeOf(instruction) == 0) {
@@ -588,7 +573,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 * @return Set containing all nodes with out degree 0
 	 */
 	public Set<V> determineExitPoints() {
-		Set<V> r = new LinkedHashSet<V>();
+		Set<V> r = new LinkedHashSet<>();
 
 		for (V instruction : vertexSet())
 			if (outDegreeOf(instruction) == 0)
@@ -606,8 +591,8 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 */
 	public Set<V> determineConnectedVertices(V v) {
 
-		Set<V> visited = new LinkedHashSet<V>();
-		Queue<V> queue = new LinkedList<V>();
+		Set<V> visited = new LinkedHashSet<>();
+		Queue<V> queue = new LinkedList<>();
 
 		queue.add(v);
 		while (!queue.isEmpty()) {
@@ -646,7 +631,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<V> getIsolatedNodes() {
-		Set<V> r = new LinkedHashSet<V>();
+		Set<V> r = new LinkedHashSet<>();
 		for (V node : graph.vertexSet())
 			if (inDegreeOf(node) == 0 && outDegreeOf(node) == 0)
 				r.add(node);
@@ -660,7 +645,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<V> getNodesWithoutChildren() {
-		Set<V> r = new LinkedHashSet<V>();
+		Set<V> r = new LinkedHashSet<>();
 		for (V node : graph.vertexSet())
 			if (outDegreeOf(node) == 0)
 				r.add(node);
@@ -690,8 +675,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 * @return a int.
 	 */
 	public int getDistance(V v1, V v2) {
-		DijkstraShortestPath<V, E> d = new DijkstraShortestPath<V, E>(graph,
-				v1, v2);
+		DijkstraShortestPath<V, E> d = new DijkstraShortestPath<>(graph, v1, v2);
 		return (int) Math.round(d.getPathLength());
 	}
 
@@ -703,7 +687,6 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 * @return a boolean.
 	 */
 	public boolean isDirectSuccessor(V v1, V v2) {
-
 		return (containsEdge(v1, v2) && inDegreeOf(v2) == 1);
 	}
 
@@ -715,7 +698,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<V> determineBranches() {
-		Set<V> r = new LinkedHashSet<V>();
+		Set<V> r = new LinkedHashSet<>();
 
 		for (V instruction : graph.vertexSet())
 			if (outDegreeOf(instruction) > 1)
@@ -730,7 +713,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<V> determineJoins() {
-		Set<V> r = new LinkedHashSet<V>();
+		Set<V> r = new LinkedHashSet<>();
 
 		for (V instruction : vertexSet())
 			if (inDegreeOf(instruction) > 1)
@@ -755,7 +738,7 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 	 */
 	protected DefaultDirectedGraph<V, E> computeReverseJGraph() {
 
-		DefaultDirectedGraph<V, E> r = new DefaultDirectedGraph<V, E>(edgeClass);
+		DefaultDirectedGraph<V, E> r = new DefaultDirectedGraph<>(edgeClass);
 
 		for (V v : vertexSet())
 			if (!r.addVertex(v))
@@ -890,10 +873,10 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 				// DOTExporter<Integer,DefaultEdge> exporter = new
 				// DOTExporter<Integer,DefaultEdge>(new LineNumberProvider(),
 				// new LineNumberProvider(), new IntegerEdgeNameProvider());
-				DOTExporter<V, E> exporter = new DOTExporter<V, E>(
-						new IntegerNameProvider<V>(),
-						new StringNameProvider<V>(),
-						new StringEdgeNameProvider<E>(),
+				DOTExporter<V, E> exporter = new DOTExporter<>(
+						new IntegerNameProvider<>(),
+						new StringNameProvider<>(),
+						new StringEdgeNameProvider<>(),
 						vertexAttributeProvider, edgeAttributeProvider);
 
 				// new IntegerEdgeNameProvider<E>());
