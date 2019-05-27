@@ -96,15 +96,15 @@ public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
 	protected Registry registry;
 
     protected final Collection<Listener<Set<? extends Chromosome>>> listeners = Collections.synchronizedList(
-                                                    new ArrayList<Listener<Set<? extends Chromosome>>>());
-	
+			new ArrayList<>());
+
 	protected final ExecutorService searchExecutor = Executors.newSingleThreadExecutor();
 
-	private final BlockingQueue<OutputVariable> outputVariableQueue = new LinkedBlockingQueue<OutputVariable>();
+	private final BlockingQueue<OutputVariable> outputVariableQueue = new LinkedBlockingQueue<>();
 
 	private Collection<Set<? extends Chromosome>> bestSolutions;
-	
-	private Thread statisticsThread; 
+
+	private Thread statisticsThread;
 
 	//only for testing
 	protected ClientNodeImpl() {
@@ -116,7 +116,7 @@ public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
 		clientRmiIdentifier = identifier;
 		doneLatch = new CountDownLatch(1);
 		finishedLatch = new CountDownLatch(1);
-		this.bestSolutions = Collections.synchronizedList(new ArrayList<Set<? extends Chromosome>>(Properties.NUM_PARALLEL_CLIENTS));
+		this.bestSolutions = Collections.synchronizedList(new ArrayList<>(Properties.NUM_PARALLEL_CLIENTS));
 	}
 
 	private static class OutputVariable {
@@ -140,53 +140,50 @@ public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
 		 * Needs to be done on separated thread, otherwise the master will block on this
 		 * function call until end of the search, even if it is on remote process
 		 */
-		searchExecutor.submit(new Runnable() {
-			@Override
-			public void run() {
-				changeState(ClientState.STARTED);
+		searchExecutor.submit(() -> {
+			changeState(ClientState.STARTED);
 
-				//Before starting search, let's activate the sandbox
-				if (Properties.SANDBOX) {
-					Sandbox.initializeSecurityManagerForSUT();
-				}
-				List<TestGenerationResult> results = new ArrayList<TestGenerationResult>();
-
-				try {
-					// Starting a new search
-					TestSuiteGenerator generator = new TestSuiteGenerator();
-					results.add(generator.generateTestSuite());
-					// TODO: Why?
-					// GeneticAlgorithm<?> ga = generator.getEmployedGeneticAlgorithm();
-
-					masterNode.evosuite_collectTestGenerationResult(clientRmiIdentifier, results);
-				} catch (Throwable t) {
-					logger.error("Error when generating tests for: "
-							+ Properties.TARGET_CLASS + " with seed "
-							+ Randomness.getSeed() + ". Configuration id : "
-							+ Properties.CONFIGURATION_ID, t);
-					results.add(TestGenerationResultBuilder.buildErrorResult("Error when generating tests for: "
-                            + Properties.TARGET_CLASS+": "+t));
-				}
-
-				changeState(ClientState.DONE);
-
-				if (Properties.SANDBOX) {
-					/*
-					 * Note: this is mainly done for debugging purposes, to simplify how test cases are run/written 
-					 */
-					Sandbox.resetDefaultSecurityManager();
-				}
-
-				/*
-				 * System is special due to the handling of properties
-				 * 
-				 *  TODO: re-add it once we save JUnit code in the 
-				 *  best individual. Otherwise, we wouldn't
-				 *  be able to properly create the JUnit files in the
-				 *  system test cases after the search
-				 */
-				//org.evosuite.runtime.System.fullReset();
+			//Before starting search, let's activate the sandbox
+			if (Properties.SANDBOX) {
+				Sandbox.initializeSecurityManagerForSUT();
 			}
+			List<TestGenerationResult> results = new ArrayList<>();
+
+			try {
+				// Starting a new search
+				TestSuiteGenerator generator = new TestSuiteGenerator();
+				results.add(generator.generateTestSuite());
+				// TODO: Why?
+				// GeneticAlgorithm<?> ga = generator.getEmployedGeneticAlgorithm();
+
+				masterNode.evosuite_collectTestGenerationResult(clientRmiIdentifier, results);
+			} catch (Throwable t) {
+				logger.error("Error when generating tests for: "
+						+ Properties.TARGET_CLASS + " with seed "
+						+ Randomness.getSeed() + ". Configuration id : "
+						+ Properties.CONFIGURATION_ID, t);
+				results.add(TestGenerationResultBuilder.buildErrorResult("Error when generating tests for: "
++ Properties.TARGET_CLASS+": "+t));
+			}
+
+			changeState(ClientState.DONE);
+
+			if (Properties.SANDBOX) {
+				/*
+				 * Note: this is mainly done for debugging purposes, to simplify how test cases are run/written
+				 */
+				Sandbox.resetDefaultSecurityManager();
+			}
+
+			/*
+			 * System is special due to the handling of properties
+			 *
+			 *  TODO: re-add it once we save JUnit code in the
+			 *  best individual. Otherwise, we wouldn't
+			 *  be able to properly create the JUnit files in the
+			 *  system test cases after the search
+			 */
+			//org.evosuite.runtime.System.fullReset();
 		});
 	}
 
@@ -350,7 +347,7 @@ public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
 	public void stop(){
 		if(statisticsThread!=null){
 			statisticsThread.interrupt();
-			List<OutputVariable> vars = new ArrayList<OutputVariable>();
+			List<OutputVariable> vars = new ArrayList<>();
 			outputVariableQueue.drainTo(vars);
 			for(OutputVariable ov : vars) {
 				try {
@@ -444,7 +441,7 @@ public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
 				changeState(ClientState.DONE);
 				if (Properties.SANDBOX) {
 					/*
-					 * Note: this is mainly done for debugging purposes, to simplify how test cases are run/written 
+					 * Note: this is mainly done for debugging purposes, to simplify how test cases are run/written
 					 */
 					Sandbox.resetDefaultSecurityManager();
 				}
@@ -533,7 +530,7 @@ public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
 			}
 		});
 	}
-	
+
     @Override
     public void immigrate(Set<? extends Chromosome> migrants) throws RemoteException {
         logger.debug(ClientProcess.getPrettyPrintIdentifier() + "receiving "
@@ -570,18 +567,18 @@ public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
     }
 
     /**
-     * Returns collected solutions of all clients other than client 0. This method blocks until all solutions are 
+     * Returns collected solutions of all clients other than client 0. This method blocks until all solutions are
      * collected.
-     * 
+     *
      * @return the list of collected best solutions or null if there is a timeout
      */
     public Set<Set<? extends Chromosome>> getBestSolutions() {
         do {
             if (bestSolutions.size() == (Properties.NUM_PARALLEL_CLIENTS - 1)) {
-                return new HashSet<Set<? extends Chromosome>>(bestSolutions);
+                return new HashSet<>(bestSolutions);
             }
         } while (finishedLatch.getCount() != 0);
-        
+
         return null;
     }
 }
