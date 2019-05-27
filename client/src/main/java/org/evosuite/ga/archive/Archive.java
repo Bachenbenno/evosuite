@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,13 +19,6 @@
  */
 package org.evosuite.ga.archive;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.SecondaryObjective;
@@ -47,6 +40,9 @@ import org.evosuite.utils.generic.GenericMethod;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Archive.
@@ -115,10 +111,8 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   protected void removeNonCoveredTargetOfAMethod(F target) {
     String targetMethod = this.getMethodFullName(target);
     if (this.nonCoveredTargetsOfEachMethod.containsKey(targetMethod)) {
-      if (this.nonCoveredTargetsOfEachMethod.get(targetMethod).contains(target)) {
-        // target has been covered, therefore we can remove it from the list of non-covered
-        this.nonCoveredTargetsOfEachMethod.get(targetMethod).remove(target);
-      }
+      // target has been covered, therefore we can remove it from the list of non-covered
+      this.nonCoveredTargetsOfEachMethod.get(targetMethod).remove(target);
 
       if (this.nonCoveredTargetsOfEachMethod.get(targetMethod).isEmpty()) {
         // method is fully covered, therefore we do not need to keep track of it
@@ -198,10 +192,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
           timesBetter--;
     }
 
-    if (timesBetter > 0)
-      return true;
-
-    return false;
+    return timesBetter > 0;
   }
 
   /**
@@ -536,7 +527,7 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
    *
    * @return
    */
-  public static final Archive<TestFitnessFunction, TestChromosome> getArchiveInstance() {
+  public static Archive<TestFitnessFunction, TestChromosome> getArchiveInstance() {
     switch (Properties.ARCHIVE_TYPE) {
       case COVERAGE:
       default:
