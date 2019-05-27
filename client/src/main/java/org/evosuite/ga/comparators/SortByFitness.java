@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -27,7 +27,7 @@ import org.evosuite.ga.FitnessFunction;
 
 /**
  * Sort a Collection of Chromosomes by their fitness value
- * 
+ *
  * @author José Campos
  */
 public class SortByFitness implements Comparator<Chromosome>, Serializable {
@@ -39,7 +39,7 @@ public class SortByFitness implements Comparator<Chromosome>, Serializable {
     private boolean order;
 
     /**
-     * 
+     *
      * @param ff
      * @param des descending order
      */
@@ -60,20 +60,10 @@ public class SortByFitness implements Comparator<Chromosome>, Serializable {
         double objetive2 = c2.getFitness(this.ff);
 
         if (this.order) {
-            if (objetive1 < objetive2)
-                return 1;
-            else if (objetive1 > objetive2)
-                return -1;
-            else
-                return 0;
+            return Double.compare(objetive2, objetive1);
         }
         else {
-            if (objetive1 < objetive2)
-                return -1;
-            else if (objetive1 > objetive2)
-                return 1;
-            else
-                return 0;
+            return Double.compare(objetive1, objetive2);
         }
     }
 }
