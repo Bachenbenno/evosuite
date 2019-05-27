@@ -1,4 +1,4 @@
-/**
+/*
  *
  * This file is part of EvoSuite.
  *
@@ -17,19 +17,18 @@
  */
 package org.evosuite.ga.operators.ranking;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.comparators.SortByFitness;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 /**
  * This class implements different variants of Crowding Distance for many-objective problems
- * 
+ *
  * @author Annibale Panichella
  */
 public class CrowdingDistance<T extends Chromosome> implements Serializable {
@@ -38,7 +37,7 @@ public class CrowdingDistance<T extends Chromosome> implements Serializable {
 
 	/**
 	 * Method used to assign the 'traditional' Crowding Distance.
-	 * 
+	 *
 	 * @param front front of non-dominated solutions/tests
 	 * @param set list of goals/targets (e.g., branches) to consider
 	 */
@@ -57,8 +56,7 @@ public class CrowdingDistance<T extends Chromosome> implements Serializable {
 			return;
 		}
 
-		for (int i = 0; i < size; i++)
-			front.get(i).setDistance(0.0);
+		front.forEach(t -> t.setDistance(0.0));
 
 		double objetiveMaxn;
 		double objetiveMinn;
@@ -66,7 +64,7 @@ public class CrowdingDistance<T extends Chromosome> implements Serializable {
 
 		for (final FitnessFunction<?> ff : set) {
 			// Sort the population by Fit n
-			Collections.sort(front, new SortByFitness(ff, false));
+			front.sort(new SortByFitness(ff, false));
 
 			objetiveMinn = front.get(0).getFitness(ff);
 			objetiveMaxn = front.get(front.size() - 1).getFitness(ff);
@@ -87,10 +85,10 @@ public class CrowdingDistance<T extends Chromosome> implements Serializable {
 	/**
 	 * This method implements a variant of the crowding distance named "subvector-dominance-assignment"
 	 * proposed by K\"{o}ppen and Yoshida in :
-	 * [1] Mario K\"{o}ppen and Kaori Yoshida, "Substitute Distance Assignments in NSGA-II for handling Many-objective 
-	 * Optimization Problems", Evolutionary Multi-Criterion Optimization, Volume 4403 of the series Lecture Notes 
+	 * [1] Mario K\"{o}ppen and Kaori Yoshida, "Substitute Distance Assignments in NSGA-II for handling Many-objective
+	 * Optimization Problems", Evolutionary Multi-Criterion Optimization, Volume 4403 of the series Lecture Notes
 	 * in Computer Science pp 727-741.
-	 * 
+	 *
 	 * @param front front of non-dominated solutions/tests
 	 * @param set set of goals/targets (e.g., branches) to consider
 	 */
@@ -101,8 +99,7 @@ public class CrowdingDistance<T extends Chromosome> implements Serializable {
 			return;
 		}
 
-		for (int i = 0; i < size; i++)
-			front.get(i).setDistance(Double.MAX_VALUE);
+		front.forEach(t -> t.setDistance(Double.MAX_VALUE));
 
 		int dominate1, dominate2;
 		for (int i = 0; i<front.size()-1; i++){
@@ -128,10 +125,10 @@ public class CrowdingDistance<T extends Chromosome> implements Serializable {
 	/**
 	 * This method implements a "fast" version of the variant of the crowding distance named "epsilon-dominance-assignment"
 	 * proposed by K\"{o}ppen and Yoshida in :
-	 * [1] Mario K\"{o}ppen and Kaori Yoshida, "Substitute Distance Assignments in NSGA-II for handling Many-objective 
-	 * Optimization Problems", Evolutionary Multi-Criterion Optimization, Volume 4403 of the series Lecture Notes 
+	 * [1] Mario K\"{o}ppen and Kaori Yoshida, "Substitute Distance Assignments in NSGA-II for handling Many-objective
+	 * Optimization Problems", Evolutionary Multi-Criterion Optimization, Volume 4403 of the series Lecture Notes
 	 * in Computer Science pp 727-741.
-	 * 
+	 *
 	 * @param front front of non-dominated solutions/tests
 	 * @param set set of goals/targets (e.g., branches) to consider
 	 */
@@ -153,15 +150,15 @@ public class CrowdingDistance<T extends Chromosome> implements Serializable {
 					minSet.add(test);
 				} else if (value == min)
 					minSet.add(test);
-				
+
 				if (value > max){
 					max = value;
-				} 
+				}
 			}
 
 			if (max == min)
 				continue;
-			
+
 			for (T test : minSet){
 				double numer = (front.size() - minSet.size());
 				double demon = front.size();
