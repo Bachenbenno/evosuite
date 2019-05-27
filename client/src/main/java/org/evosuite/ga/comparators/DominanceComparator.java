@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -29,7 +29,7 @@ import org.evosuite.ga.FitnessFunction;
 /**
  * This class implements a <code>Comparator</code> (a method for comparing <code>Chromosomes</code>
  * objects) based on the dominance test.
- * 
+ *
  * @author José Campos, Annibale Panichella
  */
 public class DominanceComparator<T extends Chromosome> implements Comparator<T>, Serializable {
@@ -39,34 +39,34 @@ public class DominanceComparator<T extends Chromosome> implements Comparator<T>,
     private Set<FitnessFunction<?>> objectives;
 
     /**
-     * 
+     *
      */
     public DominanceComparator() {
       this.objectives = null;
     }
 
     /**
-     * 
+     *
      * @param goals set of target goals to consider when computing the dominance relationship
      */
     public DominanceComparator(Set<FitnessFunction<T>> goals) {
-      this.objectives = new LinkedHashSet<FitnessFunction<?>>(goals);
+      this.objectives = new LinkedHashSet<>(goals);
     }
 
     /**
-     * 
+     *
      * @param goal to consider when computing the dominance relationship
      */
     public DominanceComparator(FitnessFunction<T> goal) {
-      this.objectives = new LinkedHashSet<FitnessFunction<?>>();
+      this.objectives = new LinkedHashSet<>();
       this.objectives.add(goal);
     }
 
     /**
      * Compares two chromosome objects in terms of dominance.
-     * 
+     *
      * http://en.wikipedia.org/wiki/Multi-objective_optimization#Introduction
-     * 
+     *
      * @param c1 a {@link org.evosuite.ga.Chromosome} object
      * @param c2 a {@link org.evosuite.ga.Chromosome} object
      * @return -1 if c1 dominates c2, +1 if c2 dominates c1, 0 if both are non-dominated
