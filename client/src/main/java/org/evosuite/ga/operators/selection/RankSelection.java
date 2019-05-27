@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -34,12 +34,13 @@ import org.evosuite.utils.Randomness;
 public class RankSelection<T extends Chromosome> extends SelectionFunction<T> {
 
 	private static final long serialVersionUID = 7849303009915557682L;
-	@Override
+
 	/**
 	 * Select index of next offspring
-	 * 
+	 *
 	 * Population has to be sorted!
 	 */
+	@Override
 	public int getIndex(List<T> population) {
 		double r = Randomness.nextDouble();
 		double d = Properties.RANK_BIAS
