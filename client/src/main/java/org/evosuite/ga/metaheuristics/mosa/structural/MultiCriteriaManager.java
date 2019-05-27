@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -71,18 +71,18 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 
 	private static final long serialVersionUID = 8161137239404885564L;
 
-	protected BranchFitnessGraph<T, FitnessFunction<T>> graph;
+	protected BranchFitnessGraph<T> graph;
 
 	protected Map<BranchCoverageTestFitness, Set<FitnessFunction<T>>> dependencies;
 
-	protected final Map<Integer, FitnessFunction<T>> branchCoverageTrueMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-	protected final Map<Integer, FitnessFunction<T>> branchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-	private final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
+	protected final Map<Integer, FitnessFunction<T>> branchCoverageTrueMap = new LinkedHashMap<>();
+	protected final Map<Integer, FitnessFunction<T>> branchCoverageFalseMap = new LinkedHashMap<>();
+	private final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new LinkedHashMap<>();
 
 	public MultiCriteriaManager(List<FitnessFunction<T>> fitnessFunctions) {
 		super(fitnessFunctions);
 
-		// initialize the dependency graph among branches 
+		// initialize the dependency graph among branches
 		this.graph = getControlDepencies4Branches(fitnessFunctions);
 
 		// initialize the dependency graph between branches and other coverage targets (e.g., statements)
@@ -195,7 +195,7 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	}
 
 	/**
-	 * This methods derive the dependencies between {@link InputCoverageTestFitness} and branches. 
+	 * This methods derive the dependencies between {@link InputCoverageTestFitness} and branches.
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	private void addDependencies4Input() {
@@ -227,7 +227,7 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	}
 
 	/**
-	 * This methods derive the dependencies between {@link MethodCoverageTestFitness} and branches. 
+	 * This methods derive the dependencies between {@link MethodCoverageTestFitness} and branches.
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	@SuppressWarnings("unchecked")
@@ -270,7 +270,7 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	}
 
 	/**
-	 * This methods derive the dependencies between {@link WeakMutationTestFitness} and branches. 
+	 * This methods derive the dependencies between {@link WeakMutationTestFitness} and branches.
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	private void addDependencies4WeakMutation() {
@@ -314,7 +314,7 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	}
 
 	/**
-	 * This methods derive the dependencies between  {@link LineCoverageTestFitness} and branches. 
+	 * This methods derive the dependencies between  {@link LineCoverageTestFitness} and branches.
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	private void addDependencies4Line() {
@@ -339,7 +339,7 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	}
 
 	/**
-	 * This methods derive the dependencies between  {@link StatementCoverageTestFitness} and branches. 
+	 * This methods derive the dependencies between  {@link StatementCoverageTestFitness} and branches.
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	@SuppressWarnings("unchecked")
@@ -377,9 +377,8 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 		}
 
 		// 1) we update the set of currents goals
-		Set<FitnessFunction<T>> visitedTargets = new LinkedHashSet<FitnessFunction<T>>(getUncoveredGoals().size()*2);
-		LinkedList<FitnessFunction<T>> targets = new LinkedList<FitnessFunction<T>>();
-		targets.addAll(this.currentGoals);
+		Set<FitnessFunction<T>> visitedTargets = new LinkedHashSet<>(getUncoveredGoals().size() * 2);
+		LinkedList<FitnessFunction<T>> targets = new LinkedList<>(this.currentGoals);
 
 		while (targets.size()>0){
 			FitnessFunction<T> fitnessFunction = targets.poll();
@@ -402,7 +401,7 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 				}
 			} else {
 				currentGoals.add(fitnessFunction);
-			}	
+			}
 		}
 		currentGoals.removeAll(this.getCoveredGoals());
 		// 2) we update the archive
@@ -432,11 +431,11 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 			// for generated exceptions
 			Set<ExceptionCoverageTestFitness> set = deriveCoveredExceptions(c);
 			for (ExceptionCoverageTestFitness exp : set){
-				// let's update the list of fitness functions 
+				// let's update the list of fitness functions
 				updateCoveredGoals((FitnessFunction<T>) exp, c);
 				// new covered exceptions (goals) have to be added to the archive
 				if (!ExceptionCoverageFactory.getGoals().containsKey(exp.getKey())){
-					// let's update the newly discovered exceptions to ExceptionCoverageFactory 
+					// let's update the newly discovered exceptions to ExceptionCoverageFactory
 					ExceptionCoverageFactory.getGoals().put(exp.getKey(), exp);
 				}
 			}
@@ -451,10 +450,10 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	 * @return list of exception goals being covered by t
 	 */
 	public Set<ExceptionCoverageTestFitness> deriveCoveredExceptions(T t){
-		Set<ExceptionCoverageTestFitness> covered_exceptions = new LinkedHashSet<ExceptionCoverageTestFitness>();
+		Set<ExceptionCoverageTestFitness> covered_exceptions = new LinkedHashSet<>();
 		TestChromosome testCh = (TestChromosome) t;
 		ExecutionResult result = testCh.getLastExecutionResult();
-		
+
 		if(result.calledReflection())
 			return covered_exceptions;
 
@@ -487,18 +486,18 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	}
 
 	public BranchFitnessGraph getControlDepencies4Branches(List<FitnessFunction<T>> fitnessFunctions){
-		Set<FitnessFunction<T>> setOfBranches = new LinkedHashSet<FitnessFunction<T>>();
+		Set<FitnessFunction<T>> setOfBranches = new LinkedHashSet<>();
 		this.dependencies = new LinkedHashMap();
 
 		List<BranchCoverageTestFitness> branches = new BranchCoverageFactory().getCoverageGoals();
 		for (BranchCoverageTestFitness branch : branches){
 			setOfBranches.add((FitnessFunction<T>) branch);
-			this.dependencies.put(branch, new LinkedHashSet<FitnessFunction<T>>());
+			this.dependencies.put(branch, new LinkedHashSet<>());
 		}
 
 		// initialize the maps
 		this.initializeMaps(setOfBranches);
 
-		return new BranchFitnessGraph<T, FitnessFunction<T>>(setOfBranches);
+		return new BranchFitnessGraph<>(setOfBranches);
 	}
 }
