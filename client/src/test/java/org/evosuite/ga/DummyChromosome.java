@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -32,12 +32,10 @@ import java.util.List;
  */
 public class DummyChromosome extends Chromosome {
 
-    private List<Integer> values = new ArrayList<Integer>();
+    private List<Integer> values = new ArrayList<>();
 
     public DummyChromosome(int... values) {
-        for(int x : values) {
-            this.values.add(x);
-        }
+        Arrays.stream(values).forEachOrdered(this.values::add);
     }
 
     public DummyChromosome(Collection<Integer> values) {
