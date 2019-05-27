@@ -49,7 +49,7 @@ import org.evosuite.dse.VMError;
  * <p>
  * TestRunnable class.
  * </p>
- * 
+ *
  * @author Gordon Fraser
  */
 public class TestRunnable implements InterfaceTestRunnable {
@@ -73,12 +73,12 @@ public class TestRunnable implements InterfaceTestRunnable {
 	protected Set<ExecutionObserver> observers;
 
 	protected final ThreadStopper threadStopper;
-	
+
 	/**
 	 * <p>
 	 * Constructor for TestRunnable.
 	 * </p>
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param scope
@@ -91,17 +91,12 @@ public class TestRunnable implements InterfaceTestRunnable {
 		this.scope = scope;
 		this.observers = observers;
 		runFinished = false;
-		
-		KillSwitch killSwitch = new KillSwitch() {			
-			@Override
-			public void setKillSwitch(boolean kill) {
-				ExecutionTracer.setKillSwitch(kill);
-			}
-		};
+
+		KillSwitch killSwitch = ExecutionTracer::setKillSwitch;
 		Set<String> threadsToIgnore = new LinkedHashSet<>();
 		threadsToIgnore.add(TestCaseExecutor.TEST_EXECUTION_THREAD);
 		threadsToIgnore.addAll(Arrays.asList(Properties.IGNORE_THREADS));
-		
+
 		threadStopper = new ThreadStopper(killSwitch, threadsToIgnore, Properties.TIMEOUT);
 	}
 
@@ -132,16 +127,14 @@ public class TestRunnable implements InterfaceTestRunnable {
 
 	/**
 	 * Inform all observers that we are going to execute the input statement
-	 * 
+	 *
 	 * @param s
 	 *            the statement to execute
 	 */
 	protected void informObservers_before(Statement s) {
 		ExecutionTracer.disable();
 		try {
-			for (ExecutionObserver observer : observers) {
-				observer.beforeStatement(s, scope);
-			}
+			observers.forEach(o -> o.beforeStatement(s, scope));
 		} finally {
 			ExecutionTracer.enable();
 		}
@@ -149,7 +142,7 @@ public class TestRunnable implements InterfaceTestRunnable {
 
 	/**
 	 * Inform all observers that input statement has been executed
-	 * 
+	 *
 	 * @param s
 	 *            the executed statement
 	 * @param exceptionThrown
@@ -159,9 +152,7 @@ public class TestRunnable implements InterfaceTestRunnable {
 	protected void informObservers_after(Statement s, Throwable exceptionThrown) {
 		ExecutionTracer.disable();
 		try {
-			for (ExecutionObserver observer : observers) {
-				observer.afterStatement(s, scope, exceptionThrown);
-			}
+			observers.forEach(o -> o.afterStatement(s, scope, exceptionThrown));
 		} finally {
 			ExecutionTracer.enable();
 		}
@@ -170,14 +161,12 @@ public class TestRunnable implements InterfaceTestRunnable {
 	protected void informObservers_finished(ExecutionResult result) {
 		ExecutionTracer.disable();
 		try {
-			for (ExecutionObserver observer : observers) {
-				observer.testExecutionFinished(result, scope);
-			}
+			observers.forEach(o -> o.testExecutionFinished(result, scope));
 		} finally {
 			ExecutionTracer.enable();
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public ExecutionResult call() {
@@ -209,7 +198,7 @@ public class TestRunnable implements InterfaceTestRunnable {
 			if(Properties.REPLACE_CALLS){
 				ShutdownHookHandler.getInstance().initHandler();
 			}
-			
+
 			executeStatements(result, out, num);
 		} catch (ThreadDeath e) {// can't stop these guys
 			logger.info("Found error in " + test.toCode(), e);
@@ -251,11 +240,11 @@ public class TestRunnable implements InterfaceTestRunnable {
 				/*
 				 * For simplicity, we call it here. Ideally, we could call it among the
 				 * statements, with "non-safe" version, to check if any exception is thrown.
-				 * But that would be quite a bit of work, which maybe is not really warranted 
+				 * But that would be quite a bit of work, which maybe is not really warranted
 				 */
 				ShutdownHookHandler.getInstance().safeExecuteAddedHooks();
 			}
-			
+
 			runFinished = true;
 		}
 
@@ -265,13 +254,13 @@ public class TestRunnable implements InterfaceTestRunnable {
 		result.setThrownExceptions(exceptionsThrown);
 		result.setReadProperties(org.evosuite.runtime.System.getAllPropertiesReadSoFar());
 		result.setWasAnyPropertyWritten(org.evosuite.runtime.System.wasAnyPropertyWritten());
-		
+
 		return result;
 	}
 
 	/**
 	 * Iterate over all statements in the test case, and execute them one at a time
-	 * 
+	 *
 	 * @param result
 	 * @param out
 	 * @param num
@@ -286,7 +275,7 @@ public class TestRunnable implements InterfaceTestRunnable {
 			AtomicInteger num) throws TimeoutException,
 			InvocationTargetException, IllegalAccessException,
 			InstantiationException, VMError, EvosuiteError {
-		
+
 		for (Statement s : test) {
 
 			if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
@@ -394,9 +383,7 @@ public class TestRunnable implements InterfaceTestRunnable {
 	/** {@inheritDoc} */
 	@Override
 	public Map<Integer, Throwable> getExceptionsThrown() {
-		HashMap<Integer, Throwable> copy = new HashMap<Integer, Throwable>();
-		copy.putAll(exceptionsThrown);
-		return copy;
+		return new HashMap<>(exceptionsThrown);
 	}
 
 	/** {@inheritDoc} */
