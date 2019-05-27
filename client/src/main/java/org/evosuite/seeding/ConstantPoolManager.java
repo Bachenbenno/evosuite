@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * 
- */
 package org.evosuite.seeding;
 
 import org.evosuite.Properties;
@@ -27,7 +24,7 @@ import org.evosuite.utils.Randomness;
 
 /**
  * @author Gordon Fraser
- * 
+ *
  */
 public class ConstantPoolManager {
 
@@ -87,7 +84,7 @@ public class ConstantPoolManager {
 	/*
 	 * Note: the indexes are hard coded for now. We do it because maybe
 	 * in the future we might want to extend this class, so still we need to
-	 * use arrays 
+	 * use arrays
 	 */
 
 	public void addSUTConstant(Object value) {
@@ -116,7 +113,7 @@ public class ConstantPoolManager {
 		 */
 		return pools[0];
 	}
-	
+
 	public ConstantPool getDynamicConstantPool() {
 		return pools[DYNAMIC_POOL_INDEX];
 	}
