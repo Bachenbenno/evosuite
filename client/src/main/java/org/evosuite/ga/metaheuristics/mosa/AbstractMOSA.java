@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,16 +19,6 @@
  */
 package org.evosuite.ga.metaheuristics.mosa;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import org.evosuite.ProgressMonitor;
 import org.evosuite.Properties;
 import org.evosuite.Properties.SelectionFunction;
@@ -46,12 +36,7 @@ import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.secondaryobjectives.TestCaseSecondaryObjective;
-import org.evosuite.testcase.statements.ArrayStatement;
-import org.evosuite.testcase.statements.ConstructorStatement;
-import org.evosuite.testcase.statements.MethodStatement;
-import org.evosuite.testcase.statements.PrimitiveStatement;
-import org.evosuite.testcase.statements.Statement;
-import org.evosuite.testcase.statements.StringPrimitiveStatement;
+import org.evosuite.testcase.statements.*;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
@@ -61,6 +46,11 @@ import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Abstract class for MOSA or variants of MOSA.
@@ -341,10 +331,9 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
      */
     @SuppressWarnings("unchecked")
     protected Set<FitnessFunction<T>> getCoveredGoals() {
-      Set<FitnessFunction<T>> coveredGoals = new LinkedHashSet<>();
-      Archive.getArchiveInstance().getCoveredTargets()
-          .forEach(ff -> coveredGoals.add((FitnessFunction<T>) ff));
-      return coveredGoals;
+		return Archive.getArchiveInstance().getCoveredTargets().stream()
+				.map(ff -> (FitnessFunction<T>) ff)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -367,10 +356,9 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
      */
     @SuppressWarnings("unchecked")
     protected Set<FitnessFunction<T>> getUncoveredGoals() {
-      Set<FitnessFunction<T>> uncoveredGoals = new LinkedHashSet<>();
-      Archive.getArchiveInstance().getUncoveredTargets()
-          .forEach(ff -> uncoveredGoals.add((FitnessFunction<T>) ff));
-      return uncoveredGoals;
+		return Archive.getArchiveInstance().getUncoveredTargets().stream()
+				.map(ff -> (FitnessFunction<T>) ff)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -398,9 +386,9 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
      */
     @SuppressWarnings("unchecked")
     protected List<T> getSolutions() {
-      List<T> solutions = new ArrayList<>();
-      Archive.getArchiveInstance().getSolutions().forEach(test -> solutions.add((T) test));
-      return solutions;
+		return Archive.getArchiveInstance().getSolutions().stream()
+				.map(test -> (T) test)
+				.collect(Collectors.toList());
     }
 
     /**
@@ -411,7 +399,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
      */
     protected TestSuiteChromosome generateSuite() {
       TestSuiteChromosome suite = new TestSuiteChromosome();
-      Archive.getArchiveInstance().getSolutions().forEach(test -> suite.addTest(test));
+      Archive.getArchiveInstance().getSolutions().forEach(suite::addTest);
       return suite;
     }
 
@@ -432,14 +420,11 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
      * @param chromosome a {@link org.evosuite.ga.Chromosome} object.
      */
     @Override
-    protected void notifyEvaluation(Chromosome chromosome) {
-        for (SearchListener listener : this.listeners) {
-            if (listener instanceof ProgressMonitor) {
-                continue; // ProgressMonitor requires a TestSuiteChromosome
-            }
-            listener.fitnessEvaluation(chromosome);
-        }
-    }
+	protected void notifyEvaluation(Chromosome chromosome) {
+		// ProgressMonitor requires a TestSuiteChromosome
+		Stream<SearchListener> ls = listeners.stream().filter(l -> !(l instanceof ProgressMonitor));
+		ls.forEach(l -> l.fitnessEvaluation(chromosome));
+	}
 
     /**
      * Notify all search listeners but ProgressMonitor of a mutation.
@@ -448,12 +433,9 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
      */
     @Override
     protected void notifyMutation(Chromosome chromosome) {
-      for (SearchListener listener : this.listeners) {
-          if (listener instanceof ProgressMonitor) {
-              continue; // ProgressMonitor requires a TestSuiteChromosome
-          }
-          listener.modification(chromosome);
-      }
+		// ProgressMonitor requires a TestSuiteChromosome
+		Stream<SearchListener> ls = listeners.stream().filter(l -> !(l instanceof ProgressMonitor));
+		ls.forEach(l -> l.modification(chromosome));
     }
 
     /**
@@ -494,10 +476,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
         // compute overall fitness and coverage
         this.computeCoverageAndFitness(bestTestCases);
 
-        List<T> bests = new ArrayList<>(1);
-        bests.add((T) bestTestCases);
-
-        return bests;
+		return Collections.singletonList((T) bestTestCases);
     }
 
     /**

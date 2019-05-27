@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,14 +19,9 @@
  */
 package org.evosuite.ga.metaheuristics.mosa;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
-import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.metaheuristics.mosa.structural.MultiCriteriaManager;
 import org.evosuite.ga.metaheuristics.mosa.structural.StructuralGoalManager;
@@ -35,11 +30,14 @@ import org.evosuite.utils.LoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Implementation of the DynaMOSA (Many Objective Sorting Algorithm) described in the paper
  * "Automated Test Case Generation as a Many-Objective Optimisation Problem with Dynamic Selection
  * of the Targets".
- * 
+ *
  * @author Annibale Panichella, Fitsum M. Kifetew, Paolo Tonella
  */
 public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
@@ -55,7 +53,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 	/**
 	 * Constructor based on the abstract class {@link AbstractMOSA}.
-	 * 
+	 *
 	 * @param factory
 	 */
 	public DynaMOSA(ChromosomeFactory<T> factory) {
@@ -108,7 +106,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		// Remain is less than front(index).size, insert only the best one
 		if (remain > 0 && !front.isEmpty()) { // front contains individuals to insert
 			this.distance.fastEpsilonDominanceAssignment(front, this.goalsManager.getCurrentGoals());
-			Collections.sort(front, new OnlyCrowdingComparator());
+			front.sort(new OnlyCrowdingComparator());
 			for (int k = 0; k < remain; k++) {
 				this.population.add(front.get(k));
 			}
@@ -162,7 +160,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		this.notifySearchFinished();
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
