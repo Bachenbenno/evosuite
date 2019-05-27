@@ -20,7 +20,9 @@
 package org.evosuite.strategy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.evosuite.ProgressMonitor;
 import org.evosuite.Properties;
@@ -49,9 +51,9 @@ import org.evosuite.utils.LoggingUtils;
 /**
  * This is the abstract superclass of all techniques to generate a set of tests
  * for a target class, which does not neccessarily require the use of a GA.
- * 
+ *
  * Postprocessing is not done as part of the test generation strategy.
- * 
+ *
  * @author gordon
  *
  */
@@ -62,13 +64,13 @@ public abstract class TestGenerationStrategy {
 	 * @return
 	 */
 	public abstract TestSuiteChromosome generateTests();
-	
+
 	/** There should only be one */
 	protected final ProgressMonitor progressMonitor = new ProgressMonitor();
 
 	/** There should only be one */
 	protected ZeroFitnessStoppingCondition zeroFitness = new ZeroFitnessStoppingCondition();
-	
+
 	/** There should only be one */
 	protected StoppingCondition globalTime = new GlobalTimeStoppingCondition();
 
@@ -76,21 +78,21 @@ public abstract class TestGenerationStrategy {
         ClientServices.getInstance().getClientNode().trackOutputVariable(RuntimeVariable.Statements_Executed, MaxStatementsStoppingCondition.getNumExecutedStatements());
         ClientServices.getInstance().getClientNode().trackOutputVariable(RuntimeVariable.Tests_Executed, MaxTestsStoppingCondition.getNumExecutedTests());
     }
-    
+
     /**
      * Convert criterion names to test suite fitness functions
      * @return
      */
 	protected List<TestSuiteFitnessFunction> getFitnessFunctions() {
-	    List<TestSuiteFitnessFunction> ffs = new ArrayList<TestSuiteFitnessFunction>();
+	    List<TestSuiteFitnessFunction> ffs = new ArrayList<>();
 	    for (int i = 0; i < Properties.CRITERION.length; i++) {
 	    	TestSuiteFitnessFunction newFunction = FitnessFunctions.getFitnessFunction(Properties.CRITERION[i]);
-	    	
+
 	    	// If this is compositional fitness, we need to make sure
-	    	// that all functions are consistently minimization or 
+	    	// that all functions are consistently minimization or
 	    	// maximization functions
 	    	if(Properties.ALGORITHM != Algorithm.NSGAII && Properties.ALGORITHM != Algorithm.SPEA2) {
-	    		for(TestSuiteFitnessFunction oldFunction : ffs) {			
+	    		for(TestSuiteFitnessFunction oldFunction : ffs) {
 	    			if(oldFunction.isMaximizationFunction() != newFunction.isMaximizationFunction()) {
 	    				StringBuffer sb = new StringBuffer();
 	    				sb.append("* Invalid combination of fitness functions: ");
@@ -116,24 +118,21 @@ public abstract class TestGenerationStrategy {
 
 		return ffs;
 	}
-	
+
 	/**
 	 * Convert criterion names to factories for test case fitness functions
 	 * @return
 	 */
 	public static List<TestFitnessFactory<? extends TestFitnessFunction>> getFitnessFactories() {
-	    List<TestFitnessFactory<? extends TestFitnessFunction>> goalsFactory = new ArrayList<TestFitnessFactory<? extends TestFitnessFunction>>();
-	    for (int i = 0; i < Properties.CRITERION.length; i++) {
-	        goalsFactory.add(FitnessFunctions.getFitnessFactory(Properties.CRITERION[i]));
-	    }
-
-		return goalsFactory;
+		return Arrays.stream(Properties.CRITERION)
+				.map(FitnessFunctions::getFitnessFactory)
+				.collect(Collectors.toList());
 	}
-	
+
 	/**
 	 * Check if the budget has been used up. The GA will do this check
 	 * on its own, but other strategies (e.g. random) may depend on this function.
-	 * 
+	 *
 	 * @param chromosome
 	 * @param stoppingCondition
 	 * @return
@@ -148,13 +147,12 @@ public abstract class TestGenerationStrategy {
 		}
 
 		if (!(stoppingCondition instanceof MaxTimeStoppingCondition)) {
-			if (globalTime.isFinished())
-				return true;
+			return globalTime.isFinished();
 		}
 
 		return false;
 	}
-	
+
 	/**
 	 * Convert property to actual stopping condition
 	 * @return
