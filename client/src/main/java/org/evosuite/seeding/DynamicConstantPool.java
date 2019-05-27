@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * 
- */
 package org.evosuite.seeding;
 
 import org.evosuite.Properties;
@@ -29,25 +26,25 @@ import org.objectweb.asm.Type;
 
 /**
  * @author Gordon Fraser
- * 
+ *
  */
 public class DynamicConstantPool implements ConstantPool {
 
-	private final RandomAccessQueue<String> stringPool = new DefaultRandomAccessQueue<String>();
+	private final RandomAccessQueue<String> stringPool = new DefaultRandomAccessQueue<>();
 
-	private final RandomAccessQueue<Type> typePool = new DefaultRandomAccessQueue<Type>();
+	private final RandomAccessQueue<Type> typePool = new DefaultRandomAccessQueue<>();
 
-	private final RandomAccessQueue<Integer> intPool = new DefaultRandomAccessQueue<Integer>();
+	private final RandomAccessQueue<Integer> intPool = new DefaultRandomAccessQueue<>();
 
-	private final RandomAccessQueue<Double> doublePool = new DefaultRandomAccessQueue<Double>();
+	private final RandomAccessQueue<Double> doublePool = new DefaultRandomAccessQueue<>();
 
-	private final RandomAccessQueue<Long> longPool = new DefaultRandomAccessQueue<Long>();
+	private final RandomAccessQueue<Long> longPool = new DefaultRandomAccessQueue<>();
 
-	private final RandomAccessQueue<Float> floatPool = new DefaultRandomAccessQueue<Float>();
+	private final RandomAccessQueue<Float> floatPool = new DefaultRandomAccessQueue<>();
 
 	public DynamicConstantPool() {
 		/*
-		 * all pools HAVE to be non-empty 
+		 * all pools HAVE to be non-empty
 		 */
 		stringPool.restrictedAdd("");
 		if (Properties.TARGET_CLASS != null && !Properties.TARGET_CLASS.isEmpty()) {
@@ -119,7 +116,7 @@ public class DynamicConstantPool implements ConstantPool {
 			String string = (String) object;
 			if(string.length() > Properties.MAX_STRING)
 				return;
-			// String literals are constrained to 65535 bytes 
+			// String literals are constrained to 65535 bytes
 			// as they are stored in the constant pool
 			if (string.length() > 65535)
 				return;
@@ -175,9 +172,9 @@ public class DynamicConstantPool implements ConstantPool {
 		res += "intPool=" + intPool.toString() + " ; ";
 		res += "longPool=" + longPool.toString() + " ; ";
 		res += "floatPool=" + floatPool.toString() + " ; ";
-		res += "doublePool=" + doublePool.toString() + "}";	
+		res += "doublePool=" + doublePool.toString() + "}";
 		return res;
 	}
 
-	
+
 }
