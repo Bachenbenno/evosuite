@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -49,6 +49,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Chromosome representation of test cases
@@ -65,10 +67,10 @@ public class TestChromosome extends ExecutableChromosome {
 	protected TestCase test = new DefaultTestCase();
 
 	/** To keep track of what has changed since last fitness evaluation */
-	protected MutationHistory<TestMutationHistoryEntry> mutationHistory = new MutationHistory<TestMutationHistoryEntry>();
+	protected MutationHistory<TestMutationHistoryEntry> mutationHistory = new MutationHistory<>();
 
 	/** Secondary objectives used during ranking */
-	private static final List<SecondaryObjective<TestChromosome>> secondaryObjectives = new ArrayList<SecondaryObjective<TestChromosome>>();
+	private static final List<SecondaryObjective<TestChromosome>> secondaryObjectives = new ArrayList<>();
 
 	/**
 	 * <p>
@@ -250,7 +252,7 @@ public class TestChromosome extends ExecutableChromosome {
 		if (lastExecutionResult != null && !isChanged()) {
 			Integer lastPos = lastExecutionResult.getFirstPositionOfThrownException();
 			if (lastPos != null)
-				lastPosition = lastPos.intValue();
+				lastPosition = lastPos;
 		}
 
 		for (TestMutationHistoryEntry mutation : mutationHistory) {
@@ -269,19 +271,12 @@ public class TestChromosome extends ExecutableChromosome {
 					continue;
 				}
 
-				int newPosition = -1;
-				for (int i = 0; i <= lastPosition; i++) {
-					if (test.getStatement(i) == mutation.getStatement()) {
-						newPosition = i;
-						break;
-					}
-				}
+				int newPosition = IntStream.rangeClosed(0, lastPosition)
+						.filter(pos -> test.getStatement(pos) == mutation.getStatement())
+						.findFirst().orElse(-1);
 
 				// Couldn't find statement, may have been deleted in other mutation?
 				assert (newPosition >= 0);
-				if (newPosition < 0) {
-					continue;
-				}
 
 				return true;
 			}
@@ -311,7 +306,7 @@ public class TestChromosome extends ExecutableChromosome {
 		boolean changed = false;
 		mutationHistory.clear();
 
-		if(mockChange()){
+		if(mockChange()) {
 			changed = true;
 		}
 
@@ -592,17 +587,14 @@ public class TestChromosome extends ExecutableChromosome {
 			return false;
 
 		boolean mutated = false;
-		List<BranchCondition> targetBranches = new ArrayList<BranchCondition>();
-		for (BranchCondition branch : branches) {
-			if (TestCluster.isTargetClassName(branch.getClassName()))
-				targetBranches.add(branch);
-		}
+
+		List<BranchCondition> targetBranches = branches.stream()
+				.filter(b -> TestCluster.isTargetClassName(b.getClassName()))
+				.collect(Collectors.toList());
+
 		// Select random branch
-		BranchCondition branch = null;
-		if (targetBranches.isEmpty())
-			branch = Randomness.choice(branches);
-		else
-			branch = Randomness.choice(targetBranches);
+		List<BranchCondition> bs = targetBranches.isEmpty() ? branches : targetBranches;
+		BranchCondition branch =  Randomness.choice(bs);
 
 		logger.debug("Trying to negate branch " + branch.getInstructionIndex()
 		        + " - have " + targetBranches.size() + "/" + branches.size()
@@ -667,8 +659,7 @@ public class TestChromosome extends ExecutableChromosome {
 	 * @return a boolean.
 	 */
 	public boolean hasException() {
-		return lastExecutionResult == null ? false
-		        : !lastExecutionResult.noThrownExceptions();
+		return lastExecutionResult != null && !lastExecutionResult.noThrownExceptions();
 	}
 
 
