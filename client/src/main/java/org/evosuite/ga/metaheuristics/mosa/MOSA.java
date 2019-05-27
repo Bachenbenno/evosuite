@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -19,14 +19,6 @@
  */
 package org.evosuite.ga.metaheuristics.mosa;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.evosuite.ClientProcess;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -43,6 +35,9 @@ import org.evosuite.statistics.RuntimeVariable;
 import org.evosuite.utils.Listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Implementation of the Many-Objective Sorting Algorithm (MOSA) described in the
@@ -62,7 +57,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	private SelectionFunction<T> emigrantsSelection;
 
 	/** Crowding distance measure to use */
-	protected CrowdingDistance<T> distance = new CrowdingDistance<T>();
+	protected CrowdingDistance<T> distance = new CrowdingDistance<>();
 
 	/**
 	 * Constructor based on the abstract class {@link AbstractMOSA}
@@ -91,7 +86,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		List<T> offspringPopulation = this.breedNextGeneration();
 
 		// Create the union of parents and offSpring
-		List<T> union = new ArrayList<T>();
+		List<T> union = new ArrayList<>();
 		union.addAll(this.population);
 		union.addAll(offspringPopulation);
 
@@ -176,7 +171,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		Listener<Set<? extends Chromosome>> listener = null;
 		if (Properties.NUM_PARALLEL_CLIENTS > 1) {
-			listener = (Listener<Set<? extends Chromosome>>) event -> immigrants.add(new LinkedList<T>((Set<? extends T>) event));
+			listener = (Listener<Set<? extends Chromosome>>) event -> immigrants.add(new LinkedList<>((Set<? extends T>) event));
 			ClientServices.getInstance().getClientNode().addListener(listener);
 		}
 
@@ -202,7 +197,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 				}
 			} else {
 				//send end result test cases to Client-0
-				Set<T> solutionsSet = new HashSet<T>(getSolutions());
+				Set<T> solutionsSet = new HashSet<>(getSolutions());
 				logger.debug(ClientProcess.getPrettyPrintIdentifier() + "Sending " + solutionsSet.size()
 											+ " solutions to " + ClientProcess.DEFAULT_CLIENT_NAME);
 				ClientServices.getInstance().getClientNode().sendBestSolution(solutionsSet);
