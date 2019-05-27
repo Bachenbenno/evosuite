@@ -25,10 +25,13 @@ import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.OptionalDouble;
+import java.util.stream.DoubleStream;
+
 /**
  * Stop search when a maximum (average) length has been reached. Used for
  * experiments on length bloat.
- * 
+ *
  * @author Gordon Fraser
  */
 public class MaxLengthStoppingCondition extends StoppingConditionImpl {
@@ -64,11 +67,10 @@ public class MaxLengthStoppingCondition extends StoppingConditionImpl {
 	/** {@inheritDoc} */
 	@Override
 	public void iteration(GeneticAlgorithm<?> algorithm) {
-		double avg = 0.0;
-		for (Chromosome c : algorithm.getPopulation()) {
-			avg += c.size();
-		}
-		averageLength = avg / algorithm.getPopulation().size();
+		averageLength = algorithm.getPopulation().stream()
+				.mapToInt(Chromosome::size)
+				.average()
+		 		.orElse(Double.NaN);
 	}
 
 	/* (non-Javadoc)
