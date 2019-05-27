@@ -35,17 +35,17 @@ import java.util.Set;
  *
  * @author Annibale Panichella
  */
-public abstract class StructuralGoalManager<T extends Chromosome> implements Serializable {
+public abstract class StructuralGoalManager<C extends Chromosome> implements Serializable {
 
 	private static final long serialVersionUID = -2577487057354286024L;
 
 	/** Set of goals currently used as objectives **/
-	protected Set<FitnessFunction<T>> currentGoals;
+	protected Set<FitnessFunction<C>> currentGoals;
 
 	/** Archive of tests and corresponding covered targets*/
 	protected Archive archive;
 
-	protected StructuralGoalManager(List<FitnessFunction<T>> fitnessFunctions){
+	protected StructuralGoalManager(List<FitnessFunction<C>> fitnessFunctions){
 		currentGoals = new HashSet<>(fitnessFunctions.size());
 		archive = Archive.getArchiveInstance();
 
@@ -58,25 +58,25 @@ public abstract class StructuralGoalManager<T extends Chromosome> implements Ser
 	 * @param c a TestChromosome
 	 * @return covered goals along with the corresponding test case
 	 */
-	public abstract void calculateFitness(T c);
+	public abstract void calculateFitness(C c);
 
-	public Set<FitnessFunction<T>> getUncoveredGoals() {
+	public Set<FitnessFunction<C>> getUncoveredGoals() {
 		return this.archive.getUncoveredTargets();
 	}
 
-	public Set<FitnessFunction<T>> getCurrentGoals() {
+	public Set<FitnessFunction<C>> getCurrentGoals() {
 		return currentGoals;
 	}
 
-	public Set<FitnessFunction<T>> getCoveredGoals() {
+	public Set<FitnessFunction<C>> getCoveredGoals() {
 		return this.archive.getCoveredTargets();
 	}
 
-	protected boolean isAlreadyCovered(FitnessFunction<T> target){
+	protected boolean isAlreadyCovered(FitnessFunction<C> target){
 		return this.archive.getCoveredTargets().contains(target);
 	}
 
-	protected void updateCoveredGoals(FitnessFunction<T> f, T tc) {
+	protected void updateCoveredGoals(FitnessFunction<C> f, C tc) {
 		// the next two lines are needed since that coverage information are used
 		// during EvoSuite post-processing
 		TestChromosome tch = (TestChromosome) tc;
