@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -16,9 +16,6 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
- */
-/**
- * 
  */
 package org.evosuite.testcase.statements;
 
@@ -41,7 +38,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
  * <p>
  * StatementInterface interface.
  * </p>
- * 
+ *
  * @author Sebastian Steenbuck
  * @author Gordon Fraser
  */
@@ -49,16 +46,16 @@ public interface Statement {
 
 	/**
 	 * Add a new assertion to statement
-	 * 
+	 *
 	 * @param assertion
 	 *            Assertion to be added
 	 */
 	public void addAssertion(Assertion assertion);
-	
+
 	/**
 	 * A statement can have a textual comment that will be included
 	 * in the JUnit output
-	 * 
+	 *
 	 * @param comment
 	 */
 	public void addComment(String comment);
@@ -67,7 +64,7 @@ public interface Statement {
 	 * Class instances are bound to a class loader - if we want to reexecute a
 	 * test on a different classloader we need to be able to change the class of
 	 * the reflection object
-	 * 
+	 *
 	 * @param loader
 	 *            a {@link java.lang.ClassLoader} object.
 	 */
@@ -75,7 +72,7 @@ public interface Statement {
 
 	/**
 	 * Create deep copy of statement
-	 * 
+	 *
 	 * @return a {@link Statement} object.
 	 */
 	public Statement clone();
@@ -84,7 +81,7 @@ public interface Statement {
 	 * <p>
 	 * clone
 	 * </p>
-	 * 
+	 *
 	 * @param newTestCase
 	 *            the testcase in which this statement will be inserted
 	 * @return a {@link Statement} object.
@@ -95,7 +92,7 @@ public interface Statement {
 	 * <p>
 	 * copy
 	 * </p>
-	 * 
+	 *
 	 * @param newTestCase
 	 *            the testcase in which this statement will be inserted
 	 * @param offset
@@ -108,7 +105,7 @@ public interface Statement {
 	 * <p>
 	 * copyAssertions
 	 * </p>
-	 * 
+	 *
 	 * @param newTestCase
 	 *            the testcase in which this statement will be inserted
 	 * @param offset
@@ -119,7 +116,7 @@ public interface Statement {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Equality check
 	 */
 	@Override
@@ -129,7 +126,7 @@ public interface Statement {
 	 * This method executes the statement under the given scope. If execution of
 	 * the statement is aborted abnormally (i.e. an exception is thrown.) The
 	 * exception is returned. Otherwise the return value is null.
-	 * 
+	 *
 	 * @param scope
 	 *            the scope under which the statement is executed
 	 * @param out
@@ -153,35 +150,35 @@ public interface Statement {
 	 * statement E.g. the Field of a FieldStatement, the Method of a
 	 * MethodStatement and so on MAY return NULL (for example for
 	 * NullStatements)
-	 * 
+	 *
 	 * @return a {@link java.lang.reflect.AccessibleObject} object.
 	 */
 	public GenericAccessibleObject<?> getAccessibleObject();
 
 	/**
 	 * Get Java code representation of assertions
-	 * 
+	 *
 	 * @return String representing all assertions attached to this statement
 	 */
 	public String getAssertionCode();
 
 	/**
 	 * Return list of assertions
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<Assertion> getAssertions();
 
 	/**
 	 * Create a string representing the statement as Java code
-	 * 
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getCode();
 
 	/**
 	 * Create a string representing the statement as Java code
-	 * 
+	 *
 	 * @param exception
 	 *            a {@link java.lang.Throwable} object.
 	 * @return a {@link java.lang.String} object.
@@ -193,20 +190,20 @@ public interface Statement {
 	 * @return
 	 */
 	public String getComment();
-	
-	
+
+
 	/**
 	 * <p>
 	 * getDeclaredExceptions
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<Class<?>> getDeclaredExceptions();
 
 	/**
 	 * Retrieve the number of parameters of this statement
-	 * 
+	 *
 	 * @return
 	 */
 	public int getNumParameters();
@@ -215,7 +212,7 @@ public interface Statement {
 	 * <p>
 	 * getPosition
 	 * </p>
-	 * 
+	 *
 	 * @return a int.
 	 */
 	public int getPosition();
@@ -224,7 +221,7 @@ public interface Statement {
 	 * <p>
 	 * getReturnClass
 	 * </p>
-	 * 
+	 *
 	 * @return Raw class of return value
 	 */
 	public Class<?> getReturnClass();
@@ -233,7 +230,7 @@ public interface Statement {
 	 * <p>
 	 * getReturnType
 	 * </p>
-	 * 
+	 *
 	 * @return Generic type of return value
 	 */
 	public Type getReturnType();
@@ -242,23 +239,23 @@ public interface Statement {
 	 * <p>
 	 * getReturnValue
 	 * </p>
-	 * 
+	 *
 	 * @return Variable representing return value
 	 */
 	public VariableReference getReturnValue();
 
 	/**
 	 * Retrieve the test case this statement is part of
-	 * 
+	 *
 	 * @return
 	 */
 	public TestCase getTestCase();
-	
+
 	/**
 	 * <p>
 	 * getUniqueVariableReferences
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.List} object.
 	 */
 	public List<VariableReference> getUniqueVariableReferences();
@@ -267,38 +264,38 @@ public interface Statement {
 	 * <p>
 	 * getVariableReferences
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<VariableReference> getVariableReferences();
 
 	/**
 	 * Check if there are assertions
-	 * 
+	 *
 	 * @return True if there are assertions
 	 */
 	public boolean hasAssertions();
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Generate hash code
 	 */
 	@Override
 	public int hashCode();
 
 	/**
-	 * Determine if the underlying reflection object is currently accessible 
+	 * Determine if the underlying reflection object is currently accessible
 	 * @return
 	 */
 	public boolean isAccessible();
-	
+
 	/**
 	 * Returns true if this statement should be handled as an
 	 * AssignmentStatement. This method was added to allow the wrapping of
 	 * AssignmentStatements (in which case "a instanceof AssignmentStatement" is
 	 * no longer working)
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean isAssignmentStatement();
@@ -309,7 +306,7 @@ public interface Statement {
 	 * Tests if the throwable defined by t is declared to be thrown by the
 	 * underlying type. Obviously this can only return true for methods and
 	 * constructors.
-	 * 
+	 *
 	 * @param t
 	 *            a {@link java.lang.Throwable} object.
 	 * @return a boolean.
@@ -320,7 +317,7 @@ public interface Statement {
 	 * Various consistency checks. This method might also return with an
 	 * assertionError Functionality might depend on the status of
 	 * enableAssertions in this JVM
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean isValid();
@@ -329,7 +326,7 @@ public interface Statement {
 	 * <p>
 	 * mutate
 	 * </p>
-	 * 
+	 *
 	 * @param test
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param factory
@@ -340,7 +337,7 @@ public interface Statement {
 
 	/**
 	 * Check if the statement makes use of var
-	 * 
+	 *
 	 * @param var
 	 *            Variable we are checking for
 	 * @return True if var is referenced
@@ -349,7 +346,7 @@ public interface Statement {
 
 	/**
 	 * Delete assertion attached to this statement
-	 * 
+	 *
 	 * @param assertion
 	 *            a {@link org.evosuite.assertion.Assertion} object.
 	 */
@@ -362,7 +359,7 @@ public interface Statement {
 
 	/**
 	 * Replace a VariableReference with another one
-	 * 
+	 *
 	 * @param var1
 	 *            The old variable
 	 * @param var2
@@ -375,7 +372,7 @@ public interface Statement {
 	 * semantic comparison than the one done by equals. E.g. two Variable are
 	 * equal if they are at the same position and they reference to objects of
 	 * the same type.
-	 * 
+	 *
 	 * @param s
 	 *            a {@link Statement} object.
 	 * @return a boolean.
@@ -384,7 +381,7 @@ public interface Statement {
 
 	/**
 	 * Sets the set of assertions to statement
-	 * 
+	 *
 	 * @param assertions
 	 *            a {@link java.util.Set} object.
 	 */
@@ -394,7 +391,7 @@ public interface Statement {
 	 * <p>
 	 * setRetval
 	 * </p>
-	 * 
+	 *
 	 * @param newRetVal
 	 *            a {@link org.evosuite.testcase.variable.VariableReference} object.
 	 */
