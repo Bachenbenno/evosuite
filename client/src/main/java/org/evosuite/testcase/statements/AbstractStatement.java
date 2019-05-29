@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -25,7 +25,9 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.evosuite.assertion.Assertion;
 import org.evosuite.testcase.variable.ArrayReference;
@@ -42,7 +44,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Abstract superclass of test case statements
- * 
+ *
  * @author Gordon Fraser
  */
 public abstract class AbstractStatement implements Statement, Serializable {
@@ -50,7 +52,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	/**
 	 * An interface to enable the concrete statements to use the executer/1
 	 * method.
-	 * 
+	 *
 	 **/
 	protected abstract class Executer {
 		/**
@@ -70,11 +72,11 @@ public abstract class AbstractStatement implements Statement, Serializable {
 		 * Executer.execute()/1. All exception in the returned set will be
 		 * thrown to a higher layer. If the others are thrown or returned by
 		 * AbstractStatement.executer()/1 is to be defined by executer()/1.
-		 * 
+		 *
 		 * @return
 		 */
 		public Set<Class<? extends Throwable>> throwableExceptions() {
-			return new HashSet<Class<? extends Throwable>>();
+			return new HashSet<>();
 		}
 	}
 
@@ -87,21 +89,21 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 * The return value of this statement. Should never be null.
 	 */
 	protected VariableReference retval;
-	
+
 	/**
 	 * Reference of the test case this statement belongs to. Should never be null.
 	 */
 	protected final TestCase tc;
 
-	protected Set<Assertion> assertions = new LinkedHashSet<Assertion>();
+	protected Set<Assertion> assertions = new LinkedHashSet<>();
 
 	protected String comment = "";
-	
+
 	/**
 	 * <p>
 	 * Constructor for AbstractStatement.
 	 * </p>
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param retval
@@ -122,7 +124,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 * <p>
 	 * Constructor for AbstractStatement.
 	 * </p>
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param type
@@ -135,7 +137,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 		if(type==null){
 			throw new IllegalArgumentException("type cannot be null");
 		}
-		
+
 		GenericClass c = new GenericClass(type);
 		if (c.isArray()) {
 			this.retval = new ArrayReference(tc, c, 0);
@@ -149,7 +151,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 * This method abstracts the exception handling away from the concrete
 	 * statements. Thereby hopefully enabling us to have a more consistent
 	 * approach to exceptions.
-	 * 
+	 *
 	 * @param code
 	 *            a {@link org.evosuite.testcase.statements.AbstractStatement.Executer}
 	 *            object.
@@ -177,27 +179,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 			 * Signal an error in evosuite code and are therefore always thrown
 			 */
 			throw e;
-		} catch (Error e) {
-			if (isAssignableFrom(e, code.throwableExceptions()))
-				throw e;
-			else
-				return e;
-		} catch (RuntimeException e) {
-			if (isAssignableFrom(e, code.throwableExceptions()))
-				throw e;
-			else
-				return e;
-		} catch (InvocationTargetException e) {
-			if (isAssignableFrom(e, code.throwableExceptions()))
-				throw e;
-			else
-				return e;
-		} catch (IllegalAccessException e) {
-			if (isAssignableFrom(e, code.throwableExceptions()))
-				throw e;
-			else
-				return e;
-		} catch (InstantiationException e) {
+		} catch (Error | RuntimeException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			if (isAssignableFrom(e, code.throwableExceptions()))
 				throw e;
 			else
@@ -210,7 +192,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	/**
 	 * Tests if concreteThrowable.getClass is assignable to any of the classes
 	 * in throwableClasses
-	 * 
+	 *
 	 * @param concreteThrowable
 	 *            true if concreteThrowable is assignable
 	 * @param throwableClasses
@@ -218,12 +200,8 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 */
 	private boolean isAssignableFrom(Throwable concreteThrowable,
 	        Set<Class<? extends Throwable>> throwableClasses) {
-		for (Class<? extends Throwable> t : throwableClasses) {
-			if (t.isAssignableFrom(concreteThrowable.getClass())) {
-				return true;
-			}
-		}
-		return false;
+		final Class<? extends Throwable> clazz = concreteThrowable.getClass();
+		return throwableClasses.stream().anyMatch(t -> t.isAssignableFrom(clazz));
 	}
 
 	/* (non-Javadoc)
@@ -239,11 +217,11 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 * <p>
 	 * getAssertionReferences
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	protected Set<VariableReference> getAssertionReferences() {
-		Set<VariableReference> variables = new LinkedHashSet<VariableReference>();
+		Set<VariableReference> variables = new LinkedHashSet<>();
 		for (Assertion assertion : assertions) {
 			variables.addAll(assertion.getReferencedVariables());
 		}
@@ -285,11 +263,11 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	public void addComment(String comment) {
 		this.comment += comment;
 	}
-	
+
 	public String getComment() {
 		return comment;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final Statement clone() {
@@ -330,7 +308,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	public int getNumParameters() {
 		return 0;
 	}
-	
+
 	@Override
 	public TestCase getTestCase() {
 		return tc;
@@ -338,12 +316,12 @@ public abstract class AbstractStatement implements Statement, Serializable {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Create copies of all attached assertions
 	 */
 	@Override
 	public Set<Assertion> copyAssertions(TestCase newTestCase, int offset) {
-		Set<Assertion> copy = new LinkedHashSet<Assertion>();
+		Set<Assertion> copy = new LinkedHashSet<>();
 		for (Assertion a : assertions) {
 			if (a == null) {
 				logger.info("Assertion is null!");
@@ -399,12 +377,10 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public String getAssertionCode() {
-		String ret_val = "";
-		for (Assertion a : assertions) {
-			if (a != null)
-				ret_val += a.getCode() + "\n";
-		}
-		return ret_val;
+		return assertions.stream()
+				.filter(Objects::nonNull)
+				.map(Assertion::getCode)
+				.collect(Collectors.joining("\n"));
 	}
 
 	/* (non-Javadoc)
@@ -440,15 +416,14 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public Set<Class<?>> getDeclaredExceptions() {
-		Set<Class<?>> ex = new HashSet<Class<?>>();
-		return ex;
+		return new HashSet<>();
 	}
 
 	/**
 	 * <p>
 	 * getExceptionClass
 	 * </p>
-	 * 
+	 *
 	 * @param t
 	 *            a {@link java.lang.Throwable} object.
 	 * @return a {@link java.lang.Class} object.
@@ -472,13 +447,9 @@ public abstract class AbstractStatement implements Statement, Serializable {
 
 	@Override
 	public boolean isAccessible() {
-		for(VariableReference var : getVariableReferences()) {
-			if(!var.isAccessible()) 
-				return false;
-		}
-		return true;
+		return getVariableReferences().stream().allMatch(VariableReference::isAccessible);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isValid() {
@@ -534,7 +505,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 */
 	public void negate() {
 	}
-	
+
 	@Override
 	public boolean isReflectionStatement() {
 		return false;
