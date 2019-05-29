@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class ExecutionResult implements Cloneable {
 
@@ -43,11 +45,8 @@ public class ExecutionResult implements Cloneable {
 	/** Map statement number to raised exception */
 	protected Map<Integer, Throwable> exceptions = new HashMap<>();
 
-	/** Record for each exception if it was explicitly thrown
-	 *
-	 * <p>
-	 * FIXME: internal data structures should never be null...
-	 * */
+	/** Record for each exception if it was explicitly thrown */
+	// FIXME: internal data structures should never be null...
 	public Map<Integer, Boolean> explicitExceptions = new HashMap<>();
 
 	/** Trace recorded during execution */
@@ -362,13 +361,9 @@ public class ExecutionResult implements Cloneable {
 	 * @return
      */
 	public boolean calledReflection() {
-		int executedStatements = getExecutedStatements();
-		for(int numStatement = 0; numStatement < executedStatements; numStatement++) {
-			Statement s = test.getStatement(numStatement);
-			if(s.isReflectionStatement())
-				return true;
-		}
-		return false;
+		Stream<Statement> stmts =
+				IntStream.range(0, executedStatements).mapToObj(test::getStatement);
+		return stmts.anyMatch(Statement::isReflectionStatement);
 	}
 
 
@@ -428,10 +423,7 @@ public class ExecutionResult implements Cloneable {
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
-		String result = "";
-		result += "Trace:";
-		result += trace;
-		return result;
+		return "Trace:" + trace;
 	}
 
 	public Set<String> getReadProperties() {
