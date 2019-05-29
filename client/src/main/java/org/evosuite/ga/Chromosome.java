@@ -29,7 +29,8 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.DoubleStream;
+
+import static java.util.stream.Collectors.averagingDouble;
 
 /**
  * Abstract base class of chromosomes
@@ -50,6 +51,7 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
     protected Chromosome() {
         // empty
     }
+
     /** Last recorded fitness value */
     private LinkedHashMap<FitnessFunction<?>, Double> fitnessValues = new LinkedHashMap<>();
 
@@ -388,11 +390,8 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
      * @return a double.
      */
     public double getCoverage() {
-        DoubleStream coverages = coverageValues.values().stream().mapToDouble(Double::doubleValue);
-        final double cov = coverages.average().orElse(0.0);
-
+        final double cov = coverageValues.values().stream().collect(averagingDouble(Double::doubleValue));
         assert (cov >= 0.0 && cov <= 1.0) : "Incorrect coverage value " + cov + ". Expected value between 0 and 1";
-
         return cov;
     }
 
@@ -523,17 +522,17 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
     }
 
     public double getFitnessInstanceOf(Class<?> clazz) {
-        Optional<FitnessFunction<?>> ff = fitnessValues.keySet().stream()
+        Optional<FitnessFunction<?>> off = fitnessValues.keySet().stream()
                 .filter(clazz::isInstance)
                 .findFirst();
-        return ff.map(fitnessValues::get).orElse(0.0);
+        return off.map(fitnessValues::get).orElse(0.0);
     }
 
     public double getCoverageInstanceOf(Class<?> clazz) {
-        Optional<FitnessFunction<?>> ff = coverageValues.keySet().stream()
+        Optional<FitnessFunction<?>> off = coverageValues.keySet().stream()
                 .filter(clazz::isInstance)
                 .findFirst();
-        return ff.map(coverageValues::get).orElse(0.0);
+        return off.map(coverageValues::get).orElse(0.0);
     }
 
     /**
