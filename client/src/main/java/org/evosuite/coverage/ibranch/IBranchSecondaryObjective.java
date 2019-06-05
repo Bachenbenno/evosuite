@@ -38,12 +38,12 @@ public class IBranchSecondaryObjective extends SecondaryObjective<TestSuiteChrom
 	public IBranchSecondaryObjective() {
 		ff = new IBranchSuiteFitness();
 	}
-	 
+
 	@Override
 	public int compareChromosomes(
 			TestSuiteChromosome chromosome1,
 			TestSuiteChromosome chromosome2) {
-				
+
 		double fitness1 = ff.getFitness(chromosome1, false);
 		double fitness2 = ff.getFitness(chromosome2, false);
 		int i = (int) Math.signum(fitness1 - fitness2);
@@ -52,7 +52,7 @@ public class IBranchSecondaryObjective extends SecondaryObjective<TestSuiteChrom
 //		if (!chromosome2.hasExecutedFitness(ff) || chromosome2.isChanged())
 //			ff.getFitness(chromosome2);
 		ff.updateCoveredGoals();
-		return i; 
+		return i;
 	}
 
 	@Override
@@ -63,13 +63,13 @@ public class IBranchSecondaryObjective extends SecondaryObjective<TestSuiteChrom
 			TestSuiteChromosome child2) {
 		logger.debug("Comparing sizes: " + parent1.size() + ", " + parent1.size() + " vs "
 				+ child1.size() + ", " + child2.size());
-		if (!parent1.hasExecutedFitness(ff) ||parent1.isChanged())
+		if (parent1.hasNotExecutedFitness(ff) ||parent1.isChanged())
 			ff.getFitness(parent1);
-		if (!parent2.hasExecutedFitness(ff) ||parent2.isChanged())
+		if (parent2.hasNotExecutedFitness(ff) ||parent2.isChanged())
 			ff.getFitness(parent2);
-		if (!child1.hasExecutedFitness(ff) ||child1.isChanged())
+		if (child1.hasNotExecutedFitness(ff) ||child1.isChanged())
 			ff.getFitness(child1);
-		if (!child2.hasExecutedFitness(ff) ||child2.isChanged())
+		if (child2.hasNotExecutedFitness(ff) ||child2.isChanged())
 			ff.getFitness(child2);
 
 		double minParents = Math.min(parent1.getFitness(ff), parent2.getFitness(ff));

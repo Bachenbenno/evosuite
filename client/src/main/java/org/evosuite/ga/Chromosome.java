@@ -137,8 +137,8 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
      * @param ff the fitness function
      * @return
      */
-    public boolean hasExecutedFitness(FitnessFunction<?> ff) {
-        return this.previousFitnessValues.containsKey(ff);
+    public boolean hasNotExecutedFitness(FitnessFunction<?> ff) {
+        return !this.previousFitnessValues.containsKey(ff);
     }
 
     public void setFitnessValues(Map<FitnessFunction<?>, Double> fits) {
