@@ -66,8 +66,10 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
 
     private LinkedHashMap<FitnessFunction<?>, Double> coverageValues = new LinkedHashMap<>();
 
+    /** The number of uncovered goals with regard to the fitness function given as key */
     private LinkedHashMap<FitnessFunction<?>, Integer> numsNotCoveredGoals = new LinkedHashMap<>();
 
+    /** The number of covered goals with regard to the fitness function given as key */
     private LinkedHashMap<FitnessFunction<?>, Integer> numsCoveredGoals = new LinkedHashMap<>();
 
 
@@ -128,6 +130,13 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         return this.previousFitnessValues;
     }
 
+    /**
+     * Tells whether the fitness of this chromosome has already been computed before using the
+     * given fitness function.
+     *
+     * @param ff the fitness function
+     * @return
+     */
     public boolean hasExecutedFitness(FitnessFunction<?> ff) {
         return this.previousFitnessValues.containsKey(ff);
     }
@@ -229,6 +238,12 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         }
     }
 
+    /**
+     * Tells whether the fitness of this chromosome has changed from the previous to the current
+     * generation.
+     *
+     * @return
+     */
     public boolean hasFitnessChanged() {
         return fitnessValues.keySet().stream()
                 .anyMatch(ff -> {
@@ -395,12 +410,24 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         return cov;
     }
 
+    /**
+     * Computes the total number of goals covered by this chromosome taking into account all the
+     * fitness functions known to this chromosome.
+     *
+     * @return
+     */
     public int getNumOfCoveredGoals() {
         return numsCoveredGoals.values().stream()
                 .mapToInt(Integer::intValue)
                 .sum();
     }
 
+    /**
+     * Computes the total number of goals not covered by this chromosome taking into account all the
+     * fitness functions known to this chromosome.
+     *
+     * @return
+     */
     public int getNumOfNotCoveredGoals() {
         return numsNotCoveredGoals.values().stream()
                 .mapToInt(Integer::intValue)
@@ -416,9 +443,11 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         this.numsNotCoveredGoals.clear();
         this.numsNotCoveredGoals.putAll(fits);
     }
+
     public void setNumOfNotCoveredGoals(FitnessFunction<?> ff, int numCoveredGoals) {
         this.numsNotCoveredGoals.put(ff, numCoveredGoals);
     }
+
     public Map<FitnessFunction<?>, Integer> getNumsOfCoveredGoals() {
         return this.numsCoveredGoals;
     }
@@ -521,6 +550,14 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         this.distance = d;
     }
 
+    /**
+     * Computes the fitness value of this chromosome, trying to use the given <code>Class</code>
+     * instance <code>clazz</code> as the fitness function. Returns <code>0.0</code> if none of the
+     * fitness functions known to this chromosome is assignment compatible with <code>clazz</code>.
+     *
+     * @param clazz
+     * @return
+     */
     public double getFitnessInstanceOf(Class<?> clazz) {
         Optional<FitnessFunction<?>> off = fitnessValues.keySet().stream()
                 .filter(clazz::isInstance)
@@ -528,6 +565,14 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         return off.map(fitnessValues::get).orElse(0.0);
     }
 
+    /**
+     * Computes the coverage value of this chromosome, trying to use the given <code>Class</code>
+     * instance <code>clazz</code> as the fitness function. Returns <code>0.0</code> if none of the
+     * fitness functions known to this chromosome is assignment compatible with <code>clazz</code>.
+     *
+     * @param clazz
+     * @return
+     */
     public double getCoverageInstanceOf(Class<?> clazz) {
         Optional<FitnessFunction<?>> off = coverageValues.keySet().stream()
                 .filter(clazz::isInstance)
