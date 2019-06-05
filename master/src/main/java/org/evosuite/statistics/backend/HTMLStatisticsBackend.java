@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 public class HTMLStatisticsBackend implements StatisticsBackend {
 
 	protected static final Logger logger = LoggerFactory.getLogger(HTMLStatisticsBackend.class);
-	
+
 	protected static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
 
 	protected static final HtmlAnalyzer html_analyzer = new HtmlAnalyzer();
@@ -129,7 +129,7 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 
 		FileIOUtils.writeFile(report.toString(), file);
 	}
-	
+
 	public static void copyFile(URL src, File dest) {
 		try {
 			InputStream in;
@@ -146,7 +146,7 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void copyFile(String name) {
 		URL systemResource = ClassLoader.getSystemResource("report/" + name);
 		logger.debug("Copying from resource: " + systemResource);
@@ -158,13 +158,13 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 	/**
 	 * Return the folder of where reports should be generated.
 	 * If the folder does not exist, try to create it
-	 * 
+	 *
 	 * @return
 	 * @throws RuntimeException if folder does not exist, and we cannot create it
 	 */
 	public static File getReportDir() throws RuntimeException{
 		File dir = new File(Properties.REPORT_DIR);
-		
+
 		if(!dir.exists()){
 			boolean created = dir.mkdirs();
 			if(!created){
@@ -173,13 +173,13 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 				throw new RuntimeException(msg);
 			}
 		}
-		
-		return dir;			
+
+		return dir;
 	}
-	
+
 	/**
 	 * HTML header
-	 * 
+	 *
 	 * @param buffer
 	 *            a {@link java.lang.StringBuffer} object.
 	 * @param title
@@ -217,7 +217,7 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 
 	/**
 	 * HTML footer
-	 * 
+	 *
 	 * @param buffer
 	 *            a {@link java.lang.StringBuffer} object.
 	 */
@@ -226,10 +226,10 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 		buffer.append("</body>\n");
 		buffer.append("</html>\n");
 	}
-	
+
 	/**
 	 * The big table of results
-	 * 
+	 *
 	 * @param buffer
 	 *            a {@link java.lang.StringBuffer} object.
 	 */
@@ -249,7 +249,7 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 			buffer.append("UNKNOWN");
 		buffer.append("</td>");
 		buffer.append("<td>");
-		Double coverage = (Double)getOutputVariableValue(data, RuntimeVariable.Coverage.name());  
+		Double coverage = (Double)getOutputVariableValue(data, RuntimeVariable.Coverage.name());
 		buffer.append((coverage != null) ? NumberFormat.getPercentInstance().format(coverage) : "UNKNOWN");
 		buffer.append("</td>");
 		buffer.append("<td><a href=\"html/");
@@ -258,15 +258,15 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 		buffer.append("\">");
 		buffer.append(data.get("TARGET_CLASS").getValue());
 		buffer.append("</tr>\n");
-		
+
 		buffer.append("<!-- EVOSUITE INSERTION POINT -->\n");
 		buffer.append("<tr class=\"top\"><td colspan=\"3\">&nbsp;<td></tr>\n");
 		buffer.append("</table>");
 	}
-	
+
 	/**
 	 * Write a file for a particular run
-	 * 
+	 *
 	 * @param run
 	 *            a {@link org.evosuite.utils.ReportGenerator.StatisticEntry}
 	 *            object.
@@ -278,9 +278,9 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 		StringBuffer sb = new StringBuffer();
 		String className = (String)data.get("TARGET_CLASS").getValue();
 		writeHTMLHeader(sb, className);
-		
+
 		sb.append("<br><br><h2 class=title>Summary</h2>\n");
-		
+
 		sb.append("<ul><li>Target class: ");
 		sb.append(getOutputVariableValue(data, "TARGET_CLASS"));
 		sb.append(": ");
@@ -288,20 +288,20 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 		sb.append("</ul>\n");
 
 		writeResultTable(suite, sb, data);
-		
+
 		// writeMutationTable(sb);
 		sb.append("<div id=\"page\">\n");
 		sb.append("<div id=\"page-bgtop\">\n");
 		sb.append("<div id=\"page-bgbtm\">\n");
 		sb.append("<div id=\"content\">\n");
-		
+
 		sb.append("<div id=\"post\">\n");
 
 		// Resulting test case
 		sb.append("<h2 class=title id=tests>Test suite</h2>\n");
 		sb.append("<div class=tests>\n");
 		int num = 0;
-		
+
 		for (TestChromosome testChromosome : suite.getTestChromosomes()) {
 			TestCase test = testChromosome.getTestCase();
 			sb.append("<h3>Test case ");
@@ -342,10 +342,10 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 		sb.append("</div>");
 		sb.append("<div id=\"post\">\n");
 
-		OutputVariable<?> ov_covered_lines = data.get(RuntimeVariable.Covered_Lines.name()); 
+		OutputVariable<?> ov_covered_lines = data.get(RuntimeVariable.Covered_Lines.name());
 		@SuppressWarnings("unchecked")
 		Set<Integer> coveredLines = (ov_covered_lines != null) ? (Set<Integer>) ov_covered_lines.getValue() : new HashSet<Integer>();
-				
+
 		// Source code
 		try {
 			Iterable<String> source = html_analyzer.getClassContent(className);
@@ -385,7 +385,7 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 		// return file.getAbsolutePath();
 		return filename;
 	}
-	
+
 	protected int getNumber(final String className) {
 		int num = 0;
 		FilenameFilter filter = new FilenameFilter() {
@@ -418,7 +418,7 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 
 	/**
 	 * Write some overall stats
-	 * 
+	 *
 	 * @param buffer
 	 *            a {@link java.lang.StringBuffer} object.
 	 * @param entry
@@ -432,11 +432,11 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 
 		buffer.append("<li>");
 		buffer.append(suite.getFitness());
-		buffer.append(" fitness evaluations, "); 
-		buffer.append(suite.getAge());
-		buffer.append(" generations, "); 
+		buffer.append(" fitness evaluations, ");
+		buffer.append(suite.getGeneration());
+		buffer.append(" generations, ");
 		buffer.append(getOutputVariableValue(data, RuntimeVariable.Statements_Executed.name()));
-		buffer.append(" statements, "); 
+		buffer.append(" statements, ");
 		buffer.append(suite.size());
 		buffer.append(" tests.\n");
 
@@ -459,9 +459,9 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 
 		buffer.append("<li>Covered " + getOutputVariableValue(data, RuntimeVariable.Covered_Branches.name()) + "/"
 		        + getOutputVariableValue(data, RuntimeVariable.Total_Branches.name()) + " branches, ");
-		buffer.append("<li>Covered "+ getOutputVariableValue(data, RuntimeVariable.Covered_Methods.name()) + "/" 
+		buffer.append("<li>Covered "+ getOutputVariableValue(data, RuntimeVariable.Covered_Methods.name()) + "/"
 		        + getOutputVariableValue(data, RuntimeVariable.Total_Methods.name()) + " methods, ");
-		buffer.append("<li>Covered "+ getOutputVariableValue(data, RuntimeVariable.Covered_Goals.name()) + "/" 
+		buffer.append("<li>Covered "+ getOutputVariableValue(data, RuntimeVariable.Covered_Goals.name()) + "/"
 		        + getOutputVariableValue(data, RuntimeVariable.Total_Goals.name()) + " total goals\n");
 		if(data.containsKey(RuntimeVariable.MutationScore.name()))
 				buffer.append("<li>Mutation score: "
@@ -469,10 +469,10 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 
 		buffer.append("</ul>\n");
 	}
-	
+
 	/**
 	 * Write some overall stats
-	 * 
+	 *
 	 * @param buffer
 	 *            a {@link java.lang.StringBuffer} object.
 	 * @param entry
@@ -487,5 +487,5 @@ public class HTMLStatisticsBackend implements StatisticsBackend {
 		}
 		buffer.append("</ul></div>\n");
 
-	} 
+	}
 }

@@ -35,7 +35,7 @@ import org.evosuite.utils.Randomness;
 public class SteadyStateGA<T extends Chromosome> extends MonotonicGA<T> {
 
 	private static final long serialVersionUID = 7301010503732698233L;
-	
+
 	private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SteadyStateGA.class);
 
 	/**
@@ -60,7 +60,7 @@ public class SteadyStateGA<T extends Chromosome> extends MonotonicGA<T> {
 
 		T parent1 = selectionFunction.select(population);
 		T parent2 = selectionFunction.select(population);
-		
+
 		T offspring1 = (T)parent1.clone();
 		T offspring2 = (T)parent2.clone();
 
@@ -75,20 +75,20 @@ public class SteadyStateGA<T extends Chromosome> extends MonotonicGA<T> {
 			offspring1.mutate();
 			notifyMutation(offspring2);
 			offspring2.mutate();
-			
+
 			if(offspring1.isChanged()) {
-				offspring1.updateAge(currentIteration);
+				offspring1.updateGeneration(currentIteration);
 			}
 			if(offspring2.isChanged()) {
-				offspring2.updateAge(currentIteration);
+				offspring2.updateGeneration(currentIteration);
 			}
 
 
 		} catch (ConstructionFailedException e) {
 			logger.info("CrossOver/Mutation failed");
 			return;
-		} 
-		
+		}
+
 		// The two offspring replace the parents if and only if one of
 		// the offspring is not worse than the best parent.
 	    for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
@@ -96,9 +96,9 @@ public class SteadyStateGA<T extends Chromosome> extends MonotonicGA<T> {
 	        notifyEvaluation(offspring1);
 	        fitnessFunction.getFitness(offspring2);
 	        notifyEvaluation(offspring2);
-	    } 
-	    
-	    
+	    }
+
+
 		// if (replacement_function.keepOffspring(parent1, parent2, offspring1,
 		if (!Properties.PARENT_CHECK
 		        || keepOffspring(parent1, parent2, offspring1, offspring2)) {
@@ -115,7 +115,7 @@ public class SteadyStateGA<T extends Chromosome> extends MonotonicGA<T> {
 		} else {
 			logger.debug("Keeping parents");
 		}
-		
+
 		updateFitnessFunctionsAndValues();
 	}
 

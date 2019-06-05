@@ -76,7 +76,7 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
     // protected int numOfCoveredGoals = 0;
 
     /** Generation in which this chromosome was created */
-    protected int age = 0;
+    protected int generation = 0;
 
     /** */
     protected int rank = -1;
@@ -497,12 +497,12 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
         this.numsCoveredGoals.put(ff, numCoveredGoals);
     }
 
-    public void updateAge(int generation) {
-        this.age = generation;
+    public void updateGeneration(int generation) {
+        this.generation = generation;
     }
 
-    public int getAge() {
-        return age;
+    public int getGeneration() {
+        return generation;
     }
 
     public int getRank() {

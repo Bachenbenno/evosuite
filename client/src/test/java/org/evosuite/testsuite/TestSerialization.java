@@ -46,10 +46,10 @@ public class TestSerialization {
 		PrimitiveStatement<?> statement = PrimitiveStatement.getPrimitiveStatement(test, int.class);
 		test.addStatement(statement);
 		testChromosome.setTestCase(test);
-		testChromosome.setFitness(null, 3.14d);		
+		testChromosome.setFitness(null, 3.14d);
 		chromosome.setFitness(null, fitness);
 		chromosome.setCoverage(null, 0.5);
-		chromosome.updateAge(24);
+		chromosome.updateGeneration(24);
 		chromosome.setChanged(true);
 		chromosome.addTest(testChromosome);
 		oos.writeObject(chromosome);
@@ -59,11 +59,11 @@ public class TestSerialization {
 		ObjectInputStream ois = new ObjectInputStream(bais);
 		TestSuiteChromosome copy = (TestSuiteChromosome) ois.readObject();
 		Assert.assertEquals(chromosome.getFitness(), copy.getFitness(), 0.0);
-		Assert.assertEquals(chromosome.getAge(), copy.getAge());
+		Assert.assertEquals(chromosome.getGeneration(), copy.getGeneration());
 		Assert.assertEquals(chromosome.getCoverage(), copy.getCoverage(), 0.0);
 		Assert.assertEquals(chromosome.getCoveredGoals(), copy.getCoveredGoals());
 		Assert.assertEquals(chromosome.isChanged(), copy.isChanged());
-		
+
 		Assert.assertEquals(chromosome.getTestChromosome(0).getFitness(), copy.getTestChromosome(0).getFitness(), 0.0);
 	}
 }

@@ -30,14 +30,13 @@ import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.FitnessReplacementFunction;
 import org.evosuite.ga.ReplacementFunction;
-import org.evosuite.ga.localsearch.LocalSearchBudget;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of steady state GA
- * 
+ *
  * @author Gordon Fraser
  */
 public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
@@ -50,7 +49,7 @@ public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param factory
 	 *            a {@link org.evosuite.ga.ChromosomeFactory} object.
 	 */
@@ -64,7 +63,7 @@ public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 	 * <p>
 	 * keepOffspring
 	 * </p>
-	 * 
+	 *
 	 * @param parent1
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 * @param parent2
@@ -127,10 +126,10 @@ public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 			offspring2.mutate();
 
 			if (offspring1.isChanged()) {
-				offspring1.updateAge(currentIteration);
+				offspring1.updateGeneration(currentIteration);
 			}
 			if (offspring2.isChanged()) {
-				offspring2.updateAge(currentIteration);
+				offspring2.updateGeneration(currentIteration);
 			}
 
 			// The two offspring replace the parents if and only if one of
@@ -234,7 +233,7 @@ public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 		}
 
 		while (!isFinished()) {
-			
+
 			logger.info("Population size before: " + population.size());
 			// related to Properties.ENABLE_SECONDARY_OBJECTIVE_AFTER;
 			// check the budget progress and activate a secondary criterion
@@ -274,7 +273,7 @@ public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 			/*
 			 * TODO: before explanation: due to static state handling, LS can
 			 * worse individuals. so, need to re-sort.
-			 * 
+			 *
 			 * now: the system tests that were failing have no static state...
 			 * so re-sorting does just hide the problem away, and reduce
 			 * performance (likely significantly). it is definitively a bug
@@ -329,7 +328,7 @@ public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 	 * <p>
 	 * setReplacementFunction
 	 * </p>
-	 * 
+	 *
 	 * @param replacement_function
 	 *            a {@link org.evosuite.ga.ReplacementFunction} object.
 	 */
@@ -341,7 +340,7 @@ public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 	 * <p>
 	 * getReplacementFunction
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.ga.ReplacementFunction} object.
 	 */
 	public ReplacementFunction getReplacementFunction() {

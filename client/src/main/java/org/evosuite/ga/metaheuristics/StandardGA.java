@@ -26,7 +26,6 @@ import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.ConstructionFailedException;
-import org.evosuite.ga.FitnessFunction;
 import org.evosuite.utils.Randomness;
 
 
@@ -38,7 +37,7 @@ import org.evosuite.utils.Randomness;
 public class StandardGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 
 	private static final long serialVersionUID = 5043503777821916152L;
-	
+
 	private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StandardGA.class);
 
 	/**
@@ -59,7 +58,7 @@ public class StandardGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 
 		// Elitism
 		newGeneration.addAll(elitism());
-		
+
 		// new_generation.size() < population_size
 		while (!isNextPopulationFull(newGeneration)) {
 
@@ -78,12 +77,12 @@ public class StandardGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 				offspring1.mutate();
 				notifyMutation(offspring2);
 				offspring2.mutate();
-				
+
 				if(offspring1.isChanged()) {
-					offspring1.updateAge(currentIteration);
+					offspring1.updateGeneration(currentIteration);
 				}
 				if(offspring2.isChanged()) {
-					offspring2.updateAge(currentIteration);
+					offspring2.updateGeneration(currentIteration);
 				}
 			} catch (ConstructionFailedException e) {
 				logger.info("CrossOver/Mutation failed.");
@@ -138,12 +137,12 @@ public class StandardGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 		if (getFitnessFunction().isMaximizationFunction()){
 			bestFitness = 0.0;
 			lastBestFitness = 0.0;
-		} 
-		
+		}
+
 		while (!isFinished()) {
 			logger.debug("Current population: " + getAge() + "/" + Properties.SEARCH_BUDGET);
 			logger.info("Best fitness: " + getBestIndividual().getFitness());
-			
+
 			evolve();
 			// Determine fitness
 			calculateFitnessAndSortPopulation();
@@ -159,21 +158,21 @@ public class StandardGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 				assert (newFitness <= bestFitness) : "best fitness was: " + bestFitness
 						+ ", now best fitness is " + newFitness;
 			bestFitness = newFitness;
-			
+
 			if (Double.compare(bestFitness, lastBestFitness) == 0) {
 				starvationCounter++;
 			} else {
 				logger.info("reset starvationCounter after " + starvationCounter + " iterations");
 				starvationCounter = 0;
 				lastBestFitness = bestFitness;
-				
+
 			}
-			
+
 			updateSecondaryCriterion(starvationCounter);
-			
+
 			this.notifyIteration();
 		}
-		
+
 		updateBestIndividualFromArchive();
 		notifySearchFinished();
 	}
