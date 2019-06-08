@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -35,8 +35,7 @@ import org.evosuite.utils.Listenable;
 
 
 /**
- *
- * A test case is a list of statements
+ * A test case is a sequence of {@link Statement statements}.
  *
  * @author Gordon Fraser
  * @author Sebastian Steenbuck
@@ -44,10 +43,9 @@ import org.evosuite.utils.Listenable;
 public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Void> {
 
 	/**
-	 * Get an unique id representing this test.
-	 * This is mainly useful for debugging.
+	 * Get a unique ID representing this test. This is mainly useful for debugging.
 	 *
-	 * @return
+	 * @return the unique ID of this test
 	 */
 	public int getID();
 
@@ -75,7 +73,7 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 
 	/**
 	 * Remove goal that may have been covered
-	 * 
+	 *
 	 * @param goal a {@link org.evosuite.testcase.TestFitnessFunction} object.
 	 */
 	public void removeCoveredGoal(TestFitnessFunction goal);
@@ -123,7 +121,7 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	 *            Length of the test case after chopping
 	 */
 	public void chop(int length);
-	
+
 	public int sliceFor(VariableReference var);
 
 	/**
@@ -131,9 +129,9 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	 */
 	public void clearCoveredGoals();
 
-	
+
 	public boolean contains(Statement statement);
-	
+
 	/**
 	 * <p>clone</p>
 	 *
@@ -166,26 +164,26 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 
 	/**
 	 * Retrieve all violations observed during test execution
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<ContractViolation> getContractViolations();
-		
-	
+
+
 	/**
 	 * Retrieve all coverage goals covered by this test
 	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<TestFitnessFunction> getCoveredGoals();
-	
+
 	/**
 	 * <p>getDeclaredExceptions</p>
 	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<Class<?>> getDeclaredExceptions();
-	
+
 	/**
 	 * Determine the set of variables that var depends on
 	 *
@@ -197,17 +195,17 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 
 	/**
 	 * Get the last object of the defined type
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 * @throws ConstructionFailedException
 	 */
 	public VariableReference getLastObject(Type type)
 			throws ConstructionFailedException;
-	
+
 	/**
 	 * Get the last object of the defined type
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 * @throws ConstructionFailedException
@@ -338,7 +336,7 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	 * @return Statement at position
 	 */
 	public Statement getStatement(int position);
-	
+
 	/**
 	 * Check if there is a statement at the given position.
 	 *
@@ -386,11 +384,11 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 
 	/**
 	 * Check if all methods/fields accessed are accessible also for the current SUT
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isAccessible();
-	
+
 	/**
 	 * <p>isEmpty</p>
 	 *
@@ -427,7 +425,7 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	/**
 	 * A test can be unstable if its assertions fail, eg due to non-determinism,
 	 * non-properly handled static variables and side effects on environment, etc
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isUnstable();
@@ -482,7 +480,7 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 
 	/**
 	 * Define whether this test case is unstable or not
-	 * 
+	 *
 	 * @param unstable
 	 */
 	public void setUnstable(boolean unstable);
@@ -507,7 +505,7 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	 * @return Code as string
 	 */
 	public String toCode();
-	
+
 	/**
 	 * Get Java code representation of the test case
 	 *
@@ -515,5 +513,5 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	 * @param exceptions a {@link java.util.Map} object.
 	 */
 	public String toCode(Map<Integer, Throwable> exceptions);
-	
+
 }
