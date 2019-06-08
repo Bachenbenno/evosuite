@@ -208,6 +208,23 @@
                 </plugins>
             </reporting>
         </profile>
+        <profile>
+            <id>internal.tools-jar</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>1.8.0</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 
 
@@ -460,6 +477,11 @@
                 <groupId>com.github.stefanbirkner</groupId>
                 <artifactId>system-rules</artifactId>
                 <version>1.17.1</version>
+            </dependency>
+            <dependency>
+                <groupId>systems.manifold</groupId>
+                <artifactId>manifold-all</artifactId>
+                <version>${manifold-version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -717,6 +739,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <!-- &lt;!&ndash;Add the Manifold plugin, with string templates enabled&ndash;&gt; -->
+                        <arg>-Xplugin:Manifold strings exceptions</arg>
+
+                    </compilerArgs>
+                </configuration>
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -873,7 +908,8 @@
         <systemTests>**/*SystemTest.java</systemTests>
         <integrationTests>**/*IntTest.java</integrationTests>
         <rerunFailingTestsCount>0</rerunFailingTestsCount>
-
+        <manifold-version>2019.1.0-ea</manifold-version>
+    <!--        <maven.compiler.source>8</maven.compiler.source>-->
+    <!--        <maven.compiler.target>8</maven.compiler.target>    </properties>-->
     </properties>
-
 </project>
