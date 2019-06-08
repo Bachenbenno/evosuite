@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -34,40 +34,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract class of an executable code assertion
- * 
+ * Abstract class modelling an executable code assertion. It corresponds to the {@code assert}
+ * statement in Java or one of the assertion methods ({@code assertTrue}, {@code assertNonNull}, i.a.) in
+ * JUnit.
+ *
  * @author Gordon Fraser
  */
 public abstract class Assertion implements Serializable {
 
 	private static final long serialVersionUID = 1617423211706717599L;
 
-	/** Variable on which the assertion is made */
+	/** Variable on which the assertion is made. */
 	protected VariableReference source;
 
-	/** Expected value of variable */
+	/** Expected value of the referred to variable {@link Assertion#source}. */
 	protected Object value;
 
-	/** Statement to which the assertion is added */
+	/** Statement to which the assertion is added. */
 	protected Statement statement;
-	
-	/** Assertion Comment */
+
+	/** Assertion comment. */
 	protected String comment;
 
-	protected transient Set<Mutation> killedMutants = new LinkedHashSet<Mutation>();
+	protected transient Set<Mutation> killedMutants = new LinkedHashSet<>();
 
 	/** Constant <code>logger</code> */
 	protected static final Logger logger = LoggerFactory.getLogger(Assertion.class);
-	
-	public boolean hasComment(){
-		return (this.comment != null);
+
+	public boolean hasComment() {
+		return this.comment != null;
 	}
-	
-	public void setComment(String comment){
+
+	public void setComment(String comment) {
 		this.comment = comment;
 	}
-	
-	public String getComment(){
+
+	public String getComment() {
 		return " " + comment.replace('\n', ' ').replace('\r', ' ');
 	}
 
@@ -114,7 +116,7 @@ public abstract class Assertion implements Serializable {
 
 	/**
 	 * Setter for statement to which assertion is added
-	 * 
+	 *
 	 * @param statement
 	 *            a {@link org.evosuite.testcase.statements.Statement} object.
 	 */
@@ -124,7 +126,7 @@ public abstract class Assertion implements Serializable {
 
 	/**
 	 * Getter for statement to which assertion is added
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.statements.Statement} object.
 	 */
 	public Statement getStatement() {
@@ -133,40 +135,40 @@ public abstract class Assertion implements Serializable {
 
 	/**
 	 * Getter for source variable
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.variable.VariableReference} object.
 	 */
 	public VariableReference getSource() {
 		return source;
 	}
-	
+
 	public void setSource(VariableReference var) {
 		source = var;
 	}
 
 	/**
 	 * Getter for value object
-	 * 
+	 *
 	 * @return a {@link java.lang.Object} object.
 	 */
 	public Object getValue() {
 		return value;
 	}
-	
+
 	public void setValue(Object value) {
 		this.value = value;
 	}
 
 	/**
-	 * This method returns the Java Code
-	 * 
+	 * Translates this assertion into Java code and returns it as a String.
+	 *
 	 * @return a {@link java.lang.String} object.
 	 */
 	public abstract String getCode();
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Return a copy of the assertion
 	 */
 	@Override
@@ -176,7 +178,7 @@ public abstract class Assertion implements Serializable {
 
 	/**
 	 * Return a copy of the assertion, which is valid in newTestCase
-	 * 
+	 *
 	 * @param newTestCase
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @return a {@link org.evosuite.assertion.Assertion} object.
@@ -187,7 +189,7 @@ public abstract class Assertion implements Serializable {
 
 	/**
 	 * Return a copy of the assertion, which is valid in newTestCase
-	 * 
+	 *
 	 * @param newTestCase
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param offset
@@ -197,8 +199,8 @@ public abstract class Assertion implements Serializable {
 	public abstract Assertion copy(TestCase newTestCase, int offset);
 
 	/**
-	 * Determine if assertion holds in current scope
-	 * 
+	 * Determines if the assertion holds in the given scope.
+	 *
 	 * @param scope
 	 *            The scope of the test case execution
 	 * @return a boolean.
@@ -207,7 +209,7 @@ public abstract class Assertion implements Serializable {
 
 	/**
 	 * Return all the variables that are part of this assertion
-	 * 
+	 *
 	 * @return a {@link java.util.Set} object.
 	 */
 	public Set<VariableReference> getReferencedVariables() {
@@ -218,7 +220,7 @@ public abstract class Assertion implements Serializable {
 
 	/**
 	 * Self-check
-	 * 
+	 *
 	 * @return a boolean.
 	 */
 	public boolean isValid() {
@@ -250,12 +252,12 @@ public abstract class Assertion implements Serializable {
 			}
 		}
 	}
-	
+
 	private void readObject(ObjectInputStream ois) throws ClassNotFoundException,
     IOException {
 		ois.defaultReadObject();
 
-		killedMutants = new LinkedHashSet<Mutation>();
+		killedMutants = new LinkedHashSet<>();
 	}
 
 }
