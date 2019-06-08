@@ -23,5 +23,14 @@ import org.evosuite.testcase.TestCase;
 
 public interface InsertionStrategy {
 
+	/**
+	 * In the given test case, insert a new statement at the end of the sequence as indicated by
+	 * {@code lastPosition}.
+	 *
+	 * @param test the test case in which to insert
+	 * @param lastPosition the position in the sequence after which to insert
+	 * @return The position of the newly inserted statement. This might not necessarily be {@code
+	 * lastPosition + 1}, e.g. when multiple statements had to be inserted before as dependencies.
+	 */
 	public int insertStatement(TestCase test, int lastPosition);
 }
