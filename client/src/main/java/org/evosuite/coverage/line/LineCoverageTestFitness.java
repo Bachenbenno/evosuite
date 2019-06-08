@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -23,8 +23,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
@@ -34,12 +38,13 @@ import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
+import org.evosuite.instrumentation.InstrumentingClassLoader;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
 
 /**
- * Fitness function for a single test on a single branch
+ * Fitness function for a single test on a single line
  *
  * @author Gordon Fraser, Jose Miguel Rojas
  */
@@ -53,6 +58,7 @@ public class LineCoverageTestFitness extends TestFitnessFunction {
 	private final Integer line;
 
 	protected transient BytecodeInstruction goalInstruction;
+	// TODO: why BranchCoverageTestFitness and not LineCoverageTestFitness?
 	protected transient List<BranchCoverageTestFitness> branchFitnesses = new ArrayList<>();
 
 	/**
@@ -106,7 +112,9 @@ public class LineCoverageTestFitness extends TestFitnessFunction {
 
 
 	private void setupDependencies() {
-		goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getFirstInstructionAtLineNumber(className, methodName, line);
+		InstrumentingClassLoader cl = TestGenerationContext.getInstance().getClassLoaderForSUT();
+		BytecodeInstructionPool pool = BytecodeInstructionPool.getInstance(cl);
+		goalInstruction = pool.getFirstInstructionAtLineNumber(className, methodName, line);
 
 		if(goalInstruction == null)
 			return;
@@ -132,17 +140,13 @@ public class LineCoverageTestFitness extends TestFitnessFunction {
 			        "an instruction is at least on the root branch of it's method");
 
 
-		branchFitnesses.sort((a,b) -> a.compareTo(b));
+		branchFitnesses.sort(Comparator.naturalOrder());
 	}
 
 	@Override
 	public boolean isCovered(ExecutionResult result) {
-		for ( Integer coveredLine : result.getTrace().getCoveredLines()) {
-			if (coveredLine.intValue() == this.line.intValue()) {
-				return true;
-			}
-		}
-		return false;
+		Stream<Integer> coveredLines = result.getTrace().getCoveredLines().stream();
+		return coveredLines.anyMatch(coveredLine -> coveredLine.intValue() == this.line.intValue());
 	}
 
 	/**
@@ -205,7 +209,7 @@ public class LineCoverageTestFitness extends TestFitnessFunction {
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
-		return className + (methodName == "" ? "" : "." + methodName) + ": Line " + line;
+		return className + (methodName.equals("") ? "" : "." + methodName) + ": Line " + line;
 	}
 
 	/** {@inheritDoc} */
@@ -271,7 +275,7 @@ public class LineCoverageTestFitness extends TestFitnessFunction {
 
 	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
 		ois.defaultReadObject();
-		branchFitnesses = new ArrayList<BranchCoverageTestFitness>();
+		branchFitnesses = new ArrayList<>();
 		if(GraphPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getActualCFG(className,
 				methodName) != null) {
 			// TODO: Figure out why the CFG may not exist
