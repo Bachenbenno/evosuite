@@ -365,9 +365,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public void setAssertions(Set<Assertion> assertions) {
-		for (Assertion assertion : assertions)
-			assertion.setStatement(this);
-
+		assertions.forEach(a -> a.setStatement(this));
 		this.assertions = assertions;
 	}
 
@@ -490,12 +488,8 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public void changeClassLoader(ClassLoader loader) {
-		for (VariableReference var : getVariableReferences()) {
-			var.changeClassLoader(loader);
-		}
-		for(Assertion assertion : assertions) {
-			assertion.changeClassLoader(loader);
-		}
+		getVariableReferences().forEach(v -> v.changeClassLoader(loader));
+		assertions.forEach(a -> a.changeClassLoader(loader));
 	}
 
 	/**
