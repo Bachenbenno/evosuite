@@ -55,12 +55,6 @@ public class RandomInsertion implements InsertionStrategy {
 			TODO: if allow inserting a UUT method in the middle of a test,
 			 we need to handle case of not breaking any initializing bounded variable
 		 */
-		int max = lastPosition;
-		if (max == test.size())
-			max += 1;
-
-		if (max <= 0)
-			max = 1;
 
 		int position = 0;
 
@@ -72,8 +66,6 @@ public class RandomInsertion implements InsertionStrategy {
 		boolean insertEnv = !insertUUT && Properties.INSERTION_ENVIRONMENT > 0 &&
 				r > Properties.INSERTION_UUT && r <= Properties.INSERTION_UUT+Properties.INSERTION_ENVIRONMENT &&
 				TestCluster.getInstance().getNumOfEnvironmentCalls() > 0;
-
-		boolean insertParam = !insertUUT && !insertEnv;
 
 		boolean success = false;
 		if (insertUUT) {
@@ -87,7 +79,7 @@ public class RandomInsertion implements InsertionStrategy {
 			 */
 			position = TestFactory.getInstance().insertRandomCallOnEnvironment(test,lastPosition);
 			success = (position >= 0);
-		} else if (insertParam){
+		} else {
 			// Insert a call to a parameter
 			VariableReference var = selectRandomVariableForCall(test, lastPosition);
 			if (var != null) {
@@ -151,7 +143,7 @@ public class RandomInsertion implements InsertionStrategy {
 			return -1;
 		}
 	}
-	
+
 	private VariableReference selectRandomVariableForCall(TestCase test, int position) {
 		if (test.isEmpty() || position == 0)
 			return null;
