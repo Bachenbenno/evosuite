@@ -376,10 +376,11 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 			return;
 		}
 
-		// 1) we update the set of currents goals
 		Set<FitnessFunction<T>> visitedTargets = new LinkedHashSet<>(getUncoveredGoals().size() * 2);
 		LinkedList<FitnessFunction<T>> targets = new LinkedList<>(this.currentGoals);
+		targets.addAll(this.currentGoals);
 
+		// 1) we update the set of current goals
 		while (targets.size()>0){
 			FitnessFunction<T> fitnessFunction = targets.poll();
 
@@ -389,8 +390,19 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 				continue;
 
 			double value = fitnessFunction.getFitness(c);
+
+			/*
+			 * Checks if the current test target has been reached and marks it as covered or
+			 * uncovered.
+			 */
 			if (value == 0.0) {
-				updateCoveredGoals(fitnessFunction, c);
+				updateCoveredGoals(fitnessFunction, c); // marks the current goal as covered
+
+				/*
+				 * If the coverage criterion is branch coverage, we also add structural children
+				 * and control dependencies of the current target to the processing queue. This is
+				 * to see which ones of those goals are already reached by control flow.
+				 */
 				if (fitnessFunction instanceof BranchCoverageTestFitness){
 					for (FitnessFunction<T> child : graph.getStructuralChildren(fitnessFunction)){
 						targets.addLast(child);
@@ -400,28 +412,31 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 					}
 				}
 			} else {
-				currentGoals.add(fitnessFunction);
+				currentGoals.add(fitnessFunction); // marks the current goal as uncovered
 			}
 		}
+
+		// Removes all covered goals from the list of uncovered goals.
 		currentGoals.removeAll(this.getCoveredGoals());
+
 		// 2) we update the archive
 		for (Integer branchid : result.getTrace().getCoveredFalseBranches()){
 			FitnessFunction<T> branch = this.branchCoverageFalseMap.get(branchid);
 			if (branch == null)
 				continue;
-			updateCoveredGoals((FitnessFunction<T>) branch, c);
+			updateCoveredGoals(branch, c);
 		}
 		for (Integer branchid : result.getTrace().getCoveredTrueBranches()){
 			FitnessFunction<T> branch = this.branchCoverageTrueMap.get(branchid);
 			if (branch == null)
 				continue;
-			updateCoveredGoals((FitnessFunction<T>) branch, c);
+			updateCoveredGoals(branch, c);
 		}
 		for (String method : result.getTrace().getCoveredBranchlessMethods()){
 			FitnessFunction<T> branch = this.branchlessMethodCoverageMap.get(method);
 			if (branch == null)
 				continue;
-			updateCoveredGoals((FitnessFunction<T>) branch, c);
+			updateCoveredGoals(branch, c);
 		}
 
 		// let's manage the exception coverage
