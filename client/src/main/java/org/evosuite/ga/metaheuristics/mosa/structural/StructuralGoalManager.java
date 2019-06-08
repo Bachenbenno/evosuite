@@ -39,13 +39,17 @@ public abstract class StructuralGoalManager<C extends Chromosome> implements Ser
 
 	private static final long serialVersionUID = -2577487057354286024L;
 
-	/** Set of goals currently used as objectives **/
-	protected Set<FitnessFunction<C>> currentGoals;
+	/**
+	 * Set of goals currently used as objectives. Each goal is encoded by a corresponding fitness
+	 * function, which returns an optimal fitness value if the goal has been reached by a given
+	 * chromosome.
+	 */
+	protected Set<FitnessFunction<T>> currentGoals;
 
 	/** Archive of tests and corresponding covered targets*/
 	protected Archive archive;
 
-	protected StructuralGoalManager(List<FitnessFunction<C>> fitnessFunctions){
+	protected StructuralGoalManager(List<FitnessFunction<T>> fitnessFunctions){
 		currentGoals = new HashSet<>(fitnessFunctions.size());
 		archive = Archive.getArchiveInstance();
 
@@ -58,25 +62,25 @@ public abstract class StructuralGoalManager<C extends Chromosome> implements Ser
 	 * @param c a TestChromosome
 	 * @return covered goals along with the corresponding test case
 	 */
-	public abstract void calculateFitness(C c);
+	public abstract void calculateFitness(T c);
 
-	public Set<FitnessFunction<C>> getUncoveredGoals() {
+	public Set<FitnessFunction<T>> getUncoveredGoals() {
 		return this.archive.getUncoveredTargets();
 	}
 
-	public Set<FitnessFunction<C>> getCurrentGoals() {
+	public Set<FitnessFunction<T>> getCurrentGoals() {
 		return currentGoals;
 	}
 
-	public Set<FitnessFunction<C>> getCoveredGoals() {
+	public Set<FitnessFunction<T>> getCoveredGoals() {
 		return this.archive.getCoveredTargets();
 	}
 
-	protected boolean isAlreadyCovered(FitnessFunction<C> target){
+	protected boolean isAlreadyCovered(FitnessFunction<T> target){
 		return this.archive.getCoveredTargets().contains(target);
 	}
 
-	protected void updateCoveredGoals(FitnessFunction<C> f, C tc) {
+	protected void updateCoveredGoals(FitnessFunction<T> f, T tc) {
 		// the next two lines are needed since that coverage information are used
 		// during EvoSuite post-processing
 		TestChromosome tch = (TestChromosome) tc;
