@@ -36,8 +36,6 @@ public abstract class TestFitnessFunction extends FitnessFunction<TestChromosome
 
 	private static final long serialVersionUID = 5602125855207061901L;
 
-	static boolean warnedAboutIsSimilarTo = false;
-
 	/**
 	 * <p>
 	 * getFitness
@@ -55,14 +53,14 @@ public abstract class TestFitnessFunction extends FitnessFunction<TestChromosome
 	@Override
 	public double getFitness(TestChromosome individual) {
 		logger.trace("Executing test case on original");
-		ExecutionResult origResult = individual.getLastExecutionResult();
-		if (origResult == null || individual.isChanged()) {
-			origResult = runTest(individual.test);
-			individual.setLastExecutionResult(origResult);
+		ExecutionResult lastResult = individual.getLastExecutionResult();
+		if (lastResult == null || individual.isChanged()) {
+			lastResult = runTest(individual.test);
+			individual.setLastExecutionResult(lastResult);
 			individual.setChanged(false);
 		}
 
-		double fitness = getFitness(individual, origResult);
+		double fitness = getFitness(individual, lastResult);
 		updateIndividual(individual, fitness);
 
 		return fitness;
