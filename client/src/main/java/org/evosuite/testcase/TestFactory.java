@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -71,7 +71,6 @@ import javax.servlet.http.HttpServlet;
 
 /**
  * @author Gordon Fraser
- *
  */
 public class TestFactory {
 
@@ -80,9 +79,11 @@ public class TestFactory {
 	/**
 	 * Keep track of objects we are already trying to generate to avoid cycles
 	 */
-	private transient Set<GenericAccessibleObject<?>> currentRecursion = new LinkedHashSet<GenericAccessibleObject<?>>();
+	private transient Set<GenericAccessibleObject<?>> currentRecursion = new LinkedHashSet<>();
 
-	/** Singleton instance */
+	/**
+	 * Singleton instance
+	 */
 	private static TestFactory instance = null;
 
     private ReflectionFactory reflectionFactory;
@@ -106,11 +107,12 @@ public class TestFactory {
 	}
 
 	/**
-	 * Append given call to the test case at given position
+	 * Appends the given call to the test case at a given position.
 	 *
-	 * @param test
-	 * @param call
-	 * @param position
+	 * @param test the test case
+	 * @param callee
+	 * @param call the call which to append
+	 * @param position the position within {@code test} at which to append
 	 */
 	private boolean addCallFor(TestCase test, VariableReference callee,
 	        GenericAccessibleObject<?> call, int position) {
@@ -260,7 +262,7 @@ public class TestFactory {
 						//Servlets are treated specially, as part of JEE
 						if (ConstraintHelper.countNumberOfMethodCalls(test, EvoServletState.class, "initServlet") == 0) {
 							Statement ms = new MethodStatement(test, ServletSupport.getServletInit(), null,
-									Arrays.asList(ref));
+									Collections.singletonList(ref));
 							test.addStatement(ms, injectPosition++);
 						}
 					}
@@ -326,7 +328,7 @@ public class TestFactory {
 				VariableReference valueToInject = satisfyParameters(
 						test,
 						ref, // avoid calling methods of bounded variables
-						Arrays.asList((Type) f.getType()),
+						Collections.singletonList(f.getType()),
 						null, //Added 'null' as additional parameter - fix for @NotNull annotations issue on evo mailing list
 						injectPosition,
 						recursionDepth +1,
@@ -1287,9 +1289,9 @@ public class TestFactory {
 						TestClusterGenerator clusterGenerator = TestGenerationContext.getInstance().getTestClusterGenerator();
 						Class<?> mock = MockList.getMockClass(clazz.getRawClass().getCanonicalName());
 						if (mock != null) {
-							clusterGenerator.addNewDependencies(Arrays.asList(mock));
+							clusterGenerator.addNewDependencies(Collections.singletonList(mock));
 						} else {
-							clusterGenerator.addNewDependencies(Arrays.asList(clazz.getRawClass()));
+							clusterGenerator.addNewDependencies(Collections.singletonList(clazz.getRawClass()));
 						}
 
 						if (TestCluster.getInstance().hasGenerator(type)) {
@@ -1660,7 +1662,7 @@ public class TestFactory {
 		references.add(test.getReturnValue(position));
 
 		for (int i = position; i < test.size(); i++) {
-			Set<VariableReference> temp = new LinkedHashSet<VariableReference>();
+			Set<VariableReference> temp = new LinkedHashSet<>();
 			for (VariableReference v : references) {
 				if (test.getStatement(i).references(v)) {
 					temp.add(test.getStatement(i).getReturnValue());
@@ -1878,7 +1880,7 @@ public class TestFactory {
 	 * @return
 	 */
 	private static Set<Type> getDependencies(GenericConstructor constructor) {
-		Set<Type> dependencies = new LinkedHashSet<Type>();
+		Set<Type> dependencies = new LinkedHashSet<>();
 		for (Type type : constructor.getParameterTypes()) {
 			dependencies.add(type);
 		}
@@ -1893,7 +1895,7 @@ public class TestFactory {
 	 * @return
 	 */
 	private static Set<Type> getDependencies(GenericField field) {
-		Set<Type> dependencies = new LinkedHashSet<Type>();
+		Set<Type> dependencies = new LinkedHashSet<>();
 		if (!field.isStatic()) {
 			dependencies.add(field.getOwnerType());
 		}
@@ -1908,7 +1910,7 @@ public class TestFactory {
 	 * @return
 	 */
 	private static Set<Type> getDependencies(GenericMethod method) {
-		Set<Type> dependencies = new LinkedHashSet<Type>();
+		Set<Type> dependencies = new LinkedHashSet<>();
 		if (!method.isStatic()) {
 			dependencies.add(method.getOwnerType());
 		}
@@ -1929,7 +1931,7 @@ public class TestFactory {
 	 */
 	private List<GenericAccessibleObject<?>> getPossibleCalls(Type returnType,
 	        List<VariableReference> objects) {
-		List<GenericAccessibleObject<?>> calls = new ArrayList<GenericAccessibleObject<?>>();
+		List<GenericAccessibleObject<?>> calls = new ArrayList<>();
 		Set<GenericAccessibleObject<?>> allCalls;
 
 		try {
@@ -1990,7 +1992,7 @@ public class TestFactory {
             Field field = reflectionFactory.nextField();
             parameters = satisfyParameters(test, null,
                     //we need a reference to the SUT, and one to a variable of same type of chosen field
-                    Arrays.asList((Type)reflectionFactory.getReflectedClass() , (Type)field.getType()), null,
+                    Arrays.asList(reflectionFactory.getReflectedClass(), field.getType()), null,
                     position, recursionDepth + 1, true, false, true);
 
             try {
@@ -2054,7 +2056,7 @@ public class TestFactory {
 			// Added 'null' as additional parameter - fix for @NotNull annotations issue on evo mailing list
 			parameters = satisfyParameters(test, callee,
 					//we need a reference to the SUT, and one to a variable of same type of chosen field
-					Arrays.asList((Type)field.getType()), null, position, recursionDepth + 1, allowNull, false, true);
+					Collections.singletonList((Type) field.getType()), null, position, recursionDepth + 1, allowNull, false, true);
 
 			try {
 				st = new PrivateFieldStatement(test,reflectionFactory.getReflectedClass(),field.getName(),
@@ -2308,6 +2310,13 @@ public class TestFactory {
 	}
 
 
+	/**
+	 * Inserts a random statement at the given position within the given test case.
+	 *
+	 * @param test the test case in which to insert
+	 * @param lastPosition the position at which to insert
+	 * @return the position at which the new statement has been inserted
+	 */
 	public int insertRandomStatement(TestCase test, int lastPosition) {
 		RandomInsertion rs = new RandomInsertion();
 		return rs.insertStatement(test, lastPosition);
