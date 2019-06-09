@@ -147,6 +147,12 @@
             <artifactId>hibernate-core</artifactId>
             <scope>compile</scope>
         </dependency>
+        <!--Support for extension methods, structural typing, string interpolation, @Jailbreak, @Self, @Precompile-->
+        <dependency>
+            <groupId>systems.manifold</groupId>
+            <artifactId>manifold-ext</artifactId>
+            <version>RELEASE</version>
+        </dependency>
 
     </dependencies>
 
@@ -168,4 +174,4 @@
         </plugins>
     </build>
 </project>
-	
+
