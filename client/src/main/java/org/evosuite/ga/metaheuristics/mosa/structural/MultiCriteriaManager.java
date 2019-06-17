@@ -75,22 +75,42 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 
 	protected Map<BranchCoverageTestFitness, Set<FitnessFunction<T>>> dependencies;
 
+	/**
+	 * Maps branch IDs to the corresponding fitness function, only considering branches we want to
+	 * take.
+	 */
 	protected final Map<Integer, FitnessFunction<T>> branchCoverageTrueMap = new LinkedHashMap<>();
+
+	/**
+	 * Maps branch IDs to the corresponding fitness function, only considering the branches we do
+	 * <em>not</em> want to take.
+	 */
 	protected final Map<Integer, FitnessFunction<T>> branchCoverageFalseMap = new LinkedHashMap<>();
+
+	/**
+	 * Maps branch IDs to the corresponding fitness function, only considering root branches of
+	 * methods (i.e. the goal is to just invoke the method).
+	 */
 	private final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new LinkedHashMap<>();
 
-	public MultiCriteriaManager(List<FitnessFunction<T>> fitnessFunctions) {
-		super(fitnessFunctions);
+	/**
+	 * Creates a new {@code MultiCriteriaManager} with the given list of targets. The targets are
+	 * encoded as fitness functions, which are expected to be minimization functions.
+	 *
+	 * @param targets The targets to cover encoded as minimization functions
+	 */
+	public MultiCriteriaManager(List<FitnessFunction<T>> targets) {
+		super(targets);
 
 		// initialize the dependency graph among branches
-		this.graph = getControlDepencies4Branches(fitnessFunctions);
+		this.graph = getControlDependencies4Branches(targets);
 
 		// initialize the dependency graph between branches and other coverage targets (e.g., statements)
 		// let's derive the dependency graph between branches and other coverage targets (e.g., statements)
 		for (Criterion criterion : Properties.CRITERION){
 			switch (criterion){
 				case BRANCH:
-					break; // branches have been handled by getControlDepencies4Branches
+					break; // branches have been handled by getControlDependencies4Branches
 				case EXCEPTION:
 					break; // exception coverage is handled by calculateFitness
 				case LINE:
@@ -147,21 +167,18 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	private void initializeMaps(Set<FitnessFunction<T>> set){
 		for (FitnessFunction<T> ff : set) {
 			BranchCoverageTestFitness goal = (BranchCoverageTestFitness) ff;
+
 			// Skip instrumented branches - we only want real branches
-			if(goal.getBranch() != null) {
-				if(goal.getBranch().isInstrumented()) {
-					continue;
-				}
+			if (goal.getBranch() != null && goal.getBranch().isInstrumented()) {
+				continue;
 			}
 
-			if (goal.getBranch() == null) {
-				branchlessMethodCoverageMap.put(goal.getClassName() + "."
-						+ goal.getMethod(), ff);
-			} else {
-				if (goal.getBranchExpressionValue())
-					branchCoverageTrueMap.put(goal.getBranch().getActualBranchId(), ff);
-				else
-					branchCoverageFalseMap.put(goal.getBranch().getActualBranchId(), ff);
+			if (goal.getBranch() == null) { // the goal is to call the method at hand
+				branchlessMethodCoverageMap.put(goal.getClassName() + "." + goal.getMethod(), ff);
+			} else if (goal.getBranchExpressionValue()) { // we want to take the given branch
+				branchCoverageTrueMap.put(goal.getBranch().getActualBranchId(), ff);
+			} else { // we don't want to take the given branch
+				branchCoverageFalseMap.put(goal.getBranch().getActualBranchId(), ff);
 			}
 		}
 	}
@@ -360,66 +377,74 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 	}
 
 
-
+	/**
+	 * Calculates the fitness of the given test chromosome w.r.t. the current set of goals. To this
+	 * end, the test chromosome is executed, it's execution trace recorded and the resulting
+	 * coverage analyzed. This information is further used to update the set of current
+	 * goals (as given by {@link MultiCriteriaManager#getCurrentGoals()} and the population of the
+	 * archive.
+	 *
+	 * @param c the chromosome whose fitness to calculate (must be a {@link TestChromosome})
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void calculateFitness(T c) {
-		// run the test
+		// Run the test and record the execution result.
 		TestCase test = ((TestChromosome) c).getTestCase();
 		ExecutionResult result = TestCaseExecutor.runTest(test);
 		((TestChromosome) c).setLastExecutionResult(result);
 		c.setChanged(false);
 
-		if (result.hasTimeout() || result.hasTestException()){
-			for (FitnessFunction<T> f : currentGoals)
-				c.setFitness(f, Double.MAX_VALUE);
+		// If the test failed to execute properly, it means none of the current gaols could be
+		// reached.
+		if (result.hasTimeout() || result.hasTestException()) {
+			currentGoals.forEach(f -> c.setFitness(f, Double.MAX_VALUE)); // assume minimization
 			return;
 		}
 
 		Set<FitnessFunction<T>> visitedTargets = new LinkedHashSet<>(getUncoveredGoals().size() * 2);
 		LinkedList<FitnessFunction<T>> targets = new LinkedList<>(this.currentGoals);
-		targets.addAll(this.currentGoals);
 
-		// 1) we update the set of current goals
-		while (targets.size()>0){
-			FitnessFunction<T> fitnessFunction = targets.poll();
+		// 1) We update the set of current goals.
+		while (targets.size() > 0) {
+			FitnessFunction<T> target = targets.poll();
 
-			int past_size = visitedTargets.size();
-			visitedTargets.add(fitnessFunction);
-			if (past_size == visitedTargets.size())
+			int pastSize = visitedTargets.size();
+			visitedTargets.add(target);
+			if (pastSize == visitedTargets.size())
 				continue;
 
-			double value = fitnessFunction.getFitness(c);
+			double fitness = target.getFitness(c);
 
 			/*
-			 * Checks if the current test target has been reached and marks it as covered or
-			 * uncovered.
+			 * Checks if the current test target has been reached and, in accordance, marks it as
+			 * covered or uncovered.
 			 */
-			if (value == 0.0) {
-				updateCoveredGoals(fitnessFunction, c); // marks the current goal as covered
+			if (fitness == 0.0) { // assume minimization function
+				updateCoveredGoals(target, c); // marks the current goal as covered
 
 				/*
 				 * If the coverage criterion is branch coverage, we also add structural children
 				 * and control dependencies of the current target to the processing queue. This is
 				 * to see which ones of those goals are already reached by control flow.
 				 */
-				if (fitnessFunction instanceof BranchCoverageTestFitness){
-					for (FitnessFunction<T> child : graph.getStructuralChildren(fitnessFunction)){
+				if (target instanceof BranchCoverageTestFitness){
+					for (FitnessFunction<T> child : graph.getStructuralChildren(target)){
 						targets.addLast(child);
 					}
-					for (FitnessFunction<T> dependentTarget : dependencies.get(fitnessFunction)){
+					for (FitnessFunction<T> dependentTarget : dependencies.get(target)){
 						targets.addLast(dependentTarget);
 					}
 				}
 			} else {
-				currentGoals.add(fitnessFunction); // marks the current goal as uncovered
+				currentGoals.add(target); // marks the goal as uncovered
 			}
 		}
 
-		// Removes all covered goals from the list of uncovered goals.
+		// Removes all newly covered goals from the list of currently uncovered goals.
 		currentGoals.removeAll(this.getCoveredGoals());
 
-		// 2) we update the archive
+		// 2) We update the archive.
 		for (Integer branchid : result.getTrace().getCoveredFalseBranches()){
 			FitnessFunction<T> branch = this.branchCoverageFalseMap.get(branchid);
 			if (branch == null)
@@ -500,9 +525,9 @@ public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalMa
 		return covered_exceptions;
 	}
 
-	public BranchFitnessGraph getControlDepencies4Branches(List<FitnessFunction<T>> fitnessFunctions){
+	public BranchFitnessGraph getControlDependencies4Branches(List<FitnessFunction<T>> fitnessFunctions){
 		Set<FitnessFunction<T>> setOfBranches = new LinkedHashSet<>();
-		this.dependencies = new LinkedHashMap();
+		this.dependencies = new LinkedHashMap<>();
 
 		List<BranchCoverageTestFitness> branches = new BranchCoverageFactory().getCoverageGoals();
 		for (BranchCoverageTestFitness branch : branches){
