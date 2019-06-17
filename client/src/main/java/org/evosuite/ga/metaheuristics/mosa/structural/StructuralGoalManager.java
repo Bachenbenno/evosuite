@@ -35,26 +35,33 @@ import java.util.Set;
  *
  * @author Annibale Panichella
  */
-public abstract class StructuralGoalManager<C extends Chromosome> implements Serializable {
+public abstract class StructuralGoalManager<T extends Chromosome> implements Serializable {
 
 	private static final long serialVersionUID = -2577487057354286024L;
 
 	/**
 	 * Set of goals currently used as objectives. Each goal is encoded by a corresponding fitness
 	 * function, which returns an optimal fitness value if the goal has been reached by a given
-	 * chromosome.
+	 * chromosome. All functions are required to be either minimization or maximization functions,
+	 * not a mix of both.
 	 */
 	protected Set<FitnessFunction<T>> currentGoals;
 
 	/** Archive of tests and corresponding covered targets*/
 	protected Archive archive;
 
-	protected StructuralGoalManager(List<FitnessFunction<T>> fitnessFunctions){
-		currentGoals = new HashSet<>(fitnessFunctions.size());
+	/**
+	 * Creates a new {@code StructuralGoalManager} with the given list of targets.
+	 *
+	 * @param targets The targets to cover, with each individual target encoded as its own
+	 *                         fitness function.
+	 */
+	protected StructuralGoalManager(List<FitnessFunction<T>> targets){
+		currentGoals = new HashSet<>(targets.size());
 		archive = Archive.getArchiveInstance();
 
 		// initialize uncovered goals
-		this.archive.addTargets(fitnessFunctions);
+		this.archive.addTargets(targets);
 	}
 
 	/**
@@ -64,22 +71,50 @@ public abstract class StructuralGoalManager<C extends Chromosome> implements Ser
 	 */
 	public abstract void calculateFitness(T c);
 
+	/**
+	 * Returns the set of yet uncovered goals.
+	 *
+	 * @return uncovered goals
+	 */
 	public Set<FitnessFunction<T>> getUncoveredGoals() {
 		return this.archive.getUncoveredTargets();
 	}
 
+	/**
+	 * Returns the subset of uncovered goals that are currently targeted. Each such goal has a
+	 * direct control dependency to one of the already covered goals.
+	 *
+	 * @return all currently targeted goals
+	 */
 	public Set<FitnessFunction<T>> getCurrentGoals() {
 		return currentGoals;
 	}
 
+	/**
+	 * Returns the set of already covered goals.
+	 *
+	 * @return the covered goals
+	 */
 	public Set<FitnessFunction<T>> getCoveredGoals() {
 		return this.archive.getCoveredTargets();
 	}
 
+	/**
+	 * Tells whether an individual covering the given target is already present in the archive.
+	 *
+	 * @param target the goal to be covered
+	 * @return {@code true} if the archive contains a chromosome that covers the target
+	 */
 	protected boolean isAlreadyCovered(FitnessFunction<T> target){
 		return this.archive.getCoveredTargets().contains(target);
 	}
 
+	/**
+	 * Records that the given coverage goal is satisfied by the given chromosome.
+	 *
+	 * @param f the coverage goal to be satisfied
+	 * @param tc the chromosome satisfying the goal
+	 */
 	protected void updateCoveredGoals(FitnessFunction<T> f, T tc) {
 		// the next two lines are needed since that coverage information are used
 		// during EvoSuite post-processing
