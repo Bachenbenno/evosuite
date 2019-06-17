@@ -52,8 +52,8 @@ public class FastNonDominatedSorting<T extends Chromosome> implements RankingFun
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void computeRankingAssignment(List<T> solutions, Set<FitnessFunction<T>> uncovered_goals) {
-		List<T>[] fronts = getNextNonDominatedFronts(solutions, uncovered_goals);
+	public void computeRankingAssignment(List<T> solutions, Set<FitnessFunction<T>> uncoveredGoals) {
+		List<T>[] fronts = getNextNonDominatedFronts(solutions, uncoveredGoals);
 		ranking_ = new ArrayList[fronts.length];
 		System.arraycopy(fronts, 0, ranking_, 0, fronts.length);
 	}
