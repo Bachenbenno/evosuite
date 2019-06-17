@@ -162,7 +162,7 @@ public class TestCluster {
 		removeOnlySelfGenerator();
 
 		removeDirectCycle();
-		
+
 		generatorCache.clear();
 	}
 
@@ -213,10 +213,8 @@ public class TestCluster {
 						continue; //as there is no need to instantiate X, it is not an issue
 					}
 					//is any generator for X using as input an instance of Y?
-					if(Arrays.asList(genOwner.getGenericParameterTypes())
-							.stream().anyMatch(
-									t -> t.equals(entry.getKey().getType()))
-							){
+					if(Arrays.stream(genOwner.getGenericParameterTypes())
+							.anyMatch(t -> t.equals(entry.getKey().getType()))) {
 						iter.remove();
 						break;
 					}
@@ -633,7 +631,7 @@ public class TestCluster {
 
 	/**
 	 * Return all calls that have a parameter with given type
-	 * 
+	 *
 	 * @param clazz
 	 * @param resolve
 	 * @return
@@ -811,7 +809,7 @@ public class TestCluster {
 	 * @throws ConstructionFailedException
 	 */
 	public Set<GenericAccessibleObject<?>> getGenerators(GenericClass clazz,
-	        boolean resolve) throws ConstructionFailedException {
+	        boolean resolve) throws ConstructionFailedException { // TODO: del parameter "resolve"
 
 		// Instantiate generic type
 		if (clazz.hasWildcardOrTypeVariables()) {
@@ -843,7 +841,6 @@ public class TestCluster {
 		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<GenericAccessibleObject<?>>();
 
 		if (clazz.isAssignableTo(Collection.class) || clazz.isAssignableTo(Map.class)) {
-			Set<GenericAccessibleObject<?>> all = new LinkedHashSet<>();
 			if (!generatorCache.containsKey(clazz)) {
 				cacheGenerators(clazz);
 			}
@@ -851,7 +848,7 @@ public class TestCluster {
 				throw new ConstructionFailedException("No generators of type " + clazz);
 			}
 
-			all.addAll(generatorCache.get(clazz));
+			Set<GenericAccessibleObject<?>> all = new LinkedHashSet<>(generatorCache.get(clazz));
 
 			for (GenericAccessibleObject<?> call : all) {
 				// TODO: Need to instantiate, or check?
@@ -876,11 +873,10 @@ public class TestCluster {
 		} else if (clazz.isAssignableTo(Number.class)) {
 			logger.debug("Found special case " + clazz);
 
-			Set<GenericAccessibleObject<?>> all = new LinkedHashSet<GenericAccessibleObject<?>>();
 			if (!generatorCache.containsKey(clazz)) {
 				cacheGenerators(clazz);
 			}
-			all.addAll(generatorCache.get(clazz));
+			Set<GenericAccessibleObject<?>> all = new LinkedHashSet<>(generatorCache.get(clazz));
 
 			if (all.isEmpty()) {
 				addNumericConstructor(clazz);
