@@ -274,7 +274,11 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
      * @return
      */
     private boolean isMaximizationFunction() {
-        return fitnessFunctions.get(0).isMaximizationFunction();
+        assert !fitnessFunctions.isEmpty() : "no fitness functions to look at";
+        final boolean isMaxFun = fitnessFunctions.get(0).isMaximizationFunction();
+        assert fitnessFunctions.stream().allMatch(ff -> ff.isMaximizationFunction() == isMaxFun)
+                : "found mixed minimization and maximization fitness functions";
+        return isMaxFun;
     }
 
     protected void updateProbability(boolean improvement){
