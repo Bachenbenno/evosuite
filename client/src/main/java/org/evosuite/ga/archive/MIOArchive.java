@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Implementation of the archive described in the 'Many Independent Objective (MIO) Algorithm for
  * Test Suite Generation' paper.
- * 
+ *
  * @author José Campos
  */
 public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome> extends Archive<F, T> {
@@ -56,10 +56,10 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
    * Map used to store all targets (keys of the map) and the corresponding covering solutions
    * (values of the map)
    **/
-  protected final Map<F, Population> archive = new LinkedHashMap<F, Population>();
+  protected final Map<F, Population> archive = new LinkedHashMap<>();
 
   public static final MIOArchive<TestFitnessFunction, TestChromosome> instance =
-      new MIOArchive<TestFitnessFunction, TestChromosome>();
+          new MIOArchive<>();
 
   /**
    * {@inheritDoc}
@@ -188,7 +188,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
    */
   @Override
   public Set<T> getSolutions() {
-    Set<T> solutions = new LinkedHashSet<T>();
+    Set<T> solutions = new LinkedHashSet<>();
     for (Population population : this.archive.values()) {
       T solution = population.getBestSolutionIfAny();
       if (solution != null) {
@@ -220,11 +220,11 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     }
 
     List<F> potentialTargets = targetsWithSolutions.stream()
-        .filter(target -> this.archive.get(target).isCovered() == false).collect(Collectors.toList());
+        .filter(target -> !this.archive.get(target).isCovered()).collect(Collectors.toList());
 
     if (potentialTargets.isEmpty()) {
       potentialTargets =
-          targetsWithSolutions.stream().filter(target -> this.archive.get(target).isCovered() == true)
+          targetsWithSolutions.stream().filter(target -> this.archive.get(target).isCovered())
               .collect(Collectors.toList());
     }
     assert !potentialTargets.isEmpty();
@@ -237,16 +237,13 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
 
     // ASC sort, i.e., from the population with the lowest counter to the population with the
     // highest counter
-    potentialTargets.sort(new Comparator<F>() {
-      @Override
-      public int compare(F f0, F f1) {
-        if (archive.get(f0).counter() < archive.get(f1).counter()) {
-          return -1;
-        } else if (archive.get(f0).counter() > archive.get(f1).counter()) {
-          return 1;
-        }
-        return 0;
+    potentialTargets.sort((f0, f1) -> {
+      if (archive.get(f0).counter() < archive.get(f1).counter()) {
+        return -1;
+      } else if (archive.get(f0).counter() > archive.get(f1).counter()) {
+        return 1;
       }
+      return 0;
     });
 
     T randomSolution = this.archive.get(potentialTargets.get(0)).sampleSolution();
@@ -291,10 +288,10 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     // concurrent access
     Properties.TEST_ARCHIVE = false;
 
-    TestSuiteChromosome mergedSolution = (TestSuiteChromosome) solution.clone();
+    TestSuiteChromosome mergedSolution = solution.clone();
 
     // to avoid adding the same solution to 'mergedSolution' suite
-    Set<T> solutionsSampledFromArchive = new LinkedHashSet<T>();
+    Set<T> solutionsSampledFromArchive = new LinkedHashSet<>();
 
     for (F target : this.archive.keySet()) {
       // does solution cover target?
@@ -367,16 +364,16 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     private List<Pair<Double, T>> solutions = null;
 
     /**
-     * 
+     *
      * @param populationSize
      */
     private Population(int populationSize) {
       this.capacity = populationSize;
-      this.solutions = new ArrayList<Pair<Double, T>>(populationSize);
+      this.solutions = new ArrayList<>(populationSize);
     }
 
     /**
-     * 
+     *
      * @return
      */
     private int counter() {
@@ -384,7 +381,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     }
 
     /**
-     * 
+     *
      * @return
      */
     private boolean isCovered() {
@@ -393,7 +390,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     }
 
     /**
-     * 
+     *
      * @param h [0,1] value, where 1 means that the target is covered, and whereas 0 is the worst
      *        possible heuristics value
      * @param t
@@ -413,7 +410,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
         return false;
       }
 
-      Pair<Double, T> candidateSolution = new ImmutablePair<Double, T>(h, t);
+      Pair<Double, T> candidateSolution = new ImmutablePair<>(h, t);
 
       boolean added = false;
 
@@ -470,7 +467,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     }
 
     /**
-     * 
+     *
      * @param currentSolution
      * @param candidateSolution
      * @return
@@ -489,7 +486,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     }
 
     /**
-     * 
+     *
      * @return
      */
     private T sampleSolution() {
@@ -518,7 +515,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     }
 
     /**
-     * 
+     *
      * @return
      */
     private int numSolutions() {
@@ -526,7 +523,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     }
 
     /**
-     * 
+     *
      * @return
      */
     private T getBestSolutionIfAny() {
@@ -537,7 +534,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
     }
 
     /**
-     * 
+     *
      * @param newPopulationSize
      */
     private void shrinkPopulation(int newPopulationSize) {
@@ -554,7 +551,7 @@ public class MIOArchive<F extends TestFitnessFunction, T extends TestChromosome>
         return;
       }
 
-      List<Pair<Double, T>> shrinkSolutions = new ArrayList<Pair<Double, T>>(newPopulationSize);
+      List<Pair<Double, T>> shrinkSolutions = new ArrayList<>(newPopulationSize);
       for (int i = 0; i < newPopulationSize; i++) {
         shrinkSolutions.add(this.solutions.get(i));
       }
