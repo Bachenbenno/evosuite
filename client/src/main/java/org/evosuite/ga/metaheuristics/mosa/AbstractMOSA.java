@@ -111,18 +111,25 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 		// we generate two offsprings
 		for (int i = 0; i < Properties.POPULATION / 2 && !this.isFinished(); i++) {
 			// select best individuals
+
+			/*
+			 * the same individual could be selected twice! Is this a problem for crossover?
+			 * Because crossing over an individual with itself will most certainly give you the
+			 * same individual again...
+			 */
+
 			T parent1 = this.selectionFunction.select(this.population);
 			T parent2 = this.selectionFunction.select(this.population);
 			T offspring1 = (T) parent1.clone();
 			T offspring2 = (T) parent2.clone();
 			// apply crossover
-			try {
-				if (Randomness.nextDouble() <= Properties.CROSSOVER_RATE) {
+			if (Randomness.nextDouble() <= Properties.CROSSOVER_RATE) {
+				try {
 					this.crossoverFunction.crossOver(offspring1, offspring2);
+				} catch (ConstructionFailedException e) {
+					logger.debug("CrossOver failed.");
+					continue;
 				}
-			} catch (ConstructionFailedException e) {
-				logger.debug("CrossOver failed.");
-				continue;
 			}
 
 			this.removeUnusedVariables(offspring1);
@@ -169,8 +176,8 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	/**
 	 * Method used to mutate an offspring.
 	 *
-	 * @param offspring
-	 * @param parent
+	 * @param offspring the offspring chromosome
+	 * @param parent the parent chromosome that {@code offspring} was created from
 	 */
 	private void mutate(T offspring, T parent) {
 		offspring.mutate();
