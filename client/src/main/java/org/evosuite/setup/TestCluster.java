@@ -333,7 +333,7 @@ public class TestCluster {
 	 */
 	public void addGenerator(GenericClass target, GenericAccessibleObject<?> call) {
 		if (!generators.containsKey(target))
-			generators.put(target, new LinkedHashSet<GenericAccessibleObject<?>>());
+			generators.put(target, new LinkedHashSet<>());
 
 		logger.debug("Adding generator for class " + target + ": " + call);
 		generators.get(target).add(call);
@@ -527,7 +527,7 @@ public class TestCluster {
 	 */
 	private Set<GenericAccessibleObject<?>> determineGenericModifiersFor(
 	        GenericClass clazz) throws ConstructionFailedException {
-		Set<GenericAccessibleObject<?>> genericModifiers = new LinkedHashSet<GenericAccessibleObject<?>>();
+		Set<GenericAccessibleObject<?>> genericModifiers = new LinkedHashSet<>();
 		if (clazz.isParameterizedType()) {
 			logger.debug("Is parameterized class");
 			for (Entry<GenericClass, Set<GenericAccessibleObject<?>>> entry : modifiers.entrySet()) {
@@ -702,7 +702,7 @@ public class TestCluster {
 			logger.debug("Got modifiers");
 			all.addAll(modifiers.get(clazz));
 		}
-		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<GenericAccessibleObject<?>>();
+		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<>();
 
 		if (clazz.isAssignableTo(Collection.class)) {
 			for (GenericAccessibleObject<?> call : all) {
@@ -838,7 +838,7 @@ public class TestCluster {
 	private Set<GenericAccessibleObject<?>> getGeneratorsForSpecialCase(GenericClass clazz)
 	        throws ConstructionFailedException {
 		logger.debug("Getting generator for special case: " + clazz);
-		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<GenericAccessibleObject<?>>();
+		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<>();
 
 		if (clazz.isAssignableTo(Collection.class) || clazz.isAssignableTo(Map.class)) {
 			if (!generatorCache.containsKey(clazz)) {
@@ -915,10 +915,10 @@ public class TestCluster {
 	 */
 	private void addNumericConstructor(GenericClass clazz) {
 		if (!generatorCache.containsKey(clazz)) {
-			generatorCache.put(clazz, new LinkedHashSet<GenericAccessibleObject<?>>());
+			generatorCache.put(clazz, new LinkedHashSet<>());
 		}
 		if (!generators.containsKey(clazz)) {
-			generators.put(clazz, new LinkedHashSet<GenericAccessibleObject<?>>());
+			generators.put(clazz, new LinkedHashSet<>());
 		}
 		logger.info("addNumericConstructor for class " + clazz);
 		for (Constructor<?> constructor : clazz.getRawClass().getConstructors()) {
@@ -944,7 +944,7 @@ public class TestCluster {
 	 * @return
 	 */
 	public Collection<Class<?>> getKnownMatchingClasses(String name) {
-		Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+		Set<Class<?>> classes = new LinkedHashSet<>();
 		for (Class<?> c : analyzedClasses) {
 			if (c.getName().endsWith(name))
 				classes.add(c);
@@ -958,7 +958,7 @@ public class TestCluster {
 	 * @return
 	 */
 	public Set<GenericAccessibleObject<?>> getModifiers() {
-		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<GenericAccessibleObject<?>>();
+		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<>();
 		for (Set<GenericAccessibleObject<?>> modifierCalls : modifiers.values())
 			calls.addAll(modifierCalls);
 
@@ -1115,7 +1115,7 @@ public class TestCluster {
 				 */
 				Set<GenericAccessibleObject<?>> set = candidates.stream()
 						.filter(p -> p.isStatic() || p.isConstructor())
-						.collect(Collectors.toCollection(() -> new LinkedHashSet<GenericAccessibleObject<?>>()));
+						.collect(Collectors.toCollection(() -> new LinkedHashSet<>()));
 				if(! set.isEmpty()){
 					candidates = set;
 				}
