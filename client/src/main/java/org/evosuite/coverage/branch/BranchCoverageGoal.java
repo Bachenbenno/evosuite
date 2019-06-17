@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -33,20 +33,27 @@ import org.evosuite.testcase.execution.ExecutionResult;
 /**
  * A single branch coverage goal Either true/false evaluation of a jump
  * condition, or a method entry
- * 
+ *
  * @author Gordon Fraser, Andre Mis
  */
 public class BranchCoverageGoal implements Serializable, Comparable<BranchCoverageGoal> {
 
 	private static final long serialVersionUID = 2962922303111452419L;
-	
+
+	/**
+	 * The branch to be covered. If set to {@code null} it means we want to cover the root branch
+	 * of the given method, i.e., just call the method.
+	 */
 	private transient Branch branch;
-	
+
+	/**
+	 * Whether to make the branch instruction jump.
+	 */
 	private final boolean value;
+
 	private final String className;
 	private final String methodName;
-	
-	
+
 	/**
 	 * The line number in the source code. This information is stored in the bytecode if the
 	 * code was compiled in debug mode. If no info, we would get a negative value (e.g., -1) here.
@@ -57,20 +64,20 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		return branch.getActualBranchId();
 
 	}
-	
+
 	/**
 	 * Can be used to create an arbitrary {@code BranchCoverageGoal} trying to cover the
-	 * given {@code Branch}
-	 * 
+	 * given {@code Branch}.
+	 *
 	 * <p>
 	 * If the given branch is {@code null}, this goal will try to cover the root branch
 	 * of the method identified by the given name - meaning it will just try to
-	 * call the method at hand
-	 * 
+	 * call the method at hand.
+	 *
 	 * <p>
 	 * Otherwise this goal will try to reach the given branch and if value is
-	 * true, make the branchInstruction jump and visa versa
-	 * 
+	 * true, make the branchInstruction jump and visa versa.
+	 *
 	 * @param branch
 	 *            a {@link org.evosuite.coverage.branch.Branch} object.
 	 * @param value
@@ -139,7 +146,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 	 * <p>
 	 * Constructor for BranchCoverageGoal.
 	 * </p>
-	 * 
+	 *
 	 * @param cd
 	 *            a {@link org.evosuite.graphs.cfg.ControlDependency} object.
 	 * @param className
@@ -154,7 +161,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 	/**
 	 * Methods that have no branches don't need a cfg, so we just set the cfg to
 	 * null
-	 * 
+	 *
 	 * @param className
 	 *            a {@link java.lang.String} object.
 	 * @param methodName
@@ -167,7 +174,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		this.className = className;
 		this.methodName = methodName;
 		lineNumber = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT())
-				.getFirstLineNumberOfMethod(className,  methodName);		                                                                                                                  
+				.getFirstLineNumberOfMethod(className,  methodName);
 	}
 
 	/**
@@ -207,14 +214,14 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 
 	/**
 	 * Determines whether this goals is connected to the given goal
-	 * 
+	 *
 	 * This is the case when this goals target branch is control dependent on
 	 * the target branch of the given goal or visa versa
-	 * 
+	 *
 	 * This is used in the ChromosomeRecycler to determine if tests produced to
 	 * cover one goal should be used initially when trying to cover the other
 	 * goal
-	 * 
+	 *
 	 * @param goal
 	 *            a {@link org.evosuite.coverage.branch.BranchCoverageGoal}
 	 *            object.
@@ -236,7 +243,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 	 * <p>
 	 * getDistance
 	 * </p>
-	 * 
+	 *
 	 * @param result
 	 *            a {@link org.evosuite.testcase.execution.ExecutionResult} object.
 	 * @return a {@link org.evosuite.coverage.ControlFlowDistance} object.
@@ -249,7 +256,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 	}
 
 	/**
-	 * 
+	 *
 	 * @return
 	 */
 	public int hashCodeWithoutValue() {
@@ -262,12 +269,12 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		result = prime * result + methodName.hashCode();
 		return result;
 	}
-	
+
 	// inherited from Object
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Readable representation
 	 */
 	@Override
@@ -359,7 +366,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 //			// Branch can only be null if this is a branchless method
 //			if(branch == null || o.getBranch() == null)
 //				return 0;
-//			
+//
 //			// If on the same line, order by appearance in bytecode
 //			return branch.getActualBranchId() - o.getBranch().getActualBranchId();
 		} else {

@@ -80,7 +80,10 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
     /** Generation in which this chromosome was created */
     protected int generation = 0;
 
-    /** */
+    /**
+     * The Pareto front this chromosome belongs to. The first non-dominated front is assigned rank
+     * 0, the next front rank 1 and so on. A rank of -1 means undefined.
+     */
     protected int rank = -1;
 
     /** */

@@ -26,19 +26,23 @@ import org.evosuite.ga.Chromosome;
 import org.evosuite.utils.Randomness;
 
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Select individual by rank
-	 */
+/**
+ * {@inheritDoc}
+ *
+ * Select individual by rank. The selection is biased towards individuals with a higher fitness.
+ */
 public class RankSelection<T extends Chromosome> extends SelectionFunction<T> {
 
 	private static final long serialVersionUID = 7849303009915557682L;
 
 	/**
-	 * Select index of next offspring
+	 * Select index of next offspring. The population has to be sorted! The selection favors
+	 * individuals with higher fitness. Bad individuals can still be selected, though, but with
+	 * lower probability.
 	 *
-	 * Population has to be sorted!
+	 * @param population
+	 *            a {@link java.util.List} object.
+	 * @return
 	 */
 	@Override
 	public int getIndex(List<T> population) {

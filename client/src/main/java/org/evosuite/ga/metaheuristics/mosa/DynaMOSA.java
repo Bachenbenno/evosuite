@@ -46,10 +46,13 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 	private static final Logger logger = LoggerFactory.getLogger(DynaMOSA.class);
 
+	// TODO: we implicitly assume that the population is sorted!
+	// protected List<T> population = new ArrayList<>();
+
 	/** Manager to determine the test goals to consider at each generation */
 	protected StructuralGoalManager<T> goalsManager = null;
 
-	protected CrowdingDistance<T> distance = new CrowdingDistance<T>();
+	protected CrowdingDistance<T> distance = new CrowdingDistance<>();
 
 	/**
 	 * Constructor based on the abstract class {@link AbstractMOSA}.
@@ -63,17 +66,19 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	/** {@inheritDoc} */
 	@Override
 	protected void evolve() {
+		// Generate offspring, compute their fitness, update the archive and coverage goals
 		List<T> offspringPopulation = this.breedNextGeneration();
 
-		// Create the union of parents and offSpring
-		List<T> union = new ArrayList<T>(this.population.size() + offspringPopulation.size());
+		// Create the union of parents and offspring
+		List<T> union = new ArrayList<>(this.population.size() + offspringPopulation.size());
 		union.addAll(this.population);
 		union.addAll(offspringPopulation);
 
 		// Ranking the union
 		logger.debug("Union Size = {}", union.size());
 
-		// Ranking the union using the best rank algorithm (modified version of the non dominated sorting algorithm
+		// Ranking the union using the best rank algorithm (modified version of the non dominated
+		// sorting algorithm)
 		this.rankingFunction.computeRankingAssignment(union, this.goalsManager.getCurrentGoals());
 
 		// let's form the next population using "preference sorting and non-dominated sorting" on the
@@ -83,7 +88,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		List<T> front = null;
 		this.population.clear();
 
-		// Obtain the next front
+		// Obtain the first front
 		front = this.rankingFunction.getSubfront(index);
 
 		while ((remain > 0) && (remain >= front.size()) && !front.isEmpty()) {
@@ -110,8 +115,6 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 			for (int k = 0; k < remain; k++) {
 				this.population.add(front.get(k));
 			}
-
-			remain = 0;
 		}
 
 		this.currentIteration++;
@@ -146,7 +149,6 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		// Calculate dominance ranks and crowding distance
 		this.rankingFunction.computeRankingAssignment(this.population, this.goalsManager.getCurrentGoals());
-
 		for (int i = 0; i < this.rankingFunction.getNumberOfSubfronts(); i++){
 			this.distance.fastEpsilonDominanceAssignment(this.rankingFunction.getSubfront(i), this.goalsManager.getCurrentGoals());
 		}
@@ -165,7 +167,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	 */
 	@Override
 	protected void calculateFitness(T c) {
-		this.goalsManager.calculateFitness(c);
+		this.goalsManager.calculateFitness(c); // this also updates the archive and the targets
 		this.notifyEvaluation(c);
 	}
 }
