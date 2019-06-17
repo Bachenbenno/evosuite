@@ -22,13 +22,17 @@ package org.evosuite.ga.operators.selection;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.evosuite.ga.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract base class of selection functions
+ * Abstract base class of selection functions. Can be used to choose the parents for mutation or
+ * crossover operations.
  *
  * @author Gordon Fraser
  */
@@ -74,11 +78,10 @@ public abstract class SelectionFunction<T extends Chromosome> implements Seriali
 	 * @return a {@link java.util.List} object.
 	 */
 	public List<T> select(List<T> population, int number) {
-		List<T> offspring = new ArrayList<>();
-		for (int i = 0; i < number; i++) {
-			offspring.add(population.get(getIndex(population)));
-		}
-		return offspring;
+		return Stream.generate(() -> getIndex(population))
+				.limit(number)
+				.map(population::get)
+				.collect(Collectors.toList());
 	}
 
 	/**
