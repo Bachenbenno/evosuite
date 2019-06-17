@@ -36,28 +36,28 @@ import java.util.List;
  * <p>
  * BranchCoverageFactory class.
  * </p>
- * 
+ *
  * @author Gordon Fraser, Andre Mis
  */
-public class BranchCoverageFactory extends
-		AbstractFitnessFactory<BranchCoverageTestFitness> {
+public class BranchCoverageFactory extends AbstractFitnessFactory<BranchCoverageTestFitness> {
 
 	private static final Logger logger = LoggerFactory.getLogger(BranchCoverageFactory.class);
-	
-	
+
+
 	/**
-	 * return coverage goals of the target class or of all the contextual branches, depending on the limitToCUT paramether
-	 * @param limitToCUT
+	 * return coverage goals of the target class or of all the contextual branches, depending on the limitToCUT parameter
+	 * @param limitToCUT whether to consider the class under test only ({@code true}) or all known
+	 *                   classes ({@code false})
 	 * @return
 	 */
 	private List<BranchCoverageTestFitness> computeCoverageGoals(boolean limitToCUT){
 		long start = System.currentTimeMillis();
-		List<BranchCoverageTestFitness> goals = new ArrayList<BranchCoverageTestFitness>();
+		List<BranchCoverageTestFitness> goals = new ArrayList<>();
 
 		// logger.info("Getting branches");
 		for (String className : BranchPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).knownClasses()) {
 			//when limitToCUT== true, if not the class under test of a inner/anonymous class, continue
-			if(limitToCUT && !isCUT(className)) continue;
+			if(limitToCUT && isNotCUT(className)) continue;
 			//when limitToCUT==false, consider all classes, but excludes libraries ones according the INSTRUMENT_LIBRARIES property
 			if(!limitToCUT && (!Properties.INSTRUMENT_LIBRARIES && !DependencyAnalysis.isTargetProject(className))) continue;
 			final MethodNameMatcher matcher = new MethodNameMatcher();
@@ -87,10 +87,10 @@ public class BranchCoverageFactory extends
 		goalComputationTime = System.currentTimeMillis() - start;
 		return goals;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.evosuite.coverage.TestCoverageFactory#getCoverageGoals()
 	 */
@@ -101,14 +101,14 @@ public class BranchCoverageFactory extends
 	}
 
 	public List<BranchCoverageTestFitness> getCoverageGoalsForAllKnownClasses() {
-		return computeCoverageGoals(false); 
+		return computeCoverageGoals(false);
 	}
 
 
 	/**
 	 * Create a fitness function for branch coverage aimed at executing the
 	 * given ControlDependency.
-	 * 
+	 *
 	 * @param cd
 	 *            a {@link org.evosuite.graphs.cfg.ControlDependency} object.
 	 * @return a {@link org.evosuite.coverage.branch.BranchCoverageTestFitness}
@@ -123,7 +123,7 @@ public class BranchCoverageFactory extends
 	/**
 	 * Create a fitness function for branch coverage aimed at executing the
 	 * Branch identified by b as defined by branchExpressionValue.
-	 * 
+	 *
 	 * @param b
 	 *            a {@link org.evosuite.coverage.branch.Branch} object.
 	 * @param branchExpressionValue
@@ -142,7 +142,7 @@ public class BranchCoverageFactory extends
 	 * Create a fitness function for branch coverage aimed at covering the root
 	 * branch of the given method in the given class. Covering a root branch
 	 * means entering the method.
-	 * 
+	 *
 	 * @param className
 	 *            a {@link java.lang.String} object.
 	 * @param method
@@ -160,7 +160,7 @@ public class BranchCoverageFactory extends
 	/**
 	 * Convenience method calling createRootBranchTestFitness(class,method) with
 	 * the respective class and method of the given BytecodeInstruction.
-	 * 
+	 *
 	 * @param instruction
 	 *            a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 * @return a {@link org.evosuite.coverage.branch.BranchCoverageTestFitness}
@@ -185,7 +185,7 @@ public class BranchCoverageFactory extends
 //f.delete();
 //try {
 //	Files.write(f.toPath(), l, Charset.defaultCharset(), StandardOpenOption.CREATE);
-//} catch (IOException e) { 
+//} catch (IOException e) {
 //	e.printStackTrace();
 //}
-////---------- 
+////----------

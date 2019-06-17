@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * MethodCoverageFactory class.
  * </p>
- * 
+ *
  * @author Gordon Fraser, Andre Mis, Jose Miguel Rojas
  */
 public class LineCoverageFactory extends
@@ -64,7 +64,7 @@ public class LineCoverageFactory extends
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.evosuite.coverage.TestCoverageFactory#getCoverageGoals()
 	 */
@@ -77,7 +77,7 @@ public class LineCoverageFactory extends
 
 		for(String className : LinePool.getKnownClasses()) {
 			// Only lines in CUT
-			if(!isCUT(className)) 
+			if(isNotCUT(className))
 				continue;
 
 			for(String methodName : LinePool.getKnownMethodsFor(className)) {
@@ -105,7 +105,7 @@ public class LineCoverageFactory extends
 	 * Create a fitness function for branch coverage aimed at covering the root
 	 * branch of the given method in the given class. Covering a root branch
 	 * means entering the method.
-	 * 
+	 *
 	 * @param className
 	 *            a {@link java.lang.String} object.
 	 * @param method
@@ -123,7 +123,7 @@ public class LineCoverageFactory extends
 	/**
 	 * Convenience method calling createMethodTestFitness(class,method) with
 	 * the respective class and method of the given BytecodeInstruction.
-	 * 
+	 *
 	 * @param instruction
 	 *            a {@link org.evosuite.graphs.cfg.BytecodeInstruction} object.
 	 * @return a {@link org.evosuite.coverage.branch.BranchCoverageTestFitness}

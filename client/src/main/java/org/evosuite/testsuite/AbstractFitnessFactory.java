@@ -29,7 +29,7 @@ import org.evosuite.testcase.execution.ExecutionTracer;
  * Historical concrete TestFitnessFactories only implement the getGoals() method
  * of TestFitnessFactory. Those old Factories can just extend these
  * AstractFitnessFactory to support the new method getFitness()
- * 
+ *
  * @author Sebastian Steenbuck
  */
 public abstract class AbstractFitnessFactory<T extends TestFitnessFunction> implements
@@ -42,16 +42,13 @@ public abstract class AbstractFitnessFactory<T extends TestFitnessFunction> impl
 	 */
 	public static long goalComputationTime = 0l;
 
-	
-	protected boolean isCUT(String className) {
-		if (!Properties.TARGET_CLASS.equals("")
-				&& !(className.equals(Properties.TARGET_CLASS) || className
-						.startsWith(Properties.TARGET_CLASS + "$"))) {
-			return false;
-		}
-		return true;
+
+	protected boolean isNotCUT(String className) {
+		return !Properties.TARGET_CLASS.equals("")
+				&& !(className.equals(Properties.TARGET_CLASS)
+				|| className.startsWith(Properties.TARGET_CLASS + "$"));
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public double getFitness(TestSuiteChromosome suite) {
