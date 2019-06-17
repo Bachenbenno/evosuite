@@ -178,7 +178,7 @@ public class RandomInsertion implements InsertionStrategy {
 		if(candidateVariables.isEmpty()) {
 			return null;
 		} else if(Properties.SORT_OBJECTS) {
-			candidateVariables = candidateVariables.stream().sorted(Comparator.comparingInt(item -> item.getDistance())).collect(Collectors.toList());
+			candidateVariables = candidateVariables.stream().sorted(Comparator.comparingInt(VariableReference::getDistance)).collect(Collectors.toList());
 			return ListUtil.selectRankBiased(candidateVariables);
 		} else {
 			return Randomness.choice(candidateVariables);
