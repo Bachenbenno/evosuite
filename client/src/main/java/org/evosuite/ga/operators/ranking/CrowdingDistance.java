@@ -130,15 +130,13 @@ public class CrowdingDistance<T extends Chromosome> implements Serializable {
 	 * in Computer Science pp 727-741.
 	 *
 	 * @param front front of non-dominated solutions/tests
-	 * @param set set of goals/targets (e.g., branches) to consider
+	 * @param goals set of goals/targets (e.g., branches) to consider
 	 */
-	public void fastEpsilonDominanceAssignment(List<T> front, Set<FitnessFunction<T>> set) {
+	public void fastEpsilonDominanceAssignment(List<T> front, Set<FitnessFunction<T>> goals) {
 		double value;
-		for (T test : front){
-			test.setDistance(0);
-		}
+		front.forEach(test -> test.setDistance(0));
 
-		for (final FitnessFunction<T> ff : set) {
+		for (final FitnessFunction<T> ff : goals) {
 			double min = Double.POSITIVE_INFINITY;
 			List<T> minSet = new ArrayList<T>(front.size());
 			double max = 0;
