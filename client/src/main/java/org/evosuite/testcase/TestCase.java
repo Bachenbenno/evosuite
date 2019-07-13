@@ -226,7 +226,7 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	public Object getObject(VariableReference reference, Scope scope);
 
 	/**
-	 * Get all objects up to position satisfying constraint
+	 * Get all objects up to the given position.
 	 *
 	 * @param position a int.
 	 * @return a {@link java.util.List} object.

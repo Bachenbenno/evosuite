@@ -66,7 +66,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	/** {@inheritDoc} */
 	@Override
 	protected void evolve() {
-		// Generate offspring, compute their fitness, update the archive and coverage goals
+		// Generate offspring, compute their fitness, update the archive and coverage goals.
 		List<T> offspringPopulation = this.breedNextGeneration();
 
 		// Create the union of parents and offspring
@@ -91,6 +91,10 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		// Obtain the first front
 		front = this.rankingFunction.getSubfront(index);
 
+		// Successively iterate through the fronts (starting with the first non-dominated front)
+		// and insert their members into the population for the next generation. This is done until
+		// all fronts have been processed or we hit a front that is too big to fit into the next
+		// population as a whole.
 		while ((remain > 0) && (remain >= front.size()) && !front.isEmpty()) {
 			// Assign crowding distance to individuals
 			this.distance.fastEpsilonDominanceAssignment(front, this.goalsManager.getCurrentGoals());
@@ -108,7 +112,11 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 			}
 		}
 
-		// Remain is less than front(index).size, insert only the best one
+		// In case the population for the next generation has not been filled up completely yet,
+		// we insert the best individuals from the current front (the one that was too big to fit
+		// entirely) until there are no more free places left. To this end, and in an effort to
+		// promote diversity, we consider those individuals with a higher crowding distance as
+		// being better.
 		if (remain > 0 && !front.isEmpty()) { // front contains individuals to insert
 			this.distance.fastEpsilonDominanceAssignment(front, this.goalsManager.getCurrentGoals());
 			front.sort(new OnlyCrowdingComparator());
@@ -132,6 +140,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	public void generateSolution() {
 		logger.debug("executing generateSolution function");
 
+		// Set up the targets to cover, which are initially free of any control dependencies.
+		// We are trying to optimize for multiple targets at the same time.
 		this.goalsManager = new MultiCriteriaManager<>(this.fitnessFunctions);
 
 		LoggingUtils.getEvoLogger().info("* Initial Number of Goals in DynMOSA = " +
@@ -139,21 +149,25 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		logger.debug("Initial Number of Goals = " + this.goalsManager.getCurrentGoals().size());
 
-		//initialize population
 		if (this.population.isEmpty()) {
+			// Initialize the population by creating solutions at random.
 			this.initializePopulation();
 		}
 
-		// update current goals
+		// Compute the fitness for each population member, update the coverage information and the
+		// set of goals to cover. Finally, update the archive.
 		this.calculateFitness();
 
-		// Calculate dominance ranks and crowding distance
+		// Calculate dominance ranks and crowding distance. This is required to decide which
+		// individuals should be used for mutation and crossover in the first iteration of the main
+		// search loop.
 		this.rankingFunction.computeRankingAssignment(this.population, this.goalsManager.getCurrentGoals());
 		for (int i = 0; i < this.rankingFunction.getNumberOfSubfronts(); i++){
 			this.distance.fastEpsilonDominanceAssignment(this.rankingFunction.getSubfront(i), this.goalsManager.getCurrentGoals());
 		}
 
-		// next generations
+		// Evolve the population generation by generation until all gaols have been covered or the
+		// search budget has been consumed.
 		while (!isFinished() && this.goalsManager.getUncoveredGoals().size() > 0) {
 			this.evolve();
 			this.notifyIteration();
@@ -163,7 +177,10 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Calculates the fitness for the given individual. Also updates the list of targets to cover,
+	 * as well as the population of best solutions in the archive.
+	 *
+	 * @param c the chromosome whose fitness to compute
 	 */
 	@Override
 	protected void calculateFitness(T c) {

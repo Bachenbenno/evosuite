@@ -65,6 +65,11 @@ import org.slf4j.LoggerFactory;
 
 import static org.evosuite.Properties.Criterion.*;
 
+/**
+ * A class for managing multiple coverage targets simultaneously.
+ *
+ * @param <T>
+ */
 public class MultiCriteriaManager<T extends Chromosome> extends StructuralGoalManager<T> implements Serializable {
 
 	private static final Logger logger = LoggerFactory.getLogger(MultiCriteriaManager.class);

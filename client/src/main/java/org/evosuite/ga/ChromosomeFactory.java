@@ -22,7 +22,7 @@ package org.evosuite.ga;
 import java.io.Serializable;
 
 /**
- * Factory for chromosomes used by the GA, e.g. to generate the initial population of solutions.
+ * Factory for chromosomes used by the GA, e.g., to generate the initial population of solutions.
  *
  * @param <T> the type of chromosome this factory produces
  * @author Gordon Fraser
