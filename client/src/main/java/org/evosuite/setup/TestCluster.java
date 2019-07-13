@@ -664,13 +664,7 @@ public class TestCluster {
 	        throws ConstructionFailedException {
 
 		Set<GenericAccessibleMember<?>> calls = getCallsFor(clazz, true);
-		Iterator<GenericAccessibleMember<?>> iter = calls.iterator();
-		while(iter.hasNext()) {
-			GenericAccessibleMember<?> gao = iter.next();
-			if (! ConstraintVerifier.isValidPositionForInsertion(gao,test,position)){
-				iter.remove();
-			}
-		}
+		calls.removeIf(gam -> !ConstraintVerifier.isValidPositionForInsertion(gam, test, position));
 
 		if (calls.isEmpty()) {
 			throw new ConstructionFailedException("No modifiers for " + clazz);
@@ -792,12 +786,10 @@ public class TestCluster {
 	 *
 	 * @return
 	 */
-	public Set<GenericAccessibleObject<?>> getGenerators() {
-		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<>();
-		for (Set<GenericAccessibleObject<?>> generatorCalls : generators.values())
-			calls.addAll(generatorCalls);
-
-		return calls;
+	public Set<GenericAccessibleMember<?>> getGenerators() {
+		return generators.values().stream()
+				.flatMap(Set::stream)
+				.collect(Collectors.toSet());
 	}
 
 	/**
@@ -941,12 +933,9 @@ public class TestCluster {
 	 * @return
 	 */
 	public Collection<Class<?>> getKnownMatchingClasses(String name) {
-		Set<Class<?>> classes = new LinkedHashSet<>();
-		for (Class<?> c : analyzedClasses) {
-			if (c.getName().endsWith(name))
-				classes.add(c);
-		}
-		return classes;
+		return analyzedClasses.stream()
+				.filter(c -> c.getName().endsWith(name))
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	/**
@@ -954,12 +943,10 @@ public class TestCluster {
 	 *
 	 * @return
 	 */
-	public Set<GenericAccessibleObject<?>> getModifiers() {
-		Set<GenericAccessibleObject<?>> calls = new LinkedHashSet<>();
-		for (Set<GenericAccessibleObject<?>> modifierCalls : modifiers.values())
-			calls.addAll(modifierCalls);
-
-		return calls;
+	public Set<GenericAccessibleMember<?>> getModifiers() {
+		return modifiers.values().stream()
+				.flatMap(Set::stream)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	/**
@@ -1087,15 +1074,8 @@ public class TestCluster {
 			}
 
 			if(generatorRefToExclude != null){
-				Iterator<GenericAccessibleMember<?>> iter = candidates.iterator();
-				while (iter.hasNext()) {
-					GenericAccessibleMember<?> gao = iter.next();
-					//if current generator could be called from excluded ref, then we cannot use it
-					if(generatorRefToExclude.isAssignableTo(gao.getOwnerType())){
-						iter.remove();
-					}
-				}
-
+				//if current generator could be called from excluded ref, then we cannot use it
+				candidates.removeIf(gam -> generatorRefToExclude.isAssignableTo(gam.getOwnerType()));
 			}
 
 			logger.debug("Candidate generators for " + clazz + ": " + candidates.size());
@@ -1112,7 +1092,7 @@ public class TestCluster {
 				 */
 				Set<GenericAccessibleMember<?>> set = candidates.stream()
 						.filter(p -> p.isStatic() || p.isConstructor())
-						.collect(Collectors.toCollection(() -> new LinkedHashSet<>()));
+						.collect(Collectors.toCollection(LinkedHashSet::new));
 				if(! set.isEmpty()){
 					candidates = set;
 				}
@@ -1169,15 +1149,19 @@ public class TestCluster {
 
 	}
 
-	public List<GenericAccessibleObject<?>> getRandomizedCallsToEnvironment(){
+	/**
+	 *
+	 * @return
+	 */
+	public List<GenericAccessibleMember<?>> getRandomizedCallsToEnvironment(){
 
-		if(environmentMethods.isEmpty()){
-			return null;
+		if (environmentMethods.isEmpty()) {
+			return null; // TODO: why not simply return an empty list?
 		}
 
-		List<GenericAccessibleObject<?>> list = new ArrayList<>();
+		final List<GenericAccessibleMember<?>> list = new ArrayList<>();
 
-		for(GenericAccessibleObject<?>  obj : environmentMethods) {
+		for (GenericAccessibleMember<?> m : environmentMethods) {
 
 			try {
 				if (m.getOwnerClass().hasWildcardOrTypeVariables()) {
