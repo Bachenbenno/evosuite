@@ -41,17 +41,15 @@ import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testcase.execution.CodeUnderTestException;
 import org.evosuite.testcase.execution.EvosuiteError;
 import org.evosuite.testcase.execution.Scope;
-import org.evosuite.utils.generic.GenericAccessibleObject;
+import org.evosuite.utils.generic.GenericAccessibleMember;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericField;
 import org.evosuite.utils.Randomness;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.GeneratorAdapter;
 
 /**
  * An assignment statement assigns a variable to another variable. This is only
  * used to assign to array indices
- * 
+ *
  * @author Gordon Fraser
  */
 public class AssignmentStatement extends AbstractStatement {
@@ -64,7 +62,7 @@ public class AssignmentStatement extends AbstractStatement {
 	 * <p>
 	 * Constructor for AssignmentStatement.
 	 * </p>
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param var
@@ -87,7 +85,7 @@ public class AssignmentStatement extends AbstractStatement {
 	 * <p>
 	 * getValue
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link org.evosuite.testcase.variable.VariableReference} object.
 	 */
 	public VariableReference getValue() {
@@ -141,7 +139,7 @@ public class AssignmentStatement extends AbstractStatement {
 					if (checkNullDereference(scope)) {
 						throw new CodeUnderTestException(new NullPointerException());
 					}
-					
+
 					retval.setObject(scope, value);
 					//} catch (CodeUnderTestException e) {
 					//	throw CodeUnderTestException.throwException(e.getCause());
@@ -164,9 +162,9 @@ public class AssignmentStatement extends AbstractStatement {
 			}
 
 			/**
-			 * Returns true of the retval of the assignment is a field reference (i.e. expr.f) 
+			 * Returns true of the retval of the assignment is a field reference (i.e. expr.f)
 			 * such that expr==null
-			 * 
+			 *
 			 * @param scope
 			 * @return
 			 * @throws CodeUnderTestException (cause is NullPointerException)
@@ -174,11 +172,11 @@ public class AssignmentStatement extends AbstractStatement {
 			private boolean checkNullDereference(final Scope scope) throws CodeUnderTestException {
 				if (retval instanceof FieldReference) {
 					FieldReference fieldRef = (FieldReference)retval;
-					
+
 					if (fieldRef.getField().isStatic()) {
 						return false;
 					}
-					
+
 					VariableReference source = fieldRef.getSource();
 					Object sourceValue = source.getObject(scope);
 					if (sourceValue==null) {
@@ -265,7 +263,7 @@ public class AssignmentStatement extends AbstractStatement {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.evosuite.testcase.Statement#getUniqueVariableReferences()
 	 */
@@ -320,7 +318,7 @@ public class AssignmentStatement extends AbstractStatement {
 	/**
 	 * Retrieve the set of FieldReference and ArrayIndex variables that can
 	 * serve as a replacement for retval
-	 * 
+	 *
 	 * @return
 	 */
 	private Set<VariableReference> getSourceReplacements() {
@@ -381,7 +379,7 @@ public class AssignmentStatement extends AbstractStatement {
 				// a long with an int, which is assignable
 				// but if the long is assigned to a Long field, then it is not!
 				if(parameter.isAssignableTo(newRetVal)) {
-					
+
 					// Need to check array status because commons lang
 					// is sometimes confused about what is assignable
 					if(parameter.isArray() == newRetVal.isArray()) {
@@ -401,9 +399,9 @@ public class AssignmentStatement extends AbstractStatement {
 			if (!objects.isEmpty()) {
 				VariableReference choice = Randomness.choice(objects);
 				if(choice.isAssignableTo(retval)) {
-					
+
 					// Need special care if it is a wrapper class
-					if(retval.getGenericClass().isWrapperType()) { 
+					if(retval.getGenericClass().isWrapperType()) {
 						Class<?> rawClass = ClassUtils.wrapperToPrimitive(retval.getVariableClass());
 						if(!retval.getVariableClass().equals(rawClass) && !retval.getVariableClass().equals(choice.getVariableClass())) {
 							return false;
@@ -423,7 +421,7 @@ public class AssignmentStatement extends AbstractStatement {
 
 	/** {@inheritDoc} */
 	@Override
-	public GenericAccessibleObject<?> getAccessibleObject() {
+	public GenericAccessibleMember<?> getAccessibleObject() {
 		return null;
 	}
 
