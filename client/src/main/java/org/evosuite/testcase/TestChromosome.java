@@ -400,17 +400,27 @@ public class TestChromosome extends ExecutableChromosome {
 		return changed;
 	}
 
+	/**
+	 * In the test case encoded by this chromosome, returns the position of the last statement that
+	 * can be mutated. If an exception occurred during the last execution of the test case, the
+	 * method returns the position of the last valid statement, i.e., the position of the statement
+	 * that directly precedes the exception-causing statement.
+	 *
+	 * @return the position of the last valid statement that can be mutated
+	 */
 	private int getLastMutatableStatement() {
-		ExecutionResult result = getLastExecutionResult();
+		final ExecutionResult result = getLastExecutionResult();
+		final int size = test.size();
+
 		if (result != null && !result.noThrownExceptions()) {
-			int pos = result.getFirstPositionOfThrownException();
-			// It may happen that pos > size() after statements have been deleted
-			if (pos >= test.size())
-				return test.size() - 1;
-			else
-				return pos;
+			// If an exception was thrown during execution, the test case is only valid up to the
+			// point right before where the exception occurred.
+			final int pos = result.getFirstPositionOfThrownException();
+
+			// It may happen that pos > size() after statements have been deleted.
+			return pos >= size ? size - 1 : pos;
 		} else {
-			return test.size() - 1;
+			return size - 1;
 		}
 	}
 

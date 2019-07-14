@@ -23,7 +23,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.evosuite.Properties;
-import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.setup.TestCluster;
 import org.evosuite.testcase.ConstraintHelper;
 import org.evosuite.testcase.ConstraintVerifier;
@@ -35,10 +34,6 @@ import org.evosuite.testcase.variable.NullReference;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.utils.ListUtil;
 import org.evosuite.utils.Randomness;
-import org.evosuite.utils.generic.GenericAccessibleObject;
-import org.evosuite.utils.generic.GenericClass;
-import org.evosuite.utils.generic.GenericConstructor;
-import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +42,9 @@ public class RandomInsertion implements InsertionStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(RandomInsertion.class);
 
 	@Override
-	public int insertStatement(TestCase test, int lastPosition) {
-		double r = Randomness.nextDouble();
-		int oldSize = test.size();
+	public int insertStatement(final TestCase test, final int lastPosition) {
+		final double r = Randomness.nextDouble();
+		final int oldSize = test.size();
 
 		/*
 			TODO: if allow inserting a UUT method in the middle of a test,
@@ -60,14 +55,19 @@ public class RandomInsertion implements InsertionStrategy {
 
 		assert Properties.INSERTION_UUT + Properties.INSERTION_ENVIRONMENT + Properties.INSERTION_PARAMETER == 1.0;
 
-		boolean insertUUT = Properties.INSERTION_UUT > 0 &&
-				r <= Properties.INSERTION_UUT && TestCluster.getInstance().getNumTestCalls() > 0 ;
+		// whether to insert a call on the unit under test
+		final boolean insertUUT = Properties.INSERTION_UUT > 0
+				&& r <= Properties.INSERTION_UUT
+				&& TestCluster.getInstance().getNumTestCalls() > 0 ;
 
-		boolean insertEnv = !insertUUT && Properties.INSERTION_ENVIRONMENT > 0 &&
-				r > Properties.INSERTION_UUT && r <= Properties.INSERTION_UUT+Properties.INSERTION_ENVIRONMENT &&
-				TestCluster.getInstance().getNumOfEnvironmentCalls() > 0;
+		// whether to insert a call on the environment of the unit under test
+		final boolean insertEnv = !insertUUT
+						&& Properties.INSERTION_ENVIRONMENT > 0
+						&& r > Properties.INSERTION_UUT && r <= Properties.INSERTION_UUT + Properties.INSERTION_ENVIRONMENT
+						&& TestCluster.getInstance().getNumOfEnvironmentCalls() > 0;
 
 		boolean success = false;
+
 		if (insertUUT) {
 			// Insert a call to the UUT at the end
 			position = test.size();
@@ -80,11 +80,15 @@ public class RandomInsertion implements InsertionStrategy {
 			position = TestFactory.getInstance().insertRandomCallOnEnvironment(test,lastPosition);
 			success = (position >= 0);
 		} else {
-			// Insert a call to a parameter
-			VariableReference var = selectRandomVariableForCall(test, lastPosition);
-			if (var != null) {
-				int lastUsage = var.getStPosition();
+			// Insert a call to a variable (one that is used as a parameter for some function call
+			// in the test case). The idea is to mutate the parameter so that new program states
+			// can be reached in the function call.
 
+			VariableReference var = selectRandomVariableForCall(test, lastPosition);
+
+			if (var != null) {
+				// find the last position where the selected variable is used in the test case
+				int lastUsage = var.getStPosition();
 				for (VariableReference usage : test.getReferences(var)) {
 					if (usage.getStPosition() > lastUsage)
 						lastUsage = usage.getStPosition();

@@ -53,10 +53,10 @@ public class FixedLengthTestChromosomeFactory implements
 		TestFactory testFactory = TestFactory.getInstance();
 
 		// Then add random stuff
-		while (test.size() < size && num < Properties.MAX_ATTEMPTS) {
+		for (int num = 0; test.size() < size && num < Properties.MAX_ATTEMPTS; num++) {
 			testFactory.insertRandomStatement(test, test.size() - 1);
-			num++;
 		}
+
 		//logger.debug("Randomized test case:" + test.toCode());
 
 		return test;
@@ -64,7 +64,7 @@ public class FixedLengthTestChromosomeFactory implements
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Generate a random chromosome
 	 */
 	@Override
