@@ -22,6 +22,7 @@ package org.evosuite.coverage.dataflow;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Objects;
 import java.util.Set;
 
 import org.evosuite.Properties;
@@ -200,12 +201,8 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 *            object.
 	 */
 	public DefUseCoverageTestFitness(Definition def, Use use, DefUsePairType type) {
-		if (def == null)
-			throw new IllegalArgumentException("null given for definition. type: "
-			        + type.toString());
-		if (use == null)
-			throw new IllegalArgumentException("null given for use. def was "
-			        + def.toString() + ". type: " + type.toString());
+		Objects.requireNonNull(def, "null given for definition. type: " + type.toString());
+		Objects.requireNonNull(use, "null given for use. def was " + def.toString() + ". type: " + type.toString());
 
 		initRegularDefUse(def, use, type);
 	}
@@ -495,7 +492,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * Getter for the field <code>goalDefinition</code>.
 	 * </p>
 	 *
-	 * @return a {@link org.evosuite.coverage.dataflow.Definition} object.
+	 * @return a {@link Definition} object.
 	 */
 	public Definition getGoalDefinition() {
 		return goalDefinition;
@@ -506,7 +503,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * Getter for the field <code>goalUse</code>.
 	 * </p>
 	 *
-	 * @return a {@link org.evosuite.coverage.dataflow.Use} object.
+	 * @return a {@link Use} object.
 	 */
 	public Use getGoalUse() {
 		return goalUse;
@@ -517,7 +514,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * Getter for the field <code>goalUseFitness</code>.
 	 * </p>
 	 *
-	 * @return a {@link org.evosuite.testcase.TestFitnessFunction} object.
+	 * @return a {@link TestFitnessFunction} object.
 	 */
 	public TestFitnessFunction getGoalUseFitness() {
 		return goalUseFitness;
@@ -528,7 +525,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * Getter for the field <code>goalDefinitionFitness</code>.
 	 * </p>
 	 *
-	 * @return a {@link org.evosuite.testcase.TestFitnessFunction} object.
+	 * @return a {@link TestFitnessFunction} object.
 	 */
 	public TestFitnessFunction getGoalDefinitionFitness() {
 		return goalDefinitionFitness;
@@ -562,7 +559,7 @@ public class DefUseCoverageTestFitness extends TestFitnessFunction {
 	 * </p>
 	 *
 	 * @return a
-	 *         {@link org.evosuite.coverage.dataflow.DefUseCoverageTestFitness.DefUsePairType}
+	 *         {@link DefUsePairType}
 	 *         object.
 	 */
 	public DefUsePairType getType() {

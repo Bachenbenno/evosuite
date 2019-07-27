@@ -29,6 +29,8 @@ import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.MethodCall;
 import org.evosuite.utils.ArrayUtil;
 
+import java.util.Objects;
+
 /**
  * Fitness function for a single test on a single branch
  *
@@ -45,14 +47,11 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 	 * Constructor - fitness is specific to a branch
 	 *
 	 * @param goal
-	 *            a {@link org.evosuite.coverage.branch.BranchCoverageGoal}
+	 *            a {@link BranchCoverageGoal}
 	 *            object.
 	 */
-	public BranchCoverageTestFitness(BranchCoverageGoal goal) throws IllegalArgumentException{
-		if(goal == null){
-			throw new IllegalArgumentException("goal cannot be null");
-		}
-		this.goal = goal;
+	public BranchCoverageTestFitness(BranchCoverageGoal goal) {
+		this.goal = Objects.requireNonNull(goal, "goal cannot be null");
 	}
 
 	/**
