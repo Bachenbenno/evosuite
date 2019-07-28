@@ -21,6 +21,11 @@ package org.evosuite.testcase.mutation;
 
 import org.evosuite.testcase.TestCase;
 
+/**
+ * This interface must be implemented by all classes that modify test cases via insertion of
+ * statements. Intended uses are for the implementation of mutation operators or for the generation
+ * of initial populations.
+ */
 public interface InsertionStrategy {
 
 	/**
@@ -28,9 +33,10 @@ public interface InsertionStrategy {
 	 * {@code lastPosition}.
 	 *
 	 * @param test the test case in which to insert
-	 * @param lastPosition the position in the sequence after which to insert
-	 * @return The position of the newly inserted statement. This might not necessarily be {@code
-	 * lastPosition + 1}, e.g. when multiple statements had to be inserted before as dependencies.
+	 * @param lastPosition the position of the last valid statement in the test case, defining the
+	 *                     insertion point for new statements
+	 * @return the updated position of the last valid statement after insertion, or a negative
+	 * 		   number if insertion failed
 	 */
 	public int insertStatement(TestCase test, int lastPosition);
 }
