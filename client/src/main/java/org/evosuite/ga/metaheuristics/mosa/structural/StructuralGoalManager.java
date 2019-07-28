@@ -31,8 +31,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * A class for managing coverage targets based on structural dependencies. More specifically,
+ * control dependence information of the UIT is used to derive the set of targets currently aimed
+ * at. Also maintains an archive of the best chromosomes satisfying a given coverage goal.
  *
- *
+ * @param <T> the type of chromosome the gaols operate on
  * @author Annibale Panichella
  */
 public abstract class StructuralGoalManager<T extends Chromosome> implements Serializable {
@@ -40,10 +43,21 @@ public abstract class StructuralGoalManager<T extends Chromosome> implements Ser
 	private static final long serialVersionUID = -2577487057354286024L;
 
 	/**
-	 * Set of goals currently used as objectives. Each goal is encoded by a corresponding fitness
-	 * function, which returns an optimal fitness value if the goal has been reached by a given
+	 * Set of goals currently used as objectives.
+	 * <p>
+	 * The idea is to consider only those gaols that are independent from any other targets. That
+	 * is, the gaols that
+	 * <ol>
+	 *     <li>are free of control dependencies, or</li>
+	 *     <li>only have direct control dependencies to already covered gaols.</li>
+	 * </ol>
+	 *
+	 *
+	 * Each goal is encoded by a corresponding fitness function, which returns an optimal fitness value if the goal has been reached by a given
 	 * chromosome. All functions are required to be either minimization or maximization functions,
 	 * not a mix of both.
+	 *
+	 *
 	 */
 	protected Set<FitnessFunction<T>> currentGoals;
 
