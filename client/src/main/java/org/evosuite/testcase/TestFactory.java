@@ -982,18 +982,12 @@ public class TestFactory {
 		Inputs.checkNull(type);
 
 		List<VariableReference> variables = tc.getObjects(type, position);
-		Iterator<VariableReference> iterator = variables.iterator();
-		while (iterator.hasNext()) {
-			VariableReference var = iterator.next();
-			if (var instanceof NullReference
-					|| tc.getStatement(var.getStPosition()) instanceof PrimitiveStatement
-					|| var.isPrimitive()
-					|| var.isWrapperType()
-					|| tc.getStatement(var.getStPosition()) instanceof FunctionalMockStatement
-					|| ConstraintHelper.getLastPositionOfBounded(var, tc) >= position) {
-				iterator.remove();
-			}
-		}
+		variables.removeIf(var -> var instanceof NullReference
+				|| tc.getStatement(var.getStPosition()) instanceof PrimitiveStatement
+				|| var.isPrimitive()
+				|| var.isWrapperType()
+				|| tc.getStatement(var.getStPosition()) instanceof FunctionalMockStatement
+				|| ConstraintHelper.getLastPositionOfBounded(var, tc) >= position);
 
 		if (variables.isEmpty()) {
 			throw new ConstructionFailedException("Found no variables of type " + type
@@ -1023,7 +1017,6 @@ public class TestFactory {
 				// if bounded variable, cannot add methods before its initialization, and so cannot be
 				// used as a callee
 				iter.remove();
-				continue;
 			}
 		}
 
@@ -1037,13 +1030,7 @@ public class TestFactory {
 
 		if(ConstraintHelper.getLastPositionOfBounded(statement.getReturnValue(),test) >= 0){
 			//if the return variable is bounded, we can only use a constructor on the right hand-side
-			Iterator<GenericAccessibleMember<?>> z = calls.iterator();
-			while(z.hasNext()){
-				GenericAccessibleMember<?> k = z.next();
-				if(! (k instanceof GenericConstructor)){
-					z.remove();
-				}
-			}
+			calls.removeIf(k -> !(k instanceof GenericConstructor));
 		}
 
 		logger.debug("Got {} possible calls for {} objects",calls.size(),objects.size());
@@ -1461,12 +1448,7 @@ public class TestFactory {
 			if (exclude.getAdditionalVariableReference() != null)
 				objects.remove(exclude.getAdditionalVariableReference());
 
-			Iterator<VariableReference> it = objects.iterator();
-			while (it.hasNext()) {
-				VariableReference v = it.next();
-				if (exclude.equals(v.getAdditionalVariableReference()))
-					it.remove();
-			}
+			objects.removeIf(v -> exclude.equals(v.getAdditionalVariableReference()));
 		}
 
 		List<VariableReference> additionalToRemove = new ArrayList<>();
@@ -1613,7 +1595,7 @@ public class TestFactory {
 		recursiveDeleteInclusion(test,toDelete,position);
 
 		List<Integer> pos = new ArrayList<>(toDelete);
-		Collections.sort(pos, Collections.reverseOrder());
+		pos.sort(Collections.reverseOrder());
 
 		for (Integer i : pos) {
 			logger.debug("Deleting statement: {}", i);
@@ -1693,12 +1675,7 @@ public class TestFactory {
 
 	private static void filterVariablesByClass(Collection<VariableReference> variables, Class<?> clazz) {
 		// Remove invalid classes if this is an Object.class reference
-		Iterator<VariableReference> replacement = variables.iterator();
-		while (replacement.hasNext()) {
-			VariableReference r = replacement.next();
-			if (!r.getVariableClass().equals(clazz))
-				replacement.remove();
-		}
+		variables.removeIf(r -> !r.getVariableClass().equals(clazz));
 	}
 
 
@@ -1876,12 +1853,7 @@ public class TestFactory {
 	 * @return
 	 */
 	private static Set<Type> getDependencies(GenericConstructor constructor) {
-		Set<Type> dependencies = new LinkedHashSet<>();
-		for (Type type : constructor.getParameterTypes()) {
-			dependencies.add(type);
-		}
-
-		return dependencies;
+		return new LinkedHashSet<>(Arrays.asList(constructor.getParameterTypes()));
 	}
 
 	/**
@@ -1910,9 +1882,7 @@ public class TestFactory {
 		if (!method.isStatic()) {
 			dependencies.add(method.getOwnerType());
 		}
-		for (Type type : method.getParameterTypes()) {
-			dependencies.add(type);
-		}
+		dependencies.addAll(Arrays.asList(method.getParameterTypes()));
 
 		return dependencies;
 	}
@@ -2064,8 +2034,7 @@ public class TestFactory {
 		} else {
 			//method
 			Method method = reflectionFactory.nextMethod();
-			List<Type> list = new ArrayList<>();
-			list.addAll(Arrays.asList(method.getParameterTypes()));
+			List<Type> list = new ArrayList<>(Arrays.asList(method.getParameterTypes()));
 			// Added 'null' as additional parameter - fix for @NotNull annotations issue on evo mailing list
 			parameters = satisfyParameters(test, callee, list, null, position, recursionDepth + 1, true, false, true);
 
@@ -2081,6 +2050,8 @@ public class TestFactory {
 	}
 
 	/**
+	 * Tries to insert a random call on the environment of the given test case. Returns the position
+	 * where the insertion happened, or a negative value if there was a failure.
 	 *
 	 * @param test the test case on whose environment to insert
 	 * @param lastValidPosition position of the last valid statement within the test case
@@ -2091,8 +2062,10 @@ public class TestFactory {
 		int previousLength = test.size();
 		currentRecursion.clear();
 
-		List<GenericAccessibleObject<?>> shuffledOptions = TestCluster.getInstance().getRandomizedCallsToEnvironment();
-		if(shuffledOptions==null || shuffledOptions.isEmpty()){
+		final List<GenericAccessibleMember<?>> shuffledOptions =
+				TestCluster.getInstance().getRandomizedCallsToEnvironment();
+
+		if (shuffledOptions == null || shuffledOptions.isEmpty()) {
 			return -1;
 		}
 
@@ -2101,7 +2074,7 @@ public class TestFactory {
 			try {
 				int position = ConstraintVerifier.getAValidPositionForInsertion(gam,test,lastValidPosition);
 
-				if(position < 0){
+				if (position < 0) {
 					//the given method/constructor cannot be added
 					continue;
 				}
@@ -2253,8 +2226,8 @@ public class TestFactory {
 	}
 
 	/**
-	 * Within the given test case, inserts a random call on the object referenced by {@code var} at
-	 * the specified position. Returns {@code true} if the operation was successful.
+	 * Within the given test case, inserts a random call at the specified position on the object
+	 * referenced by {@code var}. Returns {@code true} if the operation was successful.
 	 *
 	 * @param test the test case in which to insert
 	 * @param var the reference to the object on which to perform a method call
@@ -2315,11 +2288,11 @@ public class TestFactory {
 
 
 	/**
-	 * Inserts a random statement at the given position within the given test case.
+	 * Inserts a random statement after the given position within the given test case.
 	 *
 	 * @param test the test case in which to insert
-	 * @param lastPosition the position at which to insert
-	 * @return the position at which the new statement has been inserted
+	 * @param lastPosition the position after which to insert
+	 * @return the position at which the new statement has been inserted.
 	 */
 	public int insertRandomStatement(TestCase test, int lastPosition) {
 		RandomInsertion rs = new RandomInsertion();
