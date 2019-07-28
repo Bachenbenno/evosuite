@@ -37,6 +37,9 @@ import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An insertion strategy that allows for modification of test cases by inserting random statements.
+ */
 public class RandomInsertion implements InsertionStrategy {
 
 	private static final Logger logger = LoggerFactory.getLogger(RandomInsertion.class);
@@ -74,8 +77,10 @@ public class RandomInsertion implements InsertionStrategy {
 			success = TestFactory.getInstance().insertRandomCall(test, lastPosition + 1);
 		} else if (insertEnv) {
 			/*
-				Insert a call to the environment. As such call is likely to depend on many constraints,
-				we do not specify here the position of where it ll happen.
+				Insert a call to the environment, i.e., external resources for the test case such
+				as handles to files on the file system, sockets that open network connections, etc.
+				As such call is likely to depend on many constraints, we do not specify here the
+				position of where it ll happen.
 			 */
 			position = TestFactory.getInstance().insertRandomCallOnEnvironment(test,lastPosition);
 			success = (position >= 0);
