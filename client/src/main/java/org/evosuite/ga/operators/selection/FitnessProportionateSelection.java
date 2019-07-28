@@ -19,10 +19,11 @@
  */
 package org.evosuite.ga.operators.selection;
 
-import java.util.List;
-
 import org.evosuite.ga.Chromosome;
 import org.evosuite.utils.Randomness;
+
+import java.util.List;
+import java.util.stream.DoubleStream;
 
 
 /**
@@ -73,24 +74,19 @@ public class FitnessProportionateSelection<T extends Chromosome> extends Selecti
 
 	/**
 	 * Calculate total sum of fitnesses
-	 * 
+	 *
 	 * @param population
 	 */
 	private void setSum(List<T> population) {
-		sumValue = 0;
-		for (T c : population) {
-			double v = c.getFitness();
-			if (!maximize)
-				v = invert(v);
-
-			sumValue += v;
-		}
+		DoubleStream fitnessValues = population.stream().mapToDouble(Chromosome::getFitness);
+		if (!maximize) fitnessValues = fitnessValues.map(FitnessProportionateSelection::invert);
+		sumValue = fitnessValues.sum();
 	}
 
 	/*
 	 * used to handle the case of minimizing the fitness
 	 */
-	private double invert(double x) {
+	private static double invert(final double x) {
 		return 1d / (x + 1d);
 	}
 
@@ -101,7 +97,6 @@ public class FitnessProportionateSelection<T extends Chromosome> extends Selecti
 	 */
 	@Override
 	public List<T> select(List<T> population, int number) {
-
 		setSum(population);
 		return super.select(population, number);
 	}
