@@ -104,17 +104,19 @@ public class GraphPool {
 	// retrieve graphs
 
 	/**
-	 * <p>
-	 * getRawCFG
-	 * </p>
+	 * Returns the {@link RawControlFlowGraph} of the specified method. To this end, one has to
+	 * provide
+	 * <ul>
+	 *     <li>the fully qualified name of the class containing the desired method, and</li>
+	 *     <li>a string consisting of the method name concatenated with the corresponding
+	 *     method descriptor.</li>
+	 * </ul>
 	 *
-	 * @param className
-	 *            a {@link java.lang.String} object.
-	 * @param methodName
-	 *            a {@link java.lang.String} object.
-	 * @return a {@link org.evosuite.graphs.cfg.RawControlFlowGraph} object.
+	 * @param className the fully qualified name of the containing class
+	 * @param methodNameDesc concatenation of method name and descriptor
+	 * @return the raw control flow graph
 	 */
-	public RawControlFlowGraph getRawCFG(String className, String methodName) {
+	public RawControlFlowGraph getRawCFG(String className, String methodNameDesc) {
 
 		if (rawCFGs.get(className) == null) {
 			logger.warn("Class unknown: " + className);
@@ -122,7 +124,7 @@ public class GraphPool {
 			return null;
 		}
 
-		return rawCFGs.get(className).get(methodName);
+		return rawCFGs.get(className).get(methodNameDesc);
 	}
 
 	/**
