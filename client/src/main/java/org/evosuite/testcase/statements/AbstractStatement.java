@@ -233,11 +233,8 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public void setRetval(VariableReference newRetVal) throws IllegalArgumentException {
-		if(newRetVal==null){
-			throw new IllegalArgumentException("newRetVal cannot be null");
-		}
-		this.retval = newRetVal;
+	public void setRetval(VariableReference newRetVal) {
+		this.retval = Objects.requireNonNull(newRetVal, "newRetVal cannot be null");
 	}
 
 	/* (non-Javadoc)
