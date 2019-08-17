@@ -30,7 +30,7 @@ import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.execution.Scope;
 import org.evosuite.testcase.variable.VariableReference;
-import org.evosuite.utils.generic.GenericAccessibleMember;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 
 /**
  * <p>
@@ -151,7 +151,7 @@ public interface Statement {
 	 *
 	 * @return a {@link java.lang.reflect.AccessibleObject} object.
 	 */
-	public GenericAccessibleMember<?> getAccessibleObject();
+	public GenericAccessibleObject<?> getAccessibleObject();
 
 	/**
 	 * Get Java code representation of assertions

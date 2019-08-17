@@ -30,7 +30,7 @@ import org.evosuite.testcase.statements.environment.EnvironmentStatements;
 import org.evosuite.testcase.execution.CodeUnderTestException;
 import org.evosuite.testcase.execution.Scope;
 import org.evosuite.testcase.statements.numeric.*;
-import org.evosuite.utils.generic.GenericAccessibleMember;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.Randomness;
 
@@ -417,7 +417,7 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
      * {@inheritDoc}
      */
     @Override
-    public GenericAccessibleMember<?> getAccessibleObject() {
+    public GenericAccessibleObject<?> getAccessibleObject() {
         return null;
     }
 

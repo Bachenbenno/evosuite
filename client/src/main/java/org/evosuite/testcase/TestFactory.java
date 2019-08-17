@@ -55,7 +55,7 @@ import org.evosuite.testcase.statements.reflection.PrivateMethodStatement;
 import org.evosuite.testcase.statements.reflection.ReflectionFactory;
 import org.evosuite.testcase.variable.*;
 import org.evosuite.utils.generic.*;
-import org.evosuite.utils.generic.GenericAccessibleMember;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class TestFactory {
 	/**
 	 * Keep track of objects we are already trying to generate to avoid cycles
 	 */
-	private transient Set<GenericAccessibleMember<?>> currentRecursion = new LinkedHashSet<>();
+	private transient Set<GenericAccessibleObject<?>> currentRecursion = new LinkedHashSet<>();
 
 	/**
 	 * Singleton instance
@@ -870,7 +870,7 @@ public class TestFactory {
                     recursionDepth, null, allowNull, false, false);
 		}
 
-		GenericAccessibleMember<?> o = TestCluster.getInstance().getRandomGenerator(choice);
+		GenericAccessibleObject<?> o = TestCluster.getInstance().getRandomGenerator(choice);
 		currentRecursion.add(o);
 
 		if (o == null) {
@@ -922,7 +922,7 @@ public class TestFactory {
 	 * @throws ConstructionFailedException
 	 */
 	public void changeCall(TestCase test, Statement statement,
-	        GenericAccessibleMember<?> call) throws ConstructionFailedException {
+	        GenericAccessibleObject<?> call) throws ConstructionFailedException {
 		int position = statement.getReturnValue().getStPosition();
 
 		logger.debug("Changing call {} with {}",test.getStatement(position), call);
@@ -1021,9 +1021,9 @@ public class TestFactory {
 		}
 
 		// TODO: replacing void calls with other void calls might not be the best idea
-		List<GenericAccessibleMember<?>> calls = getPossibleCalls(statement.getReturnType(), objects);
+		List<GenericAccessibleObject<?>> calls = getPossibleCalls(statement.getReturnType(), objects);
 
-		GenericAccessibleMember<?> ao = statement.getAccessibleObject();
+		GenericAccessibleObject<?> ao = statement.getAccessibleObject();
 		if (ao != null && ao.getNumParameters() > 0) {
 			calls.remove(ao);
 		}
@@ -1041,7 +1041,7 @@ public class TestFactory {
 			return false;
 		}
 
-		GenericAccessibleMember<?> call = Randomness.choice(calls);
+		GenericAccessibleObject<?> call = Randomness.choice(calls);
 		try {
 			changeCall(test, statement, call);
 			return true;
@@ -1103,7 +1103,7 @@ public class TestFactory {
 
 		objects.remove(statement.getReturnValue());
 		logger.debug("Found assignable objects: " + objects.size());
-		Set<GenericAccessibleMember<?>> currentArrayRecursion = new LinkedHashSet<>(currentRecursion);
+		Set<GenericAccessibleObject<?>> currentArrayRecursion = new LinkedHashSet<>(currentRecursion);
 
 		for (int i = 0; i < statement.size(); i++) {
 			currentRecursion.clear();
@@ -1214,7 +1214,7 @@ public class TestFactory {
 
 			//regular creation
 
-			GenericAccessibleMember<?> o = TestCluster.getInstance().getRandomGenerator(
+			GenericAccessibleObject<?> o = TestCluster.getInstance().getRandomGenerator(
 					clazz, currentRecursion, test, position, generatorRefToExclude, recursionDepth);
 			currentRecursion.add(o);
 
@@ -1895,10 +1895,10 @@ public class TestFactory {
 	 * @param objects
 	 * @return
 	 */
-	private List<GenericAccessibleMember<?>> getPossibleCalls(Type returnType,
+	private List<GenericAccessibleObject<?>> getPossibleCalls(Type returnType,
 															  List<VariableReference> objects) {
-		List<GenericAccessibleMember<?>> calls = new ArrayList<>();
-		Set<GenericAccessibleMember<?>> allCalls;
+		List<GenericAccessibleObject<?>> calls = new ArrayList<>();
+		Set<GenericAccessibleObject<?>> allCalls;
 
 		try {
 			allCalls = TestCluster.getInstance().getGenerators(new GenericClass(
@@ -1907,7 +1907,7 @@ public class TestFactory {
 			return calls;
 		}
 
-		for (GenericAccessibleMember<?> call : allCalls) {
+		for (GenericAccessibleObject<?> call : allCalls) {
 			Set<Type> dependencies = null;
 			if (call.isMethod()) {
 				GenericMethod method = (GenericMethod) call;
@@ -2062,7 +2062,7 @@ public class TestFactory {
 		int previousLength = test.size();
 		currentRecursion.clear();
 
-		final List<GenericAccessibleMember<?>> shuffledOptions =
+		final List<GenericAccessibleObject<?>> shuffledOptions =
 				TestCluster.getInstance().getRandomizedCallsToEnvironment();
 
 		if (shuffledOptions == null || shuffledOptions.isEmpty()) {
@@ -2070,21 +2070,21 @@ public class TestFactory {
 		}
 
 		//iterate (in random order) over all possible environment methods till we find one that can be inserted
-		for(GenericAccessibleMember<?> gam : shuffledOptions) {
+		for(GenericAccessibleObject<?> gao : shuffledOptions) {
 			try {
-				int position = ConstraintVerifier.getAValidPositionForInsertion(gam,test,lastValidPosition);
+				int position = ConstraintVerifier.getAValidPositionForInsertion(gao,test,lastValidPosition);
 
 				if (position < 0) {
 					//the given method/constructor cannot be added
 					continue;
 				}
 
-				if (gam.isConstructor()) {
-					GenericConstructor c = (GenericConstructor) gam;
+				if (gao.isConstructor()) {
+					GenericConstructor c = (GenericConstructor) gao;
 					addConstructor(test, c, position, 0);
 					return position;
-				} else if (gam.isMethod()) {
-					GenericMethod m = (GenericMethod) gam;
+				} else if (gao.isMethod()) {
+					GenericMethod m = (GenericMethod) gao;
 					if (!m.isStatic()) {
 
 						VariableReference callee = null;
@@ -2108,7 +2108,7 @@ public class TestFactory {
 						return position;
 					}
 				} else {
-					throw new RuntimeException("Unrecognized type for environment: " + gam);
+					throw new RuntimeException("Unrecognized type for environment: " + gao);
 				}
 			} catch (ConstructionFailedException e){
 				//TODO what to do here?
@@ -2145,7 +2145,7 @@ public class TestFactory {
                 logger.debug("Going to insert random reflection call");
 				return insertRandomReflectionCall(test,position, 0);
             }
-			GenericAccessibleMember<?> o = TestCluster.getInstance().getRandomTestCall(test);
+			GenericAccessibleObject<?> o = TestCluster.getInstance().getRandomTestCall(test);
 			if (o == null) {
 				logger.warn("Have no target methods to test");
 				return false;
@@ -2275,7 +2275,7 @@ public class TestFactory {
                     return insertRandomReflectionCallOnObject(test, var, position, 0);
                 }
 
-                GenericAccessibleMember<?> call = TestCluster.getInstance().getRandomCallFor(var.getGenericClass(), test, position);
+                GenericAccessibleObject<?> call = TestCluster.getInstance().getRandomCallFor(var.getGenericClass(), test, position);
 				logger.debug("Chosen call {}", call);
 				return addCallFor(test, var, call, position);
 			} catch (ConstructionFailedException e) {

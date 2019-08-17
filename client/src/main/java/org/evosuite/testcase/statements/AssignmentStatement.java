@@ -41,7 +41,7 @@ import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testcase.execution.CodeUnderTestException;
 import org.evosuite.testcase.execution.EvosuiteError;
 import org.evosuite.testcase.execution.Scope;
-import org.evosuite.utils.generic.GenericAccessibleMember;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericField;
 import org.evosuite.utils.Randomness;
@@ -421,7 +421,7 @@ public class AssignmentStatement extends AbstractStatement {
 
 	/** {@inheritDoc} */
 	@Override
-	public GenericAccessibleMember<?> getAccessibleObject() {
+	public GenericAccessibleObject<?> getAccessibleObject() {
 		return null;
 	}
 

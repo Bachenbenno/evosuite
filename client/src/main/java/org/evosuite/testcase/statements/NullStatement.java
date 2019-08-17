@@ -35,7 +35,7 @@ import org.evosuite.testcase.variable.NullReference;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testcase.execution.Scope;
-import org.evosuite.utils.generic.GenericAccessibleMember;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 
 /**
  * The concept of variableReferences is: that they are created by some
@@ -130,7 +130,7 @@ public class NullStatement extends PrimitiveStatement<Void> {
 
 	/** {@inheritDoc} */
 	@Override
-	public GenericAccessibleMember<?> getAccessibleObject() {
+	public GenericAccessibleObject<?> getAccessibleObject() {
 		return null;
 	}
 
