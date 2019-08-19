@@ -358,12 +358,12 @@ public interface Statement {
 	/**
 	 * Replace a VariableReference with another one
 	 *
-	 * @param var1
+	 * @param oldVar
 	 *            The old variable
-	 * @param var2
+	 * @param newVar
 	 *            The new variable
 	 */
-	public void replace(VariableReference var1, VariableReference var2);
+	public void replace(VariableReference oldVar, VariableReference newVar);
 
 	/**
 	 * Allows the comparing of Statements between TestCases. I.e. this is a more
