@@ -42,9 +42,11 @@ import java.lang.reflect.WildcardType;
 import java.util.*;
 
 /**
- * Statement assigning a primitive numeric value
+ * A common superclass for statements assigning a primitive (e.g., numeric, boolean, String or
+ * enumeration) value to a variable. The value and the type of the statement are defined by the
+ * primitive variable.
  *
- * @param <T>
+ * @param <T> the type of the primitive variable
  * @author Gordon Fraser
  */
 public abstract class PrimitiveStatement<T> extends AbstractStatement {
@@ -264,9 +266,9 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
      * {@inheritDoc}
      */
     @Override
-    public void replace(VariableReference var1, VariableReference var2) {
-        if (retval.equals(var1)) {
-            retval = var2;
+    public void replace(VariableReference oldVar, VariableReference newVar) {
+        if (retval.equals(oldVar)) {
+            retval = newVar;
         }
     }
 

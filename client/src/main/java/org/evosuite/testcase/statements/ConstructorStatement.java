@@ -47,8 +47,10 @@ import org.objectweb.asm.Type;
 import org.evosuite.dse.VM;
 
 /**
- * This statement represents a constructor call
- * 
+ * This statement represents a constructor call, generating a new instance of any given class, e.g.,
+ * {@code Stack stack = new Stack()}. Value and type of the of the statement are defined by the
+ * object constructed in the call.
+ *
  * @author Gordon Fraser
  */
 public class ConstructorStatement extends EntityWithParametersStatement {
@@ -66,7 +68,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 	 * <p>
 	 * Constructor for ConstructorStatement.
 	 * </p>
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param constructor
@@ -86,7 +88,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 	 * as retvar. This should only be done, iff an old statement is replaced
 	 * with this statement. And already existing objects should in the future
 	 * reference this object.
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param constructor
@@ -108,7 +110,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 	 * <p>
 	 * Constructor for ConstructorStatement.
 	 * </p>
-	 * 
+	 *
 	 * @param tc
 	 *            a {@link org.evosuite.testcase.TestCase} object.
 	 * @param constructor
@@ -132,7 +134,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 	 * <p>
 	 * Getter for the field <code>constructor</code>.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.lang.reflect.Constructor} object.
 	 */
 	public GenericConstructor getConstructor() {
@@ -143,7 +145,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 	 * <p>
 	 * Setter for the field <code>constructor</code>.
 	 * </p>
-	 * 
+	 *
 	 * @param constructor
 	 *            a {@link java.lang.reflect.Constructor} object.
 	 */
@@ -156,7 +158,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 	 * <p>
 	 * getReturnType
 	 * </p>
-	 * 
+	 *
 	 * @param clazz
 	 *            a {@link java.lang.Class} object.
 	 * @return a {@link java.lang.String} object.
@@ -288,7 +290,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 	 * <p>
 	 * getParameterReferences
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link java.util.List} object.
 	 */
 	public List<VariableReference> getParameterReferences() {
@@ -344,7 +346,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.evosuite.testcase.Statement#getDeclaredExceptions()
 	 */
 	/** {@inheritDoc} */
@@ -359,7 +361,7 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 
 	/**
 	 * Go through parameters of constructor call and apply local search
-	 * 
+	 *
 	 * @param test
 	 * @param factory
 	 */
@@ -396,10 +398,10 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 	public boolean isAccessible() {
 		if(!constructor.isAccessible())
 			return false;
-		
+
 		return super.isAccessible();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.evosuite.testcase.StatementInterface#isValid()
 	 */

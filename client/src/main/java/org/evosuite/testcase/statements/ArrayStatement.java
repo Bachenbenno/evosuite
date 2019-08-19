@@ -44,7 +44,9 @@ import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.Randomness;
 
 /**
- * An array statement creates a new array
+ * An array statement creates a new array. For example, {@code Object[] var = new Object[10]}.
+ * Technically, an array definition implicitly defines a set of values of the component type of the
+ * array, according to the length of the array.
  *
  * @author Gordon Fraser
  */
@@ -59,6 +61,8 @@ public class ArrayStatement extends AbstractStatement {
 	private static int[] createRandom(int dimensions) {
 		int[] result = new int[dimensions];
 		for (int idx = 0; idx < dimensions; idx++) {
+			// FIXME: Properties.MAX_ARRAY gives the "maximum length of randomly generated
+			//  arrays", not the maximum value that one array index can take
 			result[idx] = Randomness.nextInt(Properties.MAX_ARRAY);
 		}
 		return result;
@@ -357,7 +361,7 @@ public class ArrayStatement extends AbstractStatement {
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public void replace(VariableReference var1, VariableReference var2) {
+	public void replace(VariableReference oldVar, VariableReference newVar) {
 	}
 
 	/** {@inheritDoc} */

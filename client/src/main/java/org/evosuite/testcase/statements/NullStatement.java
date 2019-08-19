@@ -108,7 +108,7 @@ public class NullStatement extends PrimitiveStatement<Void> {
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public void replace(VariableReference var1, VariableReference var2) {
+	public void replace(VariableReference oldVar, VariableReference newVar) {
 	}
 
 	/* (non-Javadoc)

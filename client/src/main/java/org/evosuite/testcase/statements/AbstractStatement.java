@@ -19,6 +19,19 @@
  */
 package org.evosuite.testcase.statements;
 
+import org.evosuite.assertion.Assertion;
+import org.evosuite.testcase.TestCase;
+import org.evosuite.testcase.TestCodeVisitor;
+import org.evosuite.testcase.TestFactory;
+import org.evosuite.testcase.execution.CodeUnderTestException;
+import org.evosuite.testcase.execution.EvosuiteError;
+import org.evosuite.testcase.variable.ArrayReference;
+import org.evosuite.testcase.variable.VariableReference;
+import org.evosuite.testcase.variable.VariableReferenceImpl;
+import org.evosuite.utils.generic.GenericClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -28,19 +41,6 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.evosuite.assertion.Assertion;
-import org.evosuite.testcase.variable.ArrayReference;
-import org.evosuite.testcase.TestCase;
-import org.evosuite.testcase.TestCodeVisitor;
-import org.evosuite.testcase.TestFactory;
-import org.evosuite.testcase.variable.VariableReference;
-import org.evosuite.testcase.variable.VariableReferenceImpl;
-import org.evosuite.testcase.execution.CodeUnderTestException;
-import org.evosuite.testcase.execution.EvosuiteError;
-import org.evosuite.utils.generic.GenericClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract superclass of test case statements
@@ -52,8 +52,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	/**
 	 * An interface to enable the concrete statements to use the executer/1
 	 * method.
-	 *
-	 **/
+	 */
 	protected abstract class Executer {
 		/**
 		 * The execute statement should, when called only execute exactly one
@@ -103,48 +102,31 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 * <p>
 	 * Constructor for AbstractStatement.
 	 * </p>
-	 *
-	 * @param tc
-	 *            a {@link org.evosuite.testcase.TestCase} object.
+	 *  @param tc
+	 *            a {@link TestCase} object.
 	 * @param retval
-	 *            a {@link org.evosuite.testcase.variable.VariableReference} object.
+	 *            a {@link VariableReference} object.
 	 */
-	protected AbstractStatement(TestCase tc, VariableReference retval) throws IllegalArgumentException{
-		if(tc==null){
-			throw new IllegalArgumentException("tc cannot be null");
-		}
-		if(retval==null){
-			throw new IllegalArgumentException("retval cannot be null");
-		}
-		this.retval = retval;
-		this.tc = tc;
+	protected AbstractStatement(TestCase tc, VariableReference retval) {
+		this.tc = Objects.requireNonNull(tc, "tc cannot be null");
+		this.retval = Objects.requireNonNull(retval, "retval cannot be null");
 	}
 
 	/**
 	 * <p>
 	 * Constructor for AbstractStatement.
 	 * </p>
-	 *
-	 * @param tc
-	 *            a {@link org.evosuite.testcase.TestCase} object.
+	 *  @param tc
+	 *            a {@link TestCase} object.
 	 * @param type
-	 *            a {@link java.lang.reflect.Type} object.
+	 *            a {@link Type} object.
 	 */
-	protected AbstractStatement(TestCase tc, Type type) throws IllegalArgumentException{
-		if(tc==null){
-			throw new IllegalArgumentException("tc cannot be null");
-		}
-		if(type==null){
-			throw new IllegalArgumentException("type cannot be null");
-		}
+	protected AbstractStatement(TestCase tc, Type type) {
+		Objects.requireNonNull(type, "type cannot be null");
 
 		GenericClass c = new GenericClass(type);
-		if (c.isArray()) {
-			this.retval = new ArrayReference(tc, c, 0);
-		} else {
-			this.retval = new VariableReferenceImpl(tc, type);
-		}
-		this.tc = tc;
+		this.retval = c.isArray() ? new ArrayReference(tc, c, 0) : new VariableReferenceImpl(tc, type);
+		this.tc = Objects.requireNonNull(tc, "tc cannot be null");
 	}
 
 	/**
