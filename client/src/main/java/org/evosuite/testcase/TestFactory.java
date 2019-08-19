@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.sun.istack.internal.NotNull;
 import org.apache.commons.lang3.ClassUtils;
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
@@ -64,6 +65,21 @@ import com.googlecode.gentyref.CaptureType;
 import com.googlecode.gentyref.GenericTypeReflector;
 
 import javax.servlet.http.HttpServlet;
+
+/*
+ * A note about terminology: unfortunately, this class currently uses the term "object" or
+ * "Object" with ambiguous meanings. Depending on the context, it may refer to one of the following:
+ *  - objects in the OOP sense as instances of classes (i.e., complex data types that extend
+ *    java.lang.Object). For example: method createObject creates an object for a given class
+ *  - object referring to the class java.lang.Object, e.g., attemptInstantiationOfObjectClass
+ *    tries to find objects of some data type T that can be assigned to Object and safely downcast
+ *    to T
+ *  - object referring to the object-representation of a reflected field, method or constructor
+ *    of a class, i.e., GenericAccessibleObject
+ * Resolving these ambiguities, e.g. by renaming methods, is an ongoing effort. Until this process
+ * is complete please be aware of the different meanings of object/Object and don't let yourself get
+ * confused :)
+ */
 
 /**
  * @author Gordon Fraser
@@ -103,52 +119,55 @@ public class TestFactory {
 	}
 
 	/**
-	 * Appends the given call to the test case at a given position.
+	 * Adds a call of the field, method or constructor represented by {@code gao} to the test case
+	 * {@code test} at the given {@code position} with {@code callee} as the callee of {@code gao}.
+	 * Returns {@code true} if the operation was successful, {@code false} otherwise.
 	 *
-	 * @param test the test case
-	 * @param callee
-	 * @param call the call which to append
-	 * @param position the position within {@code test} at which to append
+	 * @param test the test case the call should be added to
+	 * @param callee reference to the owning object of {@code gao}
+	 * @param gao the {@code GenericAccessibleObject}
+	 * @param position the position within {@code test} at which to add the call
+	 * @return {@code true} if successful, {@code false} otherwise
 	 */
-	private boolean addCallFor(TestCase test, VariableReference callee,
-							   GenericAccessibleMember<?> call, int position) {
+	protected boolean addCallFor(TestCase test, VariableReference callee,
+								 GenericAccessibleObject<?> gao, int position) {
 
 		logger.trace("addCallFor {}", callee.getName());
 
-		int previousLength = test.size();
+		int previousLength = test.size(); // length of the test case before inserting new statements
 		currentRecursion.clear();
+		int recursionDepth = 0;
 
 		try {
-			if (call.isMethod()) {
-				GenericMethod method = (GenericMethod)call;
-				if(call.isStatic() || !method.getDeclaringClass().isAssignableFrom(callee.getVariableClass())) {
+			if (gao.isMethod()) {
+				GenericMethod method = (GenericMethod) gao;
+				Class<?> declaringClass = method.getDeclaringClass();
+				Class<?> calleeClass = callee.getVariableClass();
+				if(gao.isStatic() || !declaringClass.isAssignableFrom(calleeClass)) {
 					// Static methods / methods in other classes can be modifiers of the SUT if the SUT depends on static fields
-					addMethod(test, method, position, 0);
+					addMethod(test, method, position, recursionDepth);
 				} else {
-					addMethodFor(test,
-							callee,
-							(GenericMethod) call.copyWithNewOwner(callee.getGenericClass()),
-							position);
+					method = (GenericMethod) gao.copyWithNewOwner(callee.getGenericClass());
+					addMethodFor(test, callee, method, position);
 				}
-			} else if (call.isField()) {
+			} else if (gao.isField()) {
 				// A modifier for the SUT could also be a static field in another class
-				if(call.isStatic()) {
-					addFieldAssignment(test, (GenericField) call, position, 0);
+				if(gao.isStatic()) {
+					addFieldAssignment(test, (GenericField) gao, position, recursionDepth);
 				} else {
-					addFieldFor(test,
-							callee,
-							(GenericField) call.copyWithNewOwner(callee.getGenericClass()),
-							position);
+					addFieldFor(test, callee, (GenericField) gao.copyWithNewOwner(callee.getGenericClass()), position);
 				}
 			}
 			return true;
 		} catch (ConstructionFailedException e) {
 			// TODO: Check this!
-			logger.debug("Inserting call {} has failed: {} Removing statements", call, e);
+			logger.debug("Inserting call {} has failed: {} Removing statements", gao, e);
 			// TODO: Doesn't work if position != test.size()
 			int lengthDifference = test.size() - previousLength;
 
-			for (int i = lengthDifference - 1; i >= 0; i--) { //we need to remove them in order, so that the testcase is at all time consistent
+			// Undo the changes made to the test case by removing the statements inserted so far.
+			// We need to remove them in order, so that the test case is at all time consistent.
+			for (int i = lengthDifference - 1; i >= 0; i--) {
 				if(logger.isDebugEnabled()) {
 					logger.debug("  Removing statement: " + test.getStatement(position + i).getCode());
 				}
@@ -200,7 +219,27 @@ public class TestFactory {
 		return ref;
 	}
 
-
+	/**
+	 * Inserts a call to the given {@code constructor} into the {@code test} case at the specified
+	 * {@code position}.
+	 * <p>
+	 * Callers of this method have to supply the current recursion depth. This
+	 * allows for better management of test generation resources. If this method is called from
+	 * another method that already has a recursion depth as formal parameter, passing that
+	 * recursion depth + 1 is appropriate. Otherwise, 0 should be used.
+	 * <p>
+	 * Returns a reference to the return value of the constructor call. If the
+	 * {@link Properties#MAX_RECURSION maximum recursion depth} has been reached a
+	 * {@code ConstructionFailedException} is thrown.
+	 *
+	 * @param test the test case in which to insert
+	 * @param constructor the constructor for which to add the call
+	 * @param position the position at which to insert
+	 * @param recursionDepth the current recursion depth
+	 * @return a reference to the result of the constructor call
+	 * @throws ConstructionFailedException if the maximum recursion depth has been reached
+	 */
+	@NotNull
 	public VariableReference addConstructor(TestCase test,
 	        GenericConstructor constructor, int position, int recursionDepth)
 	        throws ConstructionFailedException {
@@ -208,14 +247,25 @@ public class TestFactory {
 	}
 
 	/**
-	 * Add constructor at given position if max recursion depth has not been
-	 * reached
+	 * Inserts a call to the given {@code constructor} into the {@code test} case at the specified
+	 * {@code position}.
+	 * <p>
+	 * Callers of this method have to supply the current recursion depth. This
+	 * allows for better management of test generation resources. If this method is called from
+	 * another method that already has a recursion depth as formal parameter, passing that
+	 * recursion depth + 1 is appropriate. Otherwise, 0 should be used.
+	 * <p>
+	 * Returns a reference to the return value of the constructor call. If the
+	 * {@link Properties#MAX_RECURSION maximum recursion depth} has been reached a
+	 * {@code ConstructionFailedException} is thrown.
 	 *
-	 * @param constructor
-	 * @param position
-	 * @param recursionDepth
-	 * @return
-	 * @throws ConstructionFailedException
+	 * @param test the test case in which to insert
+	 * @param constructor the constructor for which to add the call
+	 * @param exactType
+	 * @param position the position at which to insert
+	 * @param recursionDepth the current recursion depth
+	 * @return a reference to the result of the constructor call
+	 * @throws ConstructionFailedException if the maximum recursion depth has been reached
 	 */
 	public VariableReference addConstructor(TestCase test,
 	        GenericConstructor constructor, Type exactType, int position,
@@ -369,13 +419,22 @@ public class TestFactory {
 	}
 
 	/**
-	 * Add a field to the test case
+	 * Adds the given {@code field} to the {@code test} case at the given {@code position}.
+	 * <p>
+	 * Callers of this method have to supply the current recursion depth. This
+	 * allows for better management of test generation resources. If this method is called from
+	 * another method that already has a recursion depth as formal parameter, passing that
+	 * recursion depth + 1 is appropriate. Otherwise, 0 should be used.
+	 * <p>
+	 * Returns a reference to the inserted field. If the {@link Properties#MAX_RECURSION maximum
+	 * recursion depth} has been reached a {@code ConstructionFailedException} is thrown.
 	 *
-	 * @param test
-	 * @param field
-	 * @param position
-	 * @return
-	 * @throws ConstructionFailedException
+	 * @param test the test case to which to add
+	 * @param field the field to add
+	 * @param position the position at which to add the field
+	 * @param recursionDepth the current recursion depth
+	 * @return a reference to the inserted field
+	 * @throws ConstructionFailedException if the maximum recursion depth has been reached
 	 */
 	public VariableReference addField(TestCase test, GenericField field, int position,
 	        int recursionDepth) throws ConstructionFailedException {
@@ -502,14 +561,24 @@ public class TestFactory {
 	}
 
 	/**
-	 * Add method at given position if max recursion depth has not been reached
+	 * Adds the given {@code method} call to the {@code test} at the specified {@code position}.
+	 * The callee object of the method is chosen at random.
+	 * <p>
+	 * Clients have to supply the current recursion depth. This allows for better
+	 * management of test generation resources. If this method is called from another method that
+	 * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+	 * appropriate. Otherwise, 0 should be used.
+	 * <p>
+	 * Returns a reference to the return value of the inserted method call. If the
+	 * {@link Properties#MAX_RECURSION maximum  recursion depth} has been reached a
+	 * {@code ConstructionFailedException} is thrown.
 	 *
-	 * @param test
-	 * @param method
-	 * @param position
-	 * @param recursionDepth
-	 * @return
-	 * @throws ConstructionFailedException
+	 * @param test the test case in which to insert
+	 * @param method the method call to insert
+	 * @param position the position at which to add the call
+	 * @param recursionDepth the current recursion depth (see above)
+	 * @return a reference to the return value of the inserted method call
+	 * @throws ConstructionFailedException if the maximum recursion depth has been reached
 	 */
 	public VariableReference addMethod(TestCase test, GenericMethod method, int position,
 	        int recursionDepth) throws ConstructionFailedException {
@@ -568,15 +637,20 @@ public class TestFactory {
 	}
 
 	/**
-	 * Add a call on the method for the given callee at position
+	 * Adds the given {@code method} call to the {@code test} at the specified {@code position},
+	 * using the supplied {@code VariableReference} as {@code callee} object of the {@code method}.
+	 * Returns a reference to the return value of the inserted method call. Throws a
+	 * {@code ConstructionFailedException} if the given {@code position} is invalid, i.e., if
+	 * {@code callee} is undefined (or has not been defined yet) at {@code position}.
 	 *
-	 * @param test
-	 * @param callee
-	 * @param method
-	 * @param position
-	 * @return
-	 * @throws ConstructionFailedException
+	 * @param test the test case in which to insert
+	 * @param callee reference to the object on which to call the {@code method}
+	 * @param method the method call to insert
+	 * @param position the position at which to add the call
+	 * @return a reference to the return value of the inserted method call
+	 * @throws ConstructionFailedException if the given position is invalid (see above)
 	 */
+	@NotNull
 	public VariableReference addMethodFor(TestCase test, VariableReference callee,
 	        GenericMethod method, int position) throws ConstructionFailedException {
 
@@ -613,23 +687,24 @@ public class TestFactory {
 	}
 
 	/**
-	 * Add primitive statement at position
+	 * Adds the given primitive {@code statement} at the specified {@code position} to the test
+	 * case {@code test}.
 	 *
-	 * @param test
-	 * @param old
-	 * @param position
-	 * @return
-	 * @throws ConstructionFailedException
+	 * @param test the test case to which to add the statement
+	 * @param statement the primitive statement to add
+	 * @param position the position in {@code test} at which to add the {@code statement}
+	 * @return a reference to the return value of the added statement
 	 */
-	private VariableReference addPrimitive(TestCase test, PrimitiveStatement<?> old,
-	        int position) throws ConstructionFailedException {
+	private VariableReference addPrimitive(TestCase test, PrimitiveStatement<?> statement,
+	        int position) {
 		logger.debug("Adding primitive");
-		Statement st = old.clone(test);
+		Statement st = statement.clone(test);
 		return test.addStatement(st, position);
 	}
 
 	/**
-	 * Append statement s, trying to satisfy parameters
+	 * Appends the given {@code statement} at the end of the test case {@code test}, trying to
+	 * satisfy parameters.
 	 *
 	 * Called from TestChromosome when doing crossover
 	 *
@@ -748,7 +823,6 @@ public class TestFactory {
 
 	/**
 	 * Attempt to generate a non-null object; initialize recursion level to 0
-	 *
 	 */
 	public VariableReference attemptGeneration(TestCase test, Type type, int position)
 	        throws ConstructionFailedException {
@@ -837,14 +911,30 @@ public class TestFactory {
 	}
 
 	/**
-	 * Try to generate an object suitable for Object.class
+	 * In the given test case {@code test}, tries to generate an object at the specified {@code
+     * position} suitable to serve as instance for the class {@code java.lang.Object}. This might
+	 * be useful when generating tests for "legacy code" before the advent of generics in Java.
+	 * Such code is likely to use (unsafe) down-casts from {@code Object} to some other subclass.
+	 * Since {@code Object} is at the root of the type hierarchy the information that something is
+	 * of type {@code Object} is essentially as valuable as no type information at all. For this
+	 * reason, this method scans the byte code of the UUT for subsequent down-casts and tries to
+	 * generate an instance of the subclass being cast to. If {@code allowNull} is {@code true} it
+	 * is also possible to assign the {@code null} reference.
+     * <p>
+     * Clients have to supply the current recursion depth. This allows for better
+     * management of test generation resources. If this method is called from another method that
+     * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+     * appropriate. Otherwise, 0 should be used.
+     * <p>
+     * Returns a reference to the created object of type {@code java.lang.Object}, or throws a
+     * {@code ConstructionFailedException} if an error occurred.
 	 *
-	 * @param test
-	 * @param position
-	 * @param recursionDepth
-	 * @param allowNull
-	 * @return
-	 * @throws ConstructionFailedException
+	 * @param test the test case in which to insert
+	 * @param position the position at which to insert
+	 * @param recursionDepth the current recursion depth (see above)
+	 * @param allowNull whether to allow the creation of  the {@code null} reference
+	 * @return a reference to the created object
+	 * @throws ConstructionFailedException if creation fails
 	 */
 	protected VariableReference attemptInstantiationOfObjectClass(TestCase test, int position,
 																  int recursionDepth, boolean allowNull) throws ConstructionFailedException {
@@ -1054,13 +1144,23 @@ public class TestFactory {
 	}
 
 	/**
-	 * Create a new array in a test case and return the reference
-	 *
-	 * @param test
-	 * @param position
-	 * @param recursionDepth
-	 * @return
-	 * @throws ConstructionFailedException
+	 * In the test case {@code test}, creates a new non-null array of the component type
+     * represented by the given {@code arrayClass} at the specified {@code position}.
+     * <p>
+     * Clients have to supply the current recursion depth. This allows for better
+     * management of test generation resources. If this method is called from another method that
+     * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+     * appropriate. Otherwise, 0 should be used.
+     * <p>
+	 * Returns a reference to the created array, or throws a {@code GenerationFailedException} if
+     * generation was unsuccessful.
+     *
+	 * @param test the test case in which to insert the array
+     * @param arrayClass the component type of the array
+	 * @param position the position at which to insert the array
+	 * @param recursionDepth the current recursion depth (see above)
+	 * @return a reference to the created array
+	 * @throws ConstructionFailedException if creation failed
 	 */
 	private VariableReference createArray(TestCase test, GenericClass arrayClass,
 	        int position, int recursionDepth) throws ConstructionFailedException {
@@ -1118,16 +1218,38 @@ public class TestFactory {
 	}
 
 	/**
-	 * Create and return a new primitive variable
+	 * In the given test case {@code test} at the specified {@code position}, creates and returns a
+	 * new variable of the primitive or "simple data object" data type represented by {@code clazz}.
+	 * In detail, the following data types are accepted:
+	 * <ul>
+	 *     <li>all primitive data types ({@code byte}, {@code short}, {@code int}, {@code long},
+	 *     {@code float}, {@code double}, {@code boolean}, {@code char}),</li>
+	 *     <li>{@code String}s,</li>
+	 *     <li>enumeration types ("enums"),</li>
+	 *     <li>EvoSuite environment data types as defined in
+	 *     {@link org.evosuite.runtime.testdata.EnvironmentDataList EnvironmentDataList}, and</li>
+	 *     <li>class primitives ({@code Class.class}).</li>
+	 * </ul>
+	 * The {@code null} reference and arrays receive special treatment by their own dedicated
+	 * methods, {@code createNull} and {@code createArray}.
+	 * <p>
+	 * Clients have to supply the current recursion depth. This allows for better
+	 * management of test generation resources. If this method is called from another method that
+	 * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+	 * appropriate. Otherwise, 0 should be used.
+	 * <p>
+	 * Returns a reference to the created primitive value, or throws a
+	 * {@code ConstructionFailedException} if creation is not possible.
 	 *
-	 * @param test
-	 * @param position
-	 * @param recursionDepth
-	 * @return
-	 * @throws ConstructionFailedException
+	 * @param test           the test case for which to create the variable
+	 * @param clazz          the primitive data type of the variable to create (see above)
+	 * @param position       the position at which to insert the created variable
+	 * @param recursionDepth the current recursion depth (see above)
+	 * @return a reference to the created variable
+	 * @throws ConstructionFailedException if variable creation is not possible
 	 */
 	private VariableReference createPrimitive(TestCase test, GenericClass clazz,
-	        int position, int recursionDepth) throws ConstructionFailedException {
+											  int position, int recursionDepth) throws ConstructionFailedException {
 		// Special case: we cannot instantiate Class<Class<?>>
 		if (clazz.isClass()) {
 			if (clazz.hasWildcardOrTypeVariables()) {
@@ -1141,22 +1263,30 @@ public class TestFactory {
 				        "Cannot instantiate a class with a class");
 			}
 		}
-		Statement st = PrimitiveStatement.getRandomStatement(test, clazz,
-		                                                              position);
+		Statement st = PrimitiveStatement.getRandomStatement(test, clazz, position);
 		VariableReference ret = test.addStatement(st, position);
 		ret.setDistance(recursionDepth);
 		return ret;
 	}
 
 	/**
-	 * Create and return a new null variable
+	 * Creates a new {@code null} variable of the given {@code type} at the given {@code position}
+	 * in the {@code test} case.
+	 * <p>
+	 * Clients have to supply the current recursion depth. This allows for better
+	 * management of test generation resources. If this method is called from another method that
+	 * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+	 * appropriate. Otherwise, 0 should be used.
+	 * <p>
+	 * Returns a reference to the inserted {@code null} variable. If the creation of the variable
+	 * fails a {@code ConstructionFailedException} is thrown.
 	 *
-	 * @param test
-	 * @param type
-	 * @param position
-	 * @param recursionDepth
-	 * @return
-	 * @throws ConstructionFailedException
+	 * @param test the test case for which to create the {@code null} variable
+	 * @param type represents the type of the variable to create
+	 * @param position the position in {@code test} at which to insert
+	 * @param recursionDepth the current recursion depth
+	 * @return a reference to the inserted {@code null} variable
+	 * @throws ConstructionFailedException if the creation of the variable fails
 	 */
 	private VariableReference createNull(TestCase test, Type type, int position,
 	        int recursionDepth) throws ConstructionFailedException {
@@ -1178,23 +1308,72 @@ public class TestFactory {
 	}
 
 
+	/**
+	 * Creates a new object of the given complex (i.e. non-primitive) {@code type} and adds it to
+	 * the {@code test} case at the desired {@code position}. If the test case already contains an
+	 * object of the specified type, this method might simply return a reference to the already
+	 * existing object. Also, the insertion of a {@code null} reference is possible. The decision
+	 * about which action to take is made probabilistically.
+	 * <p>
+	 * Clients have to supply the current recursion depth. This allows for better
+	 * management of test generation resources. If this method is called from another method that
+	 * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+	 * appropriate. Otherwise, 0 should be used.
+	 * <p>
+	 * Returns a reference to the created object or throws a {@code ConstructionFailedException} if
+	 * generation was not possible.
+	 *
+	 * @param test the test case for which to create the object
+	 * @param type represents the type of the object to create
+	 * @param position the position in {@code test} at which to insert the reference to the object
+	 * @param recursionDepth the current recursion depth (see above)
+	 * @param generatorRefToExclude
+	 * @return a reference to the generated object
+	 * @throws ConstructionFailedException if generation was not possible
+	 */
 	public VariableReference createObject(TestCase test, Type type, int position,
 										  int recursionDepth, VariableReference generatorRefToExclude) throws ConstructionFailedException {
 		return createObject(test,type,position,recursionDepth,generatorRefToExclude,true,true,true);
 	}
 
-		/**
-         * Create a new non-null, non-primitive object and return reference
-         *
-         * @param test
-         * @param type
-         * @param position
-         * @param recursionDepth
-         * @return
-         * @throws ConstructionFailedException
-         */
+	/**
+	 * Creates a new object of the given complex data type {@code type} (i.e., extending
+	 * {@code java.lang.Object}) and adds it to the {@code test} case at the desired {@code
+	 * position}. The following parameters allow clients to tweak the generation process:
+	 * <ul>
+	 *     <li>If {@code allowNull} is set to {@code true} the creation of {@code null} references
+	 *     is possible.</li>
+	 *     <li>If {@code canUseFunctionalMocks} is set to {@code true} the creation of mocks is
+	 *     permitted.</li>
+	 *     <li>If {@code canReuseVariables} is set to {@code true} the method is allowed to
+	 *     return a reference to an already existing object of matching {@code type}.</li>
+	 * </ul>
+     * If one wants to create {@code null} references specifically, the corresponding method
+     * {@code createNull} should be used instead. If one wants to create arrays, the corresponding
+     * method {@code createArray} should be used.
+	 * <p>
+	 * Clients have to supply the current recursion depth. This allows for better
+	 * management of test generation resources. If this method is called from another method that
+	 * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+	 * appropriate. Otherwise, 0 should be used.
+	 * <p>
+	 * Returns the reference to the created object or throws a {@code ConstructionFailedException}
+	 * if creation was not possible.
+	 *
+	 * @param test the test case in which to insert
+	 * @param type the type of the object to create
+	 * @param position the position at which to insert the created object
+	 * @param recursionDepth the current recursion depth (see above)
+	 * @param generatorRefToExclude
+	 * @param allowNull whether to allow the creation of {@code null} objects
+	 * @param canUseFunctionalMocks whether to allow the creation of mocks
+	 * @param canReuseVariables whether to allow the reuse of already existing objects of
+	 *                             matching {@code type}
+	 * @return a reference to the created object
+	 * @throws ConstructionFailedException if creation failed
+	 */
 	public VariableReference createObject(TestCase test, Type type, int position,
-	        int recursionDepth, VariableReference generatorRefToExclude,
+										  int recursionDepth, VariableReference generatorRefToExclude,
 										  boolean allowNull, boolean canUseFunctionalMocks,
 										  boolean canReuseVariables) throws ConstructionFailedException {
 		GenericClass clazz = new GenericClass(type);
@@ -1321,7 +1500,8 @@ public class TestFactory {
 
 
 	/**
-	 * Create a new variable or reuse and existing one
+	 * In the given {@code test} case, tries to create a new variable of type {@code parameterType}
+	 * at the given {@code position} or reuse an existing variable of matching type.
 	 *
 	 * @param test
 	 * @param parameterType
@@ -1388,7 +1568,37 @@ public class TestFactory {
 		return reference;
 	}
 
-
+	/**
+	 * In the given {@code test} case, tries to create a variable of the type represented by
+	 * {@code parameterType} at the specified {@code position}. Clients can tweak the creation
+	 * process using the following parameters:
+	 * <ul>
+	 *     <li>If {@code allowNull} is set to {@code true} the generation of {@code null} objects
+	 *     is possible. Only applies if {@code parameterType} represents a non-primitive type.</li>
+	 *     <li>If {@code canUseMocks} is set to {@code true} the generation of mocks for the
+	 *     specified {@code parameterType} is possible.</li>
+	 *     <li>If {@code canReuseExistingVariables} is set to {@code true} the method is
+	 *     allowed to return a reference to an already existing object of the given type
+	 *     instead of generating a new one. The given {@code position} is ignored in this case.</li>
+	 * </ul>
+	 * <p>
+	 * Clients have to supply the current recursion depth. This allows for better
+	 * management of test generation resources. If this method is called from another method that
+	 * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+	 * appropriate. Otherwise, 0 should be used.
+	 *
+	 * @param test the test case for which to create a new variable
+	 * @param parameterType represents the type of the variable to create
+	 * @param position the desired position for the insertion of the variable
+	 * @param recursionDepth the current recursion depth (see above)
+	 * @param exclude
+	 * @param allowNull whether to allow the generation of {@code null} variables
+	 * @param excludeCalleeGenerators
+	 * @param canUseMocks whether to allow the generation of mocks
+	 * @param canReuseExistingVariables whether to allow the reuse of already existing variables
+	 * @return a reference to the created variable
+	 * @throws ConstructionFailedException if creation of the variable failed
+	 */
 	private VariableReference createVariable(TestCase test, Type parameterType,
 											 int position, int recursionDepth, VariableReference exclude, boolean allowNull,
 											 boolean excludeCalleeGenerators, boolean canUseMocks, boolean canReuseExistingVariables)
@@ -1542,23 +1752,42 @@ public class TestFactory {
 	}
 
 	/**
-	 * Create or reuse a variable that can be assigned to Object.class
-	 *
-	 * @param test
-	 * @param position
-	 * @param recursionDepth
+     * In the given test case {@code test}, tries to insert a reference to an object compatible with
+     * {@code java.lang.Object} at the desired {@code position}. This method is specifically
+     * intended to create or reuse a variable that can be assigned to {@code java.lang.Object}.
+	 * For any other type, {@code createOrReuseVariable} should be used instead.
+	 * <p>
+	 * Source code using {@code Object} often dates back to pre-generic versions of Java. As such,
+	 * it was necessary to specify {@code Object} as data type for parameters or variables and use
+	 * (unsafe) downcasts if polymorphism was desired. The inherent drawback was the circumvention
+	 * of the type system and thus the loss of static type information, among others. This poses a
+	 * great challenge for test generation. In an attempt to tackle this challenge, this method
+	 * scans the byte code for subsequent downcasts, and only returns references to objects of the
+	 * type being downcast to. This is more likely to yield tests that don't fail at runtime due to
+	 * casting errors.
+     * <p>
+     * Clients have to supply the current recursion depth. This allows for better
+     * management of test generation resources. If this method is called from another method that
+     * already has a recursion depth as formal parameter, passing that recursion depth + 1 is
+     * appropriate. Otherwise, 0 should be used.
+     * <p>
+     * Returns a reference to the created variable, or throws a {@code ConstructionFailedException}
+     * if creation failed.
+     *
+	 * @param test the test in which to insert
+	 * @param position the position at which to insert
+	 * @param recursionDepth the current recursion depth (see above)
 	 * @param exclude
-	 * @return
+	 * @param allowNull whether to allow the assignment of {@code null} to the created variable
+	 * @param canUseMocks whether to allow mocks on the right-hand side for the created variable
+	 * @return a reference to the created variable
+	 * @throws ConstructionFailedException if creation fails
 	 */
-	private VariableReference createOrReuseObjectVariable(TestCase test, int position,
-	        int recursionDepth, VariableReference exclude, boolean allowNull, boolean canUseMocks)
+	private VariableReference createOrReuseVariableForObjectClass(TestCase test, int position,
+																  int recursionDepth, VariableReference exclude, boolean allowNull, boolean canUseMocks)
 	        throws ConstructionFailedException {
-
-		double reuse = Randomness.nextDouble();
-
-		// Only reuse objects if they are related to a target call
-		if (reuse <= Properties.PRIMITIVE_REUSE_PROBABILITY) {
-
+		final boolean reuse = Randomness.nextDouble() <= Properties.PRIMITIVE_REUSE_PROBABILITY;
+		if (reuse) { // Only reuse objects if they are related to a target call
 			List<VariableReference> candidates = getCandidatesForReuse(test, Object.class, position, exclude, allowNull, canUseMocks);
 			//List<VariableReference> candidates = test.getObjects(Object.class, position);
 			filterVariablesByCastClasses(candidates);
@@ -1597,7 +1826,7 @@ public class TestFactory {
 		List<Integer> pos = new ArrayList<>(toDelete);
 		pos.sort(Collections.reverseOrder());
 
-		for (Integer i : pos) {
+		for (int i : pos) {
 			logger.debug("Deleting statement: {}", i);
 			test.remove(i);
 		}
@@ -2050,8 +2279,10 @@ public class TestFactory {
 	}
 
 	/**
-	 * Tries to insert a random call on the environment of the given test case. Returns the position
-	 * where the insertion happened, or a negative value if there was a failure.
+	 * Tries to insert a random call on the environment the UUT interacts with, e.g., the file
+	 * system or network connections. Callers have to specify the position of the last valid
+	 * statement of {@code test} before the insertion. Returns the updated position of the last
+	 * valid statement after a successful insertion, or a negative value if there was an error.
 	 *
 	 * @param test the test case on whose environment to insert
 	 * @param lastValidPosition position of the last valid statement within the test case
@@ -2123,10 +2354,12 @@ public class TestFactory {
 
 
 	/**
-	 * Insert a random call for the UUT at the given position
+	 * Inserts a random call for the UUT into the given {@code test} at the specified {@code
+	 * position}. Returns {@code true} on success, {@code false} otherwise.
 	 *
-	 * @param test
-	 * @param position
+	 * @param test the test case in which to insert
+	 * @param position the position at which to insert
+	 * @return {@code true} if successful, {@code false} otherwise
 	 */
 	public boolean insertRandomCall(TestCase test, int position) {
 		int previousLength = test.size();
@@ -2226,13 +2459,14 @@ public class TestFactory {
 	}
 
 	/**
-	 * Within the given test case, inserts a random call at the specified position on the object
-	 * referenced by {@code var}. Returns {@code true} if the operation was successful.
+	 * Within the given {@code test} case, inserts a random call at the specified {@code position}
+	 * on the object referenced by {@code var}. Returns {@code true} if the operation was successful
+	 * and {@code false} otherwise.
 	 *
 	 * @param test the test case in which to insert
-	 * @param var the reference to the object on which to perform a method call
+	 * @param var the reference to the object on which to perform the random method call
 	 * @param position the position at which to insert the call
-	 * @return {@code true} if successful
+	 * @return {@code true} if successful, {@code false} otherwise
 	 */
 	public boolean insertRandomCallOnObjectAt(TestCase test, VariableReference var, int position) {
 
@@ -2250,7 +2484,7 @@ public class TestFactory {
 					try {
 						assignArray(test, array, i, position);
 						position += test.size() - old_len;
-					} catch (ConstructionFailedException e) {
+					} catch (ConstructionFailedException ignored) {
 					}
 				}
 				return true;
@@ -2279,7 +2513,7 @@ public class TestFactory {
 				logger.debug("Chosen call {}", call);
 				return addCallFor(test, var, call, position);
 			} catch (ConstructionFailedException e) {
-				logger.debug("Found no modifier: {}", e);
+				logger.debug("Found no modifier: {}", e.getMessage());
 			}
 		}
 
@@ -2288,11 +2522,17 @@ public class TestFactory {
 
 
 	/**
-	 * Inserts a random statement after the given position within the given test case.
+	 * Inserts one or perhaps multiple random statements into the given {@code test}. Callers
+	 * have to specify the position of the last valid statement of {@code test} by supplying an
+	 * appropriate index {@code lastPosition}. After a successful insertion, returns the updated
+	 * position of the last valid statement (which is always non-negative), or if there was an error
+	 * the constant {@link org.evosuite.testcase.mutation.InsertionStrategy#INSERTION_ERROR
+	 * INSERTION_ERROR}.
 	 *
 	 * @param test the test case in which to insert
-	 * @param lastPosition the position after which to insert
-	 * @return the position at which the new statement has been inserted.
+	 * @param lastPosition the position of the last valid statement of {@code test} before insertion
+	 * @return the position of the last valid statement after insertion, or {@code INSERTION_ERROR}
+	 * (see above)
 	 */
 	public int insertRandomStatement(TestCase test, int lastPosition) {
 		RandomInsertion rs = new RandomInsertion();
@@ -2300,7 +2540,9 @@ public class TestFactory {
 	}
 
 	/**
-	 * Satisfy a list of parameters by reusing or creating variables
+	 * Satisfies a list of parameters by reusing or creating variables. Returns a list of references
+	 * to the objects or values . If there are no parameters, simply returns the empty list. If
+	 * there was an error, throws a {@code ConstructionFailedException}.
 	 *
 	 * @param test
 	 * @param parameterTypes
