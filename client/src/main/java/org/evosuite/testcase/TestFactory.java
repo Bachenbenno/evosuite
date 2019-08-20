@@ -119,8 +119,9 @@ public class TestFactory {
 	}
 
 	/**
-	 * Adds a call of the field, method or constructor represented by {@code gao} to the test case
+	 * Adds a call of the field or method represented by {@code gao} to the test case
 	 * {@code test} at the given {@code position} with {@code callee} as the callee of {@code gao}.
+	 * Note that constructor calls are <em>not</em> supported
 	 * Returns {@code true} if the operation was successful, {@code false} otherwise.
 	 *
 	 * @param test the test case the call should be added to
@@ -129,8 +130,8 @@ public class TestFactory {
 	 * @param position the position within {@code test} at which to add the call
 	 * @return {@code true} if successful, {@code false} otherwise
 	 */
-	protected boolean addCallFor(TestCase test, VariableReference callee,
-								 GenericAccessibleObject<?> gao, int position) {
+	protected boolean addCallForMethodOrField(TestCase test, VariableReference callee,
+											  GenericAccessibleObject<?> gao, int position) {
 
 		logger.trace("addCallFor {}", callee.getName());
 
@@ -562,7 +563,7 @@ public class TestFactory {
 
 	/**
 	 * Adds the given {@code method} call to the {@code test} at the specified {@code position}.
-	 * The callee object of the method is chosen at random.
+	 * For non-static methods, the callee object of the method is chosen at random.
 	 * <p>
 	 * Clients have to supply the current recursion depth. This allows for better
 	 * management of test generation resources. If this method is called from another method that
@@ -639,6 +640,9 @@ public class TestFactory {
 	/**
 	 * Adds the given {@code method} call to the {@code test} at the specified {@code position},
 	 * using the supplied {@code VariableReference} as {@code callee} object of the {@code method}.
+	 * Only intended to be used for <em>non-static</em> methods! If a static {@code method} is
+	 * supplied, the behavior is undefined.
+	 * <p>
 	 * Returns a reference to the return value of the inserted method call. Throws a
 	 * {@code ConstructionFailedException} if the given {@code position} is invalid, i.e., if
 	 * {@code callee} is undefined (or has not been defined yet) at {@code position}.
@@ -2462,6 +2466,10 @@ public class TestFactory {
 	 * Within the given {@code test} case, inserts a random call at the specified {@code position}
 	 * on the object referenced by {@code var}. Returns {@code true} if the operation was successful
 	 * and {@code false} otherwise.
+	 * <p>
+	 * This method is especially useful if someone wants to insert a random call to a variable
+	 * that is subsequently used as a parameter for the method under test (MUT). The idea is to
+	 * mutate the parameter so that new program states can be reached in the MUT.
 	 *
 	 * @param test the test case in which to insert
 	 * @param var the reference to the object on which to perform the random method call
@@ -2509,9 +2517,13 @@ public class TestFactory {
                     return insertRandomReflectionCallOnObject(test, var, position, 0);
                 }
 
-                GenericAccessibleObject<?> call = TestCluster.getInstance().getRandomCallFor(var.getGenericClass(), test, position);
-				logger.debug("Chosen call {}", call);
-				return addCallFor(test, var, call, position);
+                // For the specified object "var" (that is being used as a parameter in a
+				// subsequent but here unrelated call to the MUT), randomly choose a method that we
+				// can call so as to change the state of "var". This tactic makes it more likely
+				// that new program states will be reached and thus more code will be covered.
+                GenericAccessibleObject<?> gao = TestCluster.getInstance().getRandomCallFor(var.getGenericClass(), test, position);
+				logger.debug("Chosen call {}", gao);
+				return addCallForMethodOrField(test, var, gao, position);
 			} catch (ConstructionFailedException e) {
 				logger.debug("Found no modifier: {}", e.getMessage());
 			}
