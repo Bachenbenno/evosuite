@@ -62,18 +62,16 @@ public class MethodStatement extends EntityWithParametersStatement {
 	protected VariableReference callee;
 
 	/**
-	 * <p>
-	 * Constructor for MethodStatement.
-	 * </p>
+	 * Creates a new method statement for the given test case {@code tc}, calling the supplied
+	 * {@code method} on the object represented by {@code callee} with the parameter list given by
+	 * {@code parameters}. Setting {@code callee} to {@code null} is only allowed if {@code method}
+	 * represents a static method.
 	 *
-	 * @param tc
-	 *            a {@link org.evosuite.testcase.TestCase} object.
-	 * @param method
-	 *            a {@link java.lang.reflect.Method} object.
-	 * @param callee
-	 *            a {@link org.evosuite.testcase.variable.VariableReference} object.
-	 * @param parameters
-	 *            a {@link java.util.List} object.
+	 * @param tc the tes case for which to create the method statement
+	 * @param method the method to call
+	 * @param callee the object on which to call the method
+	 * @param parameters a list of references to the parameters to be used for the method call
+	 * @throws IllegalArgumentException
 	 */
 	public MethodStatement(TestCase tc, GenericMethod method, VariableReference callee,
 	        List<VariableReference> parameters) throws IllegalArgumentException {
