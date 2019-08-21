@@ -35,8 +35,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class modelling an executable code assertion. It corresponds to the {@code assert}
- * statement in Java or one of the assertion methods ({@code assertTrue}, {@code assertNonNull}, i.a.) in
- * JUnit.
+ * statement in Java or one of the assertion methods in JUnit (e.g., {@code assertTrue}, {@code
+ * assertNonNull}, etc.).
  *
  * @author Gordon Fraser
  */
