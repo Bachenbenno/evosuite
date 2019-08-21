@@ -33,9 +33,10 @@ import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.utils.generic.GenericAccessibleObject;
 
 /**
- * <p>
- * StatementInterface interface.
- * </p>
+ * Statements serve as the building blocks for test cases. Conceptually, a statement in EvoSuite
+ * test cases can be mapped to one or more statements in the Java language. Each statement in a test
+ * case represents a value v of some type T. EvoSuite distinguishes between different kinds of
+ * statements, each of which are implemented in subclasses of this interface.
  *
  * @author Sebastian Steenbuck
  * @author Gordon Fraser
@@ -43,35 +44,33 @@ import org.evosuite.utils.generic.GenericAccessibleObject;
 public interface Statement {
 
 	/**
-	 * Add a new assertion to statement
+	 * Adds a new assertion to this statement.
 	 *
-	 * @param assertion
-	 *            Assertion to be added
+	 * @param assertion the assertion to be added
 	 */
 	public void addAssertion(Assertion assertion);
 
 	/**
-	 * A statement can have a textual comment that will be included
-	 * in the JUnit output
+	 * Adds to this statement a textual comment that will be included in the JUnit output.
 	 *
-	 * @param comment
+	 * @param comment the comment to add
 	 */
 	public void addComment(String comment);
 
 	/**
-	 * Class instances are bound to a class loader - if we want to reexecute a
+	 * Sets the class loader for this statement to the specified {@code loader}.
+	 * Class instances are bound to a class loader - if we want to re-execute a
 	 * test on a different classloader we need to be able to change the class of
-	 * the reflection object
+	 * the reflection object.
 	 *
-	 * @param loader
-	 *            a {@link java.lang.ClassLoader} object.
+	 * @param loader the class laoder to use
 	 */
 	public void changeClassLoader(ClassLoader loader);
 
 	/**
-	 * Create deep copy of statement
+	 * Creates a deep copy of this statement.
 	 *
-	 * @return a {@link Statement} object.
+	 * @return a deep copy of this statement
 	 */
 	public Statement clone();
 
@@ -114,30 +113,23 @@ public interface Statement {
 
 	/**
 	 * {@inheritDoc}
-	 *
-	 * Equality check
 	 */
 	@Override
 	public boolean equals(Object s);
 
 	/**
-	 * This method executes the statement under the given scope. If execution of
-	 * the statement is aborted abnormally (i.e. an exception is thrown.) The
-	 * exception is returned. Otherwise the return value is null.
+	 * Executes the statement under the given scope. If execution of the statement
+	 * is aborted abnormally (i.e., an exception is thrown) the exception is returned.
+	 * Otherwise, the return value is {@code null}.
 	 *
-	 * @param scope
-	 *            the scope under which the statement is executed
-	 * @param out
-	 *            a {@link java.io.PrintStream} object.
-	 * @return if an exception was thrown during execution this is the exception
+	 * @param scope the scope under which the statement is executed
+	 * @param out a {@link java.io.PrintStream} object.
+	 * @return the exception that was thrown during execution, or {@code null} if no exception
+	 * was thrown
 	 * @throws java.lang.reflect.InvocationTargetException
-	 *             if any.
 	 * @throws java.lang.IllegalArgumentException
-	 *             if any.
 	 * @throws java.lang.IllegalAccessException
-	 *             if any.
 	 * @throws java.lang.InstantiationException
-	 *             if any.
 	 */
 	public Throwable execute(Scope scope, PrintStream out)
 	        throws InvocationTargetException, IllegalArgumentException,
@@ -145,8 +137,8 @@ public interface Statement {
 
 	/**
 	 * Returns the accessibleObject which is used to generate this kind of
-	 * statement E.g. the Field of a FieldStatement, the Method of a
-	 * MethodStatement and so on MAY return NULL (for example for
+	 * statement, e.g., the Field of a FieldStatement, the Method of a
+	 * MethodStatement and so on. MAY return NULL (for example for
 	 * NullStatements)
 	 *
 	 * @return a {@link java.lang.reflect.AccessibleObject} object.
