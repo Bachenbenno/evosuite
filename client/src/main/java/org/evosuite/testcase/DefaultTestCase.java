@@ -280,7 +280,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 
 		int lastPosition = var.getStPosition();
 		// Add all statements that use this var
-		for(VariableReference ref : getReferences(var)) {
+		for(VariableReference ref : getVariablesDependingOn(var)) {
 			if(ref.getStPosition() > lastPosition)
 				lastPosition = ref.getStPosition();
 			dependentStatements.add(statements.get(ref.getStPosition()));
@@ -660,14 +660,8 @@ public class DefaultTestCase implements TestCase, Serializable {
 		Inputs.checkNull(type);
 
 		List<VariableReference> variables = getObjects(type, position);
-		Iterator<VariableReference> iterator = variables.iterator();
-		while (iterator.hasNext()) {
-			VariableReference ref = iterator.next();
-			if (ref instanceof NullReference ||
-					(this.getStatement(ref.getStPosition()) instanceof FunctionalMockStatement) ) {
-				iterator.remove();
-			}
-		}
+		variables.removeIf(ref -> ref instanceof NullReference
+				|| (this.getStatement(ref.getStPosition()) instanceof FunctionalMockStatement));
 		if (variables.isEmpty())
 			throw new ConstructionFailedException("Found no variables of type " + type
 			        + " at position " + position);
@@ -691,10 +685,8 @@ public class DefaultTestCase implements TestCase, Serializable {
 	@Override
 	public VariableReference getRandomObject(int position) {
 		List<VariableReference> variables = getObjects(position);
-		if (variables.isEmpty())
-			return null;
+		return variables.isEmpty() ? null : Randomness.choice(variables);
 
-		return Randomness.choice(variables);
 	}
 
 	/* (non-Javadoc)
@@ -728,26 +720,34 @@ public class DefaultTestCase implements TestCase, Serializable {
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public Set<VariableReference> getReferences(VariableReference var) {
+	public Set<VariableReference> getVariablesDependingOn(VariableReference var, boolean reflexive) {
 		Set<VariableReference> references = new LinkedHashSet<>();
 
-		if (var == null || var.getStPosition() == -1)
+		if (var == null || var.getStPosition() == -1) {
 			return references;
+		}
 
-		// references.add(var);
+		if (reflexive) {
+			references.add(var);
+		}
 
 		for (int i = var.getStPosition() + 1; i < statements.size(); i++) {
 			Set<VariableReference> temp = new LinkedHashSet<>();
-			if (statements.get(i).references(var))
+
+			if (statements.get(i).references(var)) {
 				temp.add(statements.get(i).getReturnValue());
-			else if (statements.get(i).references(var.getAdditionalVariableReference()))
+			} else if (statements.get(i).references(var.getAdditionalVariableReference())) {
 				temp.add(statements.get(i).getReturnValue());
-			for (VariableReference v : references) {
-				if (statements.get(i).references(v))
-					temp.add(statements.get(i).getReturnValue());
-				else if (statements.get(i).references(v.getAdditionalVariableReference()))
-					temp.add(statements.get(i).getReturnValue());
 			}
+
+			for (VariableReference v : references) {
+				if (statements.get(i).references(v)) {
+					temp.add(statements.get(i).getReturnValue());
+				} else if (statements.get(i).references(v.getAdditionalVariableReference())) {
+					temp.add(statements.get(i).getReturnValue());
+				}
+			}
+
 			references.addAll(temp);
 		}
 
@@ -824,15 +824,11 @@ public class DefaultTestCase implements TestCase, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean hasObject(Type type, int position) {
-		for (int i = 0; i < position && i < size(); i++) {
-			Statement st = statements.get(i);
-			if (st.getReturnValue() == null)
-				continue; // Nop
-			if (st.getReturnValue().isAssignableTo(type)) {
-				return true;
-			}
-		}
-		return false;
+		return statements.stream()
+				.limit(position)
+				.map(Statement::getReturnValue)
+				.filter(Objects::nonNull)
+				.anyMatch(retVal -> retVal.isAssignableTo(type));
 	}
 
 	/* (non-Javadoc)
@@ -848,10 +844,12 @@ public class DefaultTestCase implements TestCase, Serializable {
 			if (statements.get(i).references(var))
 				return true;
 		}
+
 		for (Assertion assertion : statements.get(var.getStPosition()).getAssertions()) {
 			if (assertion.getReferencedVariables().contains(var))
 				return true;
 		}
+
 		return false;
 	}
 
@@ -1050,7 +1048,7 @@ public class DefaultTestCase implements TestCase, Serializable {
 					if(assertionsNeedDownCast(ms, retVal, methodReturnClass)) {
 						return;
 					}
-					for(VariableReference ref : getReferences(retVal)) {
+					for(VariableReference ref : getVariablesDependingOn(retVal)) {
 						Statement usageStatement = statements.get(ref.getStPosition());
 						if(assertionsNeedDownCast(usageStatement, retVal, methodReturnClass)) {
 							return;
@@ -1090,8 +1088,6 @@ public class DefaultTestCase implements TestCase, Serializable {
 	public void replace(VariableReference var1, VariableReference var2) {
 		statements.forEach(s -> s.replace(var1, var2));
 	}
-
-
 
 	private void readObject(ObjectInputStream ois) throws ClassNotFoundException,
 	        IOException {
