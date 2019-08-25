@@ -99,8 +99,8 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	}
 
 	/**
-	 * This method is used to generate new individuals (offsprings) from
-	 * the current population.
+	 * This method is used to generate new individuals (offspring) from
+	 * the current population. The offspring population has the same size as the parent population.
 	 *
 	 * @return offspring population
 	 */
@@ -236,10 +236,11 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	 * @param chromosome TestChromosome to clean
 	 */
 	private void clearCachedResults(T chromosome) {
-		((TestChromosome) chromosome).clearCachedMutationResults();
-		((TestChromosome) chromosome).clearCachedResults();
-		((TestChromosome) chromosome).clearMutationHistory();
-		((TestChromosome) chromosome).getFitnessValues().clear();
+		final TestChromosome testChromosome = (TestChromosome) chromosome;
+		testChromosome.clearCachedMutationResults();
+		testChromosome.clearCachedResults();
+		testChromosome.clearMutationHistory();
+		testChromosome.getFitnessValues().clear();
 	}
 
 	/**
@@ -251,18 +252,15 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	 * @return true or false depending on whether "unused variables" are removed
 	 */
 	private boolean removeUnusedVariables(T chromosome) {
-		int sizeBefore = chromosome.size();
-		TestCase t = ((TestChromosome) chromosome).getTestCase();
-		List<Integer> toDelete = new ArrayList<>(chromosome.size());
+		final int sizeBefore = chromosome.size();
+		final TestCase t = ((TestChromosome) chromosome).getTestCase();
+		final List<Integer> toDelete = new ArrayList<>(chromosome.size());
 		boolean hasDeleted = false;
 
 		int num = 0;
 		for (Statement s : t) {
-			VariableReference var = s.getReturnValue();
-			boolean delete = false;
-			delete = delete || s instanceof PrimitiveStatement;
-			delete = delete || s instanceof ArrayStatement;
-			delete = delete || s instanceof StringPrimitiveStatement;
+			final VariableReference var = s.getReturnValue();
+			final boolean delete = s instanceof PrimitiveStatement || s instanceof ArrayStatement;
 			if (!t.hasReferences(var) && delete) {
 				toDelete.add(num);
 				hasDeleted = true;
@@ -270,10 +268,10 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			num++;
 		}
 		toDelete.sort(Collections.reverseOrder());
-		for (Integer position : toDelete) {
+		for (int position : toDelete) {
 			t.remove(position);
 		}
-		int sizeAfter = chromosome.size();
+		final int sizeAfter = chromosome.size();
 		if (hasDeleted) {
 			logger.debug("Removed {} unused statements", (sizeBefore - sizeAfter));
 		}
@@ -288,18 +286,18 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	 * @return the non-dominated set of test cases
 	 */
 	private List<T> getNonDominatedSolutions(List<T> solutions) {
-		DominanceComparator<T> comparator = new DominanceComparator<>(this.getCoveredGoals());
-		List<T> next_front = new ArrayList<>(solutions.size());
+		final DominanceComparator<T> comparator = new DominanceComparator<>(this.getCoveredGoals());
+		final List<T> nextFront = new ArrayList<>(solutions.size());
 		boolean isDominated;
 		for (T p : solutions) {
 			isDominated = false;
 			List<T> dominatedSolutions = new ArrayList<>(solutions.size());
-			for (T best : next_front) {
-				int flag = comparator.compare(p, best);
-				if (flag == -1) {
+			for (T best : nextFront) {
+				final int flag = comparator.compare(p, best);
+				if (flag < 0) {
 					dominatedSolutions.add(best);
 				}
-				if (flag == +1) {
+				if (flag > 0) {
 					isDominated = true;
 				}
 			}
@@ -307,10 +305,10 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 				continue;
 			}
 
-			next_front.add(p);
-			next_front.removeAll(dominatedSolutions);
+			nextFront.add(p);
+			nextFront.removeAll(dominatedSolutions);
 		}
-		return next_front;
+		return nextFront;
 	}
 
 	/**
