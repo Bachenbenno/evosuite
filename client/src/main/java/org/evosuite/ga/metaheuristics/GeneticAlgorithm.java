@@ -81,7 +81,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome, F extends FitnessFu
     protected ChromosomeFactory<T> chromosomeFactory;
 
     /** Listeners */
-    protected transient Set<SearchListener> listeners = new HashSet<>();
+    protected transient Set<SearchListener<T>> listeners = new HashSet<>();
 
     /** List of conditions on which to end the search */
     protected transient Set<StoppingCondition> stoppingConditions = new HashSet<>();
@@ -111,7 +111,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome, F extends FitnessFu
      */
     public GeneticAlgorithm(ChromosomeFactory<T> factory) {
         chromosomeFactory = factory;
-        addStoppingCondition(new MaxGenerationStoppingCondition());
+        addStoppingCondition(new MaxGenerationStoppingCondition<>());
         if (Properties.LOCAL_SEARCH_RATE > 0)
             addListener(LocalSearchBudget.getInstance());
         // addBloatControl(new MaxSizeBloatControl());
@@ -825,7 +825,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome, F extends FitnessFu
      *            a {@link org.evosuite.ga.metaheuristics.SearchListener}
      *            object.
      */
-    public void addListener(SearchListener listener) {
+    public void addListener(SearchListener<T> listener) {
         listeners.add(listener);
     }
 
@@ -867,7 +867,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome, F extends FitnessFu
      * @param chromosome
      *            a {@link org.evosuite.ga.Chromosome} object.
      */
-    protected void notifyEvaluation(Chromosome chromosome) {
+    protected void notifyEvaluation(T chromosome) {
         listeners.forEach(l -> l.fitnessEvaluation(chromosome));
     }
 
@@ -877,7 +877,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome, F extends FitnessFu
      * @param chromosome
      *            a {@link org.evosuite.ga.Chromosome} object.
      */
-    protected void notifyMutation(Chromosome chromosome) {
+    protected void notifyMutation(T chromosome) {
         listeners.forEach(l -> l.modification(chromosome));
     }
 
@@ -949,7 +949,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome, F extends FitnessFu
      *            a {@link org.evosuite.ga.stoppingconditions.StoppingCondition}
      *            object.
      */
-    public void addStoppingCondition(StoppingCondition condition) {
+    public void addStoppingCondition(StoppingCondition<T> condition) {
         final boolean contained = stoppingConditions.stream()
                 .anyMatch(obj -> obj.getClass().equals(condition.getClass()));
 
@@ -976,7 +976,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome, F extends FitnessFu
      *            a {@link org.evosuite.ga.stoppingconditions.StoppingCondition}
      *            object.
      */
-    public void setStoppingCondition(StoppingCondition condition) {
+    public void setStoppingCondition(StoppingCondition<T> condition) {
         stoppingConditions.clear();
         logger.debug("Setting stopping condition");
         stoppingConditions.add(condition);

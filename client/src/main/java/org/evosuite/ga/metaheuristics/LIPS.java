@@ -360,8 +360,8 @@ public class LIPS extends GeneticAlgorithm<TestChromosome, TestFitnessFunction> 
 	 *            a {@link org.evosuite.ga.Chromosome} object.
 	 */
 	@Override
-	protected void notifyEvaluation(Chromosome chromosome) {
-		for (SearchListener listener : listeners) {
+	protected void notifyEvaluation(TestChromosome chromosome) {
+		for (SearchListener<TestChromosome> listener : listeners) {
 			if (listener instanceof ProgressMonitor)
 				continue;
 			listener.fitnessEvaluation(chromosome);
