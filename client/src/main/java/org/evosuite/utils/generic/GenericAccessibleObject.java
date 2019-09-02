@@ -288,7 +288,7 @@ public abstract class GenericAccessibleObject<T extends GenericAccessibleObject<
 	/**
 	 * Set type parameters based on return type
 	 *
-	 * @param returnType
+	 * @param generatedType
 	 * @return
 	 * @throws ConstructionFailedException
 	 */

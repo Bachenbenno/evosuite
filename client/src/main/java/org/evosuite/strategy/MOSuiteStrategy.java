@@ -19,11 +19,11 @@
  */
 package org.evosuite.strategy;
 
+import junit.framework.TestSuite;
 import org.evosuite.ClientProcess;
 import org.evosuite.Properties;
 import org.evosuite.Properties.Criterion;
 import org.evosuite.coverage.TestFitnessFactory;
-import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.MaxStatementsStoppingCondition;
@@ -60,12 +60,8 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 		// Set up search algorithm
 		PropertiesSuiteGAFactory algorithmFactory = new PropertiesSuiteGAFactory();
 
-		GeneticAlgorithm<TestSuiteChromosome> algorithm = algorithmFactory.getSearchAlgorithm();
-
-		// Override chromosome factory
-		// TODO handle this better by introducing generics
-		ChromosomeFactory factory = new RandomLengthTestFactory();
-		algorithm.setChromosomeFactory(factory);
+		GeneticAlgorithm<TestSuiteChromosome, FitnessFunction<TestSuiteChromosome>> algorithm =
+				algorithmFactory.getSearchAlgorithm();
 
 		if(Properties.SERIALIZE_GA || Properties.CLIENT_ON_THREAD)
 			TestGenerationResultBuilder.getInstance().setGeneticAlgorithm(algorithm);
@@ -76,7 +72,7 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 		List<TestFitnessFactory<? extends TestFitnessFunction>> goalFactories = getFitnessFactories();
 		List<TestFitnessFunction> fitnessFunctions = new ArrayList<>();
 		goalFactories.forEach(f -> fitnessFunctions.addAll(f.getCoverageGoals()));
-		algorithm.addFitnessFunctions((List)fitnessFunctions);
+		algorithm.addFitnessFunctions((List)fitnessFunctions); // FIXME this cast is still ugly :(
 
 		// if (Properties.SHOW_PROGRESS && !logger.isInfoEnabled())
 		algorithm.addListener(progressMonitor); // FIXME progressMonitor may cause

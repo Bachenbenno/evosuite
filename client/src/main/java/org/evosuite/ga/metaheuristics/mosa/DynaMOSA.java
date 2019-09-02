@@ -26,6 +26,7 @@ import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.metaheuristics.mosa.structural.MultiCriteriaManager;
 import org.evosuite.ga.metaheuristics.mosa.structural.StructuralGoalManager;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
+import org.evosuite.testcase.TestChromosome;
 import org.evosuite.utils.LoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ import java.util.List;
  *
  * @author Annibale Panichella, Fitsum M. Kifetew, Paolo Tonella
  */
-public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
+public class DynaMOSA extends AbstractMOSA {
 
 	private static final long serialVersionUID = 146182080947267628L;
 
@@ -50,16 +51,16 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	// protected List<T> population = new ArrayList<>();
 
 	/** Manager to determine the test goals to consider at each generation */
-	protected StructuralGoalManager<T> goalsManager = null;
+	protected StructuralGoalManager goalsManager = null;
 
-	protected CrowdingDistance<T> distance = new CrowdingDistance<>();
+	protected CrowdingDistance<TestChromosome> distance = new CrowdingDistance<>();
 
 	/**
 	 * Constructor based on the abstract class {@link AbstractMOSA}.
 	 *
 	 * @param factory
 	 */
-	public DynaMOSA(ChromosomeFactory<T> factory) {
+	public DynaMOSA(ChromosomeFactory<TestChromosome> factory) {
 		super(factory);
 	}
 
@@ -67,10 +68,10 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	@Override
 	protected void evolve() {
 		// Generate offspring, compute their fitness, update the archive and coverage goals.
-		List<T> offspringPopulation = this.breedNextGeneration();
+		List<TestChromosome> offspringPopulation = this.breedNextGeneration();
 
 		// Create the union of parents and offspring
-		List<T> union = new ArrayList<>(this.population.size() + offspringPopulation.size());
+		List<TestChromosome> union = new ArrayList<>(this.population.size() + offspringPopulation.size());
 		union.addAll(this.population);
 		union.addAll(offspringPopulation);
 
@@ -85,7 +86,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		// updated set of goals
 		int remain = Math.max(Properties.POPULATION, this.rankingFunction.getSubfront(0).size());
 		int index = 0;
-		List<T> front = null;
+		List<TestChromosome> front = null;
 		this.population.clear();
 
 		// Obtain the first front
@@ -142,7 +143,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		// Set up the targets to cover, which are initially free of any control dependencies.
 		// We are trying to optimize for multiple targets at the same time.
-		this.goalsManager = new MultiCriteriaManager<>(this.fitnessFunctions);
+		this.goalsManager = new MultiCriteriaManager(this.fitnessFunctions);
 
 		LoggingUtils.getEvoLogger().info("* Initial Number of Goals in DynMOSA = " +
 				this.goalsManager.getCurrentGoals().size() +" / "+ this.getUncoveredGoals().size());
@@ -183,7 +184,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	 * @param c the chromosome whose fitness to compute
 	 */
 	@Override
-	protected void calculateFitness(T c) {
+	protected void calculateFitness(TestChromosome c) {
 		this.goalsManager.calculateFitness(c); // this also updates the archive and the targets
 		this.notifyEvaluation(c);
 	}

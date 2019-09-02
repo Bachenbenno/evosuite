@@ -27,6 +27,8 @@ import org.evosuite.ga.FitnessFunction;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
+import org.evosuite.testcase.TestChromosome;
+import org.evosuite.testcase.TestFitnessFunction;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,22 +44,22 @@ import java.util.stream.Stream;
  *
  * @author Annibale Panichella
  */
-public class BranchFitnessGraph<T extends Chromosome> implements Serializable {
+public class BranchFitnessGraph implements Serializable {
 
 	private static final long serialVersionUID = -8020578778906420503L;
 
 	private static final Logger logger = LoggerFactory.getLogger(BranchFitnessGraph.class);
 
-	protected DefaultDirectedGraph<FitnessFunction<T>, DependencyEdge> graph = new DefaultDirectedGraph<>(DependencyEdge.class);
+	protected DefaultDirectedGraph<TestFitnessFunction, DependencyEdge> graph =
+			new DefaultDirectedGraph<>(DependencyEdge.class);
 
-	protected Set<FitnessFunction<T>> rootBranches = new HashSet<>();
+	protected Set<TestFitnessFunction> rootBranches = new HashSet<>();
 
-	@SuppressWarnings("unchecked")
-	public BranchFitnessGraph(Set<FitnessFunction<T>> goals){
+	public BranchFitnessGraph(Set<TestFitnessFunction> goals){
 		goals.forEach(g -> graph.addVertex(g));
 
 		// derive dependencies among branches
-		for (FitnessFunction<T> fitness : goals){
+		for (TestFitnessFunction fitness : goals){
 			Branch branch = ((BranchCoverageTestFitness) fitness).getBranch();
 			if (branch==null){
 				this.rootBranches.add(fitness);
@@ -80,11 +82,11 @@ public class BranchFitnessGraph<T extends Chromosome> implements Serializable {
 
 				BranchCoverageGoal goal = new BranchCoverageGoal(newB, true, newB.getClassName(), newB.getMethodName());
 				BranchCoverageTestFitness newFitness = new BranchCoverageTestFitness(goal);
-				graph.addEdge((FitnessFunction<T>) newFitness, fitness);
+				graph.addEdge(newFitness, fitness);
 
 				BranchCoverageGoal goal2 = new BranchCoverageGoal(newB, false, newB.getClassName(), newB.getMethodName());
 				BranchCoverageTestFitness newfitness2 = new BranchCoverageTestFitness(goal2);
-				graph.addEdge((FitnessFunction<T>) newfitness2, fitness);
+				graph.addEdge(newfitness2, fitness);
 			}
 		}
 	}
@@ -115,7 +117,7 @@ public class BranchFitnessGraph<T extends Chromosome> implements Serializable {
 	 * @param block object of {@link BasicBlock}
 	 * @return true or false depending on whether a branch is found
 	 */
-	public boolean containsBranches(BasicBlock block){
+	public boolean containsBranches(BasicBlock block) {
 		for (BytecodeInstruction inst : block)
 			if (inst.toBranch()!=null)
 				return true;
@@ -135,23 +137,21 @@ public class BranchFitnessGraph<T extends Chromosome> implements Serializable {
 		return null;
 	}
 
-	public Set<FitnessFunction<T>> getRootBranches(){
+	public Set<TestFitnessFunction> getRootBranches(){
 		return this.rootBranches;
 	}
 
-	@SuppressWarnings("unchecked")
-	public Set<FitnessFunction<T>> getStructuralChildren(FitnessFunction<T> parent){
+	public Set<TestFitnessFunction> getStructuralChildren(TestFitnessFunction parent){
 		Set<DependencyEdge> outgoingEdges = this.graph.outgoingEdgesOf(parent);
-		Stream<FitnessFunction<T>> children = outgoingEdges.stream()
-				.map(edge -> (FitnessFunction<T>) edge.getTarget());
+		Stream<TestFitnessFunction> children = outgoingEdges.stream()
+				.map(DependencyEdge::getTarget);
 		return children.collect(Collectors.toSet());
 	}
 
-	@SuppressWarnings("unchecked")
-	public Set<FitnessFunction<T>> getStructuralParents(FitnessFunction<T> parent){
+	public Set<TestFitnessFunction> getStructuralParents(TestFitnessFunction parent){
 		Set<DependencyEdge> incomingEdges = this.graph.incomingEdgesOf(parent);
-		Stream<FitnessFunction<T>> parents = incomingEdges.stream()
-				.map(edge -> (FitnessFunction<T>) edge.getSource());
+		Stream<TestFitnessFunction> parents = incomingEdges.stream()
+				.map(DependencyEdge::getSource);
 		return parents.collect(Collectors.toSet());
 	}
 }

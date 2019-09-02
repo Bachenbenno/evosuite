@@ -19,11 +19,13 @@
  */
 package org.evosuite.ga.metaheuristics.mosa.structural;
 
-import org.evosuite.ga.FitnessFunction;
+import org.evosuite.testcase.TestFitnessFunction;
 import org.jgrapht.graph.DefaultEdge;
 
 /**
- *
+ * A wrapper class around {@code DefaultEdge} intended to be used only in class {@code
+ * BranchFitnessGraph}. It provides overloaded variants of the methods {@code getSource} and
+ * {@code getTarget} that return {@code TestFitnessFunction}s instead of {@code Object}s.
  *
  * @author Annibale Panichella
  */
@@ -31,11 +33,11 @@ public class DependencyEdge extends DefaultEdge {
 
 	private static final long serialVersionUID = 1L;
 
-	public FitnessFunction<?> getSource(){
-		return (FitnessFunction<?>) super.getSource();
+	public TestFitnessFunction getSource() {
+		return (TestFitnessFunction) super.getSource();
 	}
 
-	public FitnessFunction<?> getTarget(){
-		return (FitnessFunction<?>) super.getTarget();
+	public TestFitnessFunction getTarget() {
+		return (TestFitnessFunction) super.getTarget();
 	}
 }

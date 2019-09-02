@@ -13,6 +13,7 @@ import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.FitnessReplacementFunction;
 import org.evosuite.ga.Neighbourhood;
 import org.evosuite.ga.ReplacementFunction;
+import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.Randomness;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Nasser Albunian
  */
-public class CellularGA<T extends Chromosome> extends GeneticAlgorithm<T>{
+public class CellularGA<T extends Chromosome, F extends FitnessFunction<T>> extends GeneticAlgorithm<T, F> {
 
 	private static final long serialVersionUID = 7846967347821123201L;
 
@@ -139,7 +140,7 @@ public class CellularGA<T extends Chromosome> extends GeneticAlgorithm<T>{
 			T mainIndividual = main.get(i);
 			T tempIndividual = temp.get(i);
 
-			for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
+			for (F fitnessFunction : fitnessFunctions) {
 				fitnessFunction.getFitness(mainIndividual);
 				notifyEvaluation(mainIndividual);
 				fitnessFunction.getFitness(tempIndividual);
@@ -163,7 +164,7 @@ public class CellularGA<T extends Chromosome> extends GeneticAlgorithm<T>{
 	 */
 	public T getBestOffspring(T offspring1, T offspring2){
 
-		for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
+		for (F fitnessFunction : fitnessFunctions) {
 			fitnessFunction.getFitness(offspring1);
 			notifyEvaluation(offspring1);
 			fitnessFunction.getFitness(offspring2);
@@ -295,7 +296,7 @@ public class CellularGA<T extends Chromosome> extends GeneticAlgorithm<T>{
 	 */
 	private double getBestFitness() {
 		T bestIndividual = getBestIndividual();
-		for (FitnessFunction<T> ff : fitnessFunctions) {
+		for (F ff : fitnessFunctions) {
 			ff.getFitness(bestIndividual);
 		}
 		return bestIndividual.getFitness();

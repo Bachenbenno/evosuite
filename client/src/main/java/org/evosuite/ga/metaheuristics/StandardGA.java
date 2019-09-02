@@ -26,6 +26,7 @@ import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.ConstructionFailedException;
+import org.evosuite.ga.FitnessFunction;
 import org.evosuite.utils.Randomness;
 
 
@@ -34,7 +35,7 @@ import org.evosuite.utils.Randomness;
  *
  * @author Gordon Fraser
  */
-public class StandardGA<T extends Chromosome> extends GeneticAlgorithm<T> {
+public class StandardGA<T extends Chromosome, F extends FitnessFunction<T>> extends GeneticAlgorithm<T, F> {
 
 	private static final long serialVersionUID = 5043503777821916152L;
 
@@ -54,10 +55,8 @@ public class StandardGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 	@Override
 	protected void evolve() {
 
-		List<T> newGeneration = new ArrayList<T>();
-
 		// Elitism
-		newGeneration.addAll(elitism());
+		List<T> newGeneration = new ArrayList<>(elitism());
 
 		// new_generation.size() < population_size
 		while (!isNextPopulationFull(newGeneration)) {

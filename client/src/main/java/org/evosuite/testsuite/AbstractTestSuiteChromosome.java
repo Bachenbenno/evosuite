@@ -36,6 +36,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * An abstract base class for chromosomes that represent whole test suites. A test suite consists
+ * of several executable tests, represented by their own respective chromosomes.
+ *
+ * @param <T> the type of chromosome that represents a single test case in this test suite
+ */
 public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome> extends Chromosome {
 
 
@@ -43,7 +49,14 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 
 	private static final Logger logger = LoggerFactory.getLogger(AbstractTestSuiteChromosome.class);
 
+	/**
+	 * The list of test cases this test suite comprises.
+	 */
 	protected List<T> tests = new ArrayList<>();
+
+	/**
+	 * Factory for creating an individual test case.
+	 */
 	protected ChromosomeFactory<T> testChromosomeFactory;
 
 	/**
@@ -73,9 +86,10 @@ public abstract class AbstractTestSuiteChromosome<T extends ExecutableChromosome
 	}
 
 	/**
-	 * Creates a deep copy of source.
+	 * A copy constructor for {@code AbstractTestSuiteChromosome} that creates a deep copy
+	 * of the given {@code source}.
 	 *
-	 * @param source a {@link org.evosuite.testsuite.AbstractTestSuiteChromosome} object.
+	 * @param source the {@code AbstractTestSuiteChromosome} to copy
 	 */
 	@SuppressWarnings("unchecked")
 	protected AbstractTestSuiteChromosome(AbstractTestSuiteChromosome<T> source) {

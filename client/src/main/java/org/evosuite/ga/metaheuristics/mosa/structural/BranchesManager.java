@@ -24,6 +24,7 @@ import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
+import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.slf4j.Logger;
@@ -37,31 +38,31 @@ import java.util.*;
  *
  * @author Annibale Panichella, Fitsum Meshesha Kifetew
  */
-public class BranchesManager<T extends Chromosome> extends StructuralGoalManager<T>{
+public class BranchesManager extends StructuralGoalManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(BranchesManager.class);
 
-	protected BranchFitnessGraph<T> graph;
+	protected BranchFitnessGraph graph;
 
-	protected final Map<Integer, FitnessFunction<T>> branchCoverageTrueMap = new HashMap<>();
-	protected final Map<Integer, FitnessFunction<T>> branchCoverageFalseMap = new HashMap<>();
-	private final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new HashMap<>();
+	protected final Map<Integer, TestFitnessFunction> branchCoverageTrueMap = new HashMap<>();
+	protected final Map<Integer, TestFitnessFunction> branchCoverageFalseMap = new HashMap<>();
+	private final Map<String, TestFitnessFunction> branchlessMethodCoverageMap = new HashMap<>();
 
 	/**
 	 * Constructor used to initialize the set of uncovered goals, and the initial set
 	 * of goals to consider as initial contrasting objectives
-	 * @param fitnessFunctions List of all FitnessFunction<T>
+	 * @param fitnessFunctions List of all TestFitnessFunctions
 	 */
-	public BranchesManager(List<FitnessFunction<T>> fitnessFunctions){
+	public BranchesManager(List<TestFitnessFunction> fitnessFunctions) {
 		super(fitnessFunctions);
 
-		graph = new BranchFitnessGraph<>(new HashSet<>(fitnessFunctions));
+		graph = new BranchFitnessGraph(new HashSet<>(fitnessFunctions));
 
 		// initialize current goals
 		this.currentGoals.addAll(graph.getRootBranches());
 
 		// initialize the maps
-		for (FitnessFunction<T> ff : fitnessFunctions) {
+		for (TestFitnessFunction ff : fitnessFunctions) {
 			BranchCoverageTestFitness goal = (BranchCoverageTestFitness) ff;
 			// Skip instrumented branches - we only want real branches
 			if (goal.getBranch() != null && goal.getBranch().isInstrumented()) {
@@ -78,11 +79,11 @@ public class BranchesManager<T extends Chromosome> extends StructuralGoalManager
 		}
 	}
 
-	public void calculateFitness(T c){
+	public void calculateFitness(TestChromosome c){
 		// run the test
-		TestCase test = ((TestChromosome) c).getTestCase();
+		TestCase test = c.getTestCase();
 		ExecutionResult result = TestCaseExecutor.runTest(test);
-		((TestChromosome) c).setLastExecutionResult(result);
+		c.setLastExecutionResult(result);
 		c.setChanged(false);
 
 		if (result.hasTimeout() || result.hasTestException()){
@@ -91,21 +92,21 @@ public class BranchesManager<T extends Chromosome> extends StructuralGoalManager
 		}
 
 		// 1) we update the set of currents goals
-		Set<FitnessFunction<T>> visitedStatements = new HashSet<>(this.getUncoveredGoals().size() * 2);
-		LinkedList<FitnessFunction<T>> targets = new LinkedList<>(this.currentGoals);
+		Set<TestFitnessFunction> visitedStatements = new HashSet<>(this.getUncoveredGoals().size() * 2);
+		LinkedList<TestFitnessFunction> targets = new LinkedList<>(this.currentGoals);
 
 		while (targets.size()>0){
-			FitnessFunction<T> fitnessFunction = targets.poll();
+			TestFitnessFunction fitnessFunction = targets.poll();
 
-			int past_size = visitedStatements.size();
+			int pastSize = visitedStatements.size();
 			visitedStatements.add(fitnessFunction);
-			if (past_size == visitedStatements.size())
+			if (pastSize == visitedStatements.size())
 				continue;
 
 			double value = fitnessFunction.getFitness(c);
 			if (value == 0.0) {
 				updateCoveredGoals(fitnessFunction, c);
-				for (FitnessFunction<T> child : graph.getStructuralChildren(fitnessFunction)){
+				for (TestFitnessFunction child : graph.getStructuralChildren(fitnessFunction)){
 					targets.addLast(child);
 				}
 			} else {
@@ -115,20 +116,20 @@ public class BranchesManager<T extends Chromosome> extends StructuralGoalManager
 		currentGoals.removeAll(this.getCoveredGoals());
 
 		// 2) we update the archive
-		for (Integer branchid : result.getTrace().getCoveredFalseBranches()){
-			FitnessFunction<T> branch = this.branchCoverageFalseMap.get(branchid);
+		for (Integer branchID : result.getTrace().getCoveredFalseBranches()){
+			TestFitnessFunction branch = this.branchCoverageFalseMap.get(branchID);
 			if (branch == null)
 				continue;
 			updateCoveredGoals(branch, c);
 		}
-		for (Integer branchid : result.getTrace().getCoveredTrueBranches()){
-			FitnessFunction<T> branch = this.branchCoverageTrueMap.get(branchid);
+		for (Integer branchID : result.getTrace().getCoveredTrueBranches()){
+			TestFitnessFunction branch = this.branchCoverageTrueMap.get(branchID);
 			if (branch == null)
 				continue;
 			updateCoveredGoals(branch, c);
 		}
 		for (String method : result.getTrace().getCoveredBranchlessMethods()){
-			FitnessFunction<T> branch = this.branchlessMethodCoverageMap.get(method);
+			TestFitnessFunction branch = this.branchlessMethodCoverageMap.get(method);
 			if (branch == null)
 				continue;
 			updateCoveredGoals(branch, c);
@@ -136,16 +137,16 @@ public class BranchesManager<T extends Chromosome> extends StructuralGoalManager
 		//debugStructuralDependencies(c);
 	}
 
-	protected void debugStructuralDependencies(T c){
-		for (FitnessFunction<T> fitnessFunction : this.getUncoveredGoals()) {
+	protected void debugStructuralDependencies(TestChromosome c){
+		for (TestFitnessFunction fitnessFunction : this.getUncoveredGoals()) {
 			double value = fitnessFunction.getFitness(c);
-			if (value <1 && !currentGoals.contains(fitnessFunction) && !this.getCoveredGoals().contains(fitnessFunction)) {
+			if (value < 1 && !currentGoals.contains(fitnessFunction) && !this.getCoveredGoals().contains(fitnessFunction)) {
 				logger.error("Branch {} has fitness {} but is not in the current goals", fitnessFunction.toString(), value);
 			}
 		}
 	}
 
-	public BranchFitnessGraph<T> getGraph() {
+	public BranchFitnessGraph getGraph() {
 		return graph;
 	}
 

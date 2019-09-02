@@ -52,7 +52,7 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void computeRankingAssignment(List<T> solutions, Set<FitnessFunction<T>> uncoveredGoals) {
+	public void computeRankingAssignment(List<T> solutions, Set<? extends FitnessFunction<T>> uncoveredGoals) {
 		if (solutions.isEmpty()) {
 			logger.debug("solution is empty");
 			return;
@@ -100,7 +100,7 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 	 * @param uncoveredGoals the goals used for ranking
 	 * @return the non-dominated solutions (first sub-front)
 	 */
-	private List<T> getZeroFront(List<T> solutionSet, Set<FitnessFunction<T>> uncoveredGoals) {
+	private List<T> getZeroFront(List<T> solutionSet, Set<? extends FitnessFunction<T>> uncoveredGoals) {
 		Set<T> zeroFront = new LinkedHashSet<>(solutionSet.size());
 		for (FitnessFunction<T> f : uncoveredGoals) {
 			// for each uncovered goal, peak up the best tests using the proper comparator
@@ -128,10 +128,10 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 			List<T> dominatedSolutions = new ArrayList<>(solutions.size());
 			for (T best : front) {
 				int flag = comparator.compare(p, best);
-				if (flag == -1) {
+				if (flag < 0) {
 					dominatedSolutions.add(best);
 				}
-				if (flag == +1) {
+				if (flag > 0) {
 					isDominated = true;
 					break;
 				}
@@ -149,6 +149,7 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 
 	/**
 	 * {@inheritDoc}
+	 * @return
 	 */
 	public List<T> getSubfront(int rank) {
 		if (this.fronts == null || rank >= this.fronts.size()) {
