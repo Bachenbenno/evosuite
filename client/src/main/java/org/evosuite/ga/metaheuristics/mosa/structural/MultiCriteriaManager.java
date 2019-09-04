@@ -49,6 +49,7 @@ import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
+import org.evosuite.testcase.execution.ExecutionTrace;
 import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.evosuite.utils.ArrayUtil;
 import org.evosuite.utils.LoggingUtils;
@@ -437,19 +438,20 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 		currentGoals.removeAll(this.getCoveredGoals());
 
 		// 2) We update the archive.
-		for (Integer branchid : result.getTrace().getCoveredFalseBranches()){
+		final ExecutionTrace trace = result.getTrace();
+		for (int branchid : trace.getCoveredFalseBranches()){
 			TestFitnessFunction branch = this.branchCoverageFalseMap.get(branchid);
 			if (branch == null)
 				continue;
 			updateCoveredGoals(branch, c);
 		}
-		for (Integer branchid : result.getTrace().getCoveredTrueBranches()){
+		for (int branchid : trace.getCoveredTrueBranches()){
 			TestFitnessFunction branch = this.branchCoverageTrueMap.get(branchid);
 			if (branch == null)
 				continue;
 			updateCoveredGoals(branch, c);
 		}
-		for (String method : result.getTrace().getCoveredBranchlessMethods()){
+		for (String method : trace.getCoveredBranchlessMethods()){
 			TestFitnessFunction branch = this.branchlessMethodCoverageMap.get(method);
 			if (branch == null)
 				continue;
@@ -482,11 +484,11 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 	 * @return list of exception goals being covered by t
 	 */
 	public Set<ExceptionCoverageTestFitness> deriveCoveredExceptions(TestChromosome t){
-		Set<ExceptionCoverageTestFitness> covered_exceptions = new LinkedHashSet<>();
+		Set<ExceptionCoverageTestFitness> coveredExceptions = new LinkedHashSet<>();
 		ExecutionResult result = t.getLastExecutionResult();
 
 		if(result.calledReflection())
-			return covered_exceptions;
+			return coveredExceptions;
 
 		for (Integer i : result.getPositionsWhereExceptionsWereThrown()) {
 			if(ExceptionCoverageHelper.shouldSkip(result,i)){
@@ -510,10 +512,10 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 				 * Add goal to list of fitness functions to solve
 				 */
 				ExceptionCoverageTestFitness goal = new ExceptionCoverageTestFitness(Properties.TARGET_CLASS, methodIdentifier, exceptionClass, type);
-				covered_exceptions.add(goal);
+				coveredExceptions.add(goal);
 			}
 		}
-		return covered_exceptions;
+		return coveredExceptions;
 	}
 
 	public BranchFitnessGraph getControlDependencies4Branches(List<TestFitnessFunction> fitnessFunctions){
