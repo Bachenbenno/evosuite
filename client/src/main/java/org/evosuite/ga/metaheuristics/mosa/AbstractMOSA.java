@@ -32,6 +32,7 @@ import org.evosuite.ga.archive.Archive;
 import org.evosuite.ga.comparators.DominanceComparator;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.metaheuristics.SearchListener;
+import org.evosuite.ga.metaheuristics.TestSuiteAdapter;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -61,6 +62,8 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome, Test
 	private static final long serialVersionUID = 146182080947267628L;
 
 	private static final Logger logger = LoggerFactory.getLogger(AbstractMOSA.class);
+
+	private MOSATestSuiteAdapter adapter = null;
 
 	/** Keep track of overall suite fitness functions and correspondent test fitness functions */
 	public final Map<TestSuiteFitnessFunction, Class<?>> suiteFitnessFunctions;
@@ -94,6 +97,15 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome, Test
 		  .warn("Originally, MOSA was implemented with a '"
 		      + SelectionFunction.RANK_CROWD_DISTANCE_TOURNAMENT.name()
 		      + "' selection function. You may want to consider using it.");
+		}
+	}
+
+	public void setAdapter(final MOSATestSuiteAdapter adapter) {
+		Objects.requireNonNull(adapter);
+		if (this.adapter == null) {
+			this.adapter = adapter;
+		} else {
+			throw new IllegalStateException("adapter has already been set");
 		}
 	}
 
@@ -407,31 +419,57 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome, Test
 	 * in the {@link org.evosuite.ga.archive.Archive}.
 	 */
 
-	/**
-     * Notify all search listeners but ProgressMonitor of fitness evaluation.
-     *
-     * @param chromosome a {@link org.evosuite.ga.Chromosome} object.
-     */
-    @Override
-	protected void notifyEvaluation(TestChromosome chromosome) {
-		// ProgressMonitor requires a TestSuiteChromosome
-		Stream<SearchListener<TestChromosome>> ls = listeners.stream().filter(l -> !(l instanceof ProgressMonitor));
-		ls.forEach(l -> l.fitnessEvaluation(chromosome));
+	// This override should no longer be needed since MOSA no longer accepts ProgressMonitors
+//	/**
+//     * Notify all search listeners but ProgressMonitor of fitness evaluation.
+//     *
+//     * @param chromosome a {@link org.evosuite.ga.Chromosome} object.
+//     */
+//    @Override
+//	protected void notifyEvaluation(TestChromosome chromosome) {
+//		// ProgressMonitor requires a TestSuiteChromosome
+//		Stream<SearchListener<TestChromosome>> ls = listeners.stream().filter(l -> !(l instanceof ProgressMonitor));
+//		ls.forEach(l -> l.fitnessEvaluation(chromosome));
+//	}
+
+	// This override should no longer be needed since MOSA no longer accepts ProgressMonitors
+//    /**
+//     * Notify all search listeners but ProgressMonitor of a mutation.
+//     *
+//     * @param chromosome a {@link org.evosuite.ga.Chromosome} object.
+//     */
+//    @Override
+//    protected void notifyMutation(TestChromosome chromosome) {
+//		// ProgressMonitor requires a TestSuiteChromosome
+//		Stream<SearchListener<TestChromosome>> ls = listeners.stream().filter(l -> !(l instanceof ProgressMonitor));
+//		ls.forEach(l -> l.modification(chromosome));
+//    }
+
+	@Override
+	protected void notifySearchStarted() {
+		super.notifySearchStarted();
+		if (adapter != null) {
+			adapter.notifySearchStarted();
+		}
 	}
 
-    /**
-     * Notify all search listeners but ProgressMonitor of a mutation.
-     *
-     * @param chromosome a {@link org.evosuite.ga.Chromosome} object.
-     */
-    @Override
-    protected void notifyMutation(TestChromosome chromosome) {
-		// ProgressMonitor requires a TestSuiteChromosome
-		Stream<SearchListener<TestChromosome>> ls = listeners.stream().filter(l -> !(l instanceof ProgressMonitor));
-		ls.forEach(l -> l.modification(chromosome));
-    }
+	@Override
+	protected void notifyIteration() {
+		super.notifyIteration();
+		if (adapter != null) {
+			adapter.notifyIteration();
+		}
+	}
 
-    /**
+	@Override
+	protected void notifySearchFinished() {
+		super.notifySearchFinished();
+		if (adapter != null) {
+			adapter.notifySearchFinished();
+		}
+	}
+
+	/**
      * {@inheritDoc}
      */
     @Override
