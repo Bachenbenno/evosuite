@@ -145,7 +145,7 @@ public class DynaMOSA extends AbstractMOSA {
 		// We are trying to optimize for multiple targets at the same time.
 		this.goalsManager = new MultiCriteriaManager(this.fitnessFunctions);
 
-		LoggingUtils.getEvoLogger().info("* Initial Number of Goals in DynMOSA = " +
+		LoggingUtils.getEvoLogger().info("* Initial Number of Goals in DynaMOSA = " +
 				this.goalsManager.getCurrentGoals().size() +" / "+ this.getUncoveredGoals().size());
 
 		logger.debug("Initial Number of Goals = " + this.goalsManager.getCurrentGoals().size());
