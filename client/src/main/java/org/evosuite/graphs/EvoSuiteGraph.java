@@ -23,11 +23,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.evosuite.utils.LoggingUtils;
@@ -198,6 +194,29 @@ public abstract class EvoSuiteGraph<V, E extends DefaultEdge> {
 					"expect children count and size of set of all children of a graphs node to be equal");
 
 		return r;
+	}
+
+	public Set<V> getChildrenRecursively(V node) {
+		if (!containsVertex(node)) {
+			throw new IllegalArgumentException("node not contained in this graph");
+		}
+
+		final Queue<V> workQueue = new LinkedList<>();
+		final Set<V> children = new HashSet<>();
+
+		workQueue.add(node);
+		while (!workQueue.isEmpty()) {
+			final V current = workQueue.remove();
+			final Set<V> directChildren = getChildren(current);
+
+			// to avoid cycles, don't visit children more than once
+			directChildren.removeAll(children);
+			workQueue.addAll(directChildren);
+
+			children.addAll(directChildren);
+		}
+
+		return children;
 	}
 
 	/**
