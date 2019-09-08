@@ -26,70 +26,55 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 /**
- * 
+ *
  * simple implementation of a graph where edges are not classes.
  * @author mattia
  *
- * @param <E>
+ * @param <V> type of vertices used by the graph
  */
-public abstract class Graph<E> {
+public abstract class Graph<V> {
 
-	private final Map<E, Set<E>> edges = Collections.synchronizedMap(new HashMap<E, Set<E>>());
-	private final Map<E, Set<E>> reverseEdges = Collections.synchronizedMap(new HashMap<E, Set<E>>());
-	private final Set<E> vertexSet = Collections.synchronizedSet(new HashSet<E>());
-	
-	public Map<E, Set<E>> getEdges() {
+	private final Map<V, Set<V>> edges = Collections.synchronizedMap(new HashMap<>());
+	private final Map<V, Set<V>> reverseEdges = Collections.synchronizedMap(new HashMap<>());
+	private final Set<V> vertexSet = Collections.synchronizedSet(new HashSet<>());
+
+	public Map<V, Set<V>> getEdges() {
 		return edges;
 	}
-	
-	public synchronized void removeVertex(E vertex) {
+
+	public synchronized void removeVertex(V vertex) {
 		edges.remove(vertex);
 		reverseEdges.remove(vertex);
 		vertexSet.remove(vertex);
 	}
 
-	public synchronized boolean containsEdge(E src, E dest){
-		Set<E> tempSet = edges.get(src);
+	public synchronized boolean containsEdge(V src, V dest){
+		Set<V> tempSet = edges.get(src);
 		if(tempSet==null)
 			return false;
 		else return tempSet.contains(dest);
 	}
-	
-	public synchronized void addEdge(E src, E dest) {
+
+	public synchronized void addEdge(V src, V dest) {
 		vertexSet.add(src);
 		vertexSet.add(dest);
-		Set<E> srcNeighbors = this.edges.get(src);
-		if (srcNeighbors == null) {
-			this.edges.put(src, srcNeighbors = new LinkedHashSet<E>());
-		}
+		Set<V> srcNeighbors = this.edges.computeIfAbsent(src, k -> new LinkedHashSet<>());
 		srcNeighbors.add(dest);
-		
-		Set<E> rsrcNeighbors = this.reverseEdges.get(dest);
-		if (rsrcNeighbors == null) {
-			this.reverseEdges.put(dest, rsrcNeighbors = new LinkedHashSet<E>());
-		}
+
+		Set<V> rsrcNeighbors = this.reverseEdges.computeIfAbsent(dest, k -> new LinkedHashSet<>());
 		rsrcNeighbors.add(src);
 	}
-	
-	public synchronized Set<E> getVertexSet() {
+
+	public synchronized Set<V> getVertexSet() {
 		return vertexSet;
 	}
-	
-	public synchronized boolean containsVertex(E e){
+
+	public synchronized boolean containsVertex(V e){
 		return vertexSet.contains(e);
 	}
 
-	public synchronized Iterable<E> getNeighbors(E vertex) {
-		Set<E> neighbors = this.edges.get(vertex);
-		if (neighbors == null) {
-			return Collections.emptyList();
-		} else {
-			return Collections.unmodifiableSet(neighbors);
-		}
-	}
-	
-	public synchronized Iterable<E> getReverseNeighbors(E vertex) {
-		Set<E> neighbors = this.reverseEdges.get(vertex);
+	public synchronized Iterable<V> getNeighbors(V vertex) {
+		Set<V> neighbors = this.edges.get(vertex);
 		if (neighbors == null) {
 			return Collections.emptyList();
 		} else {
@@ -97,7 +82,16 @@ public abstract class Graph<E> {
 		}
 	}
 
-	public synchronized int getNeighborsSize(E vertex) {
+	public synchronized Iterable<V> getReverseNeighbors(V vertex) {
+		Set<V> neighbors = this.reverseEdges.get(vertex);
+		if (neighbors == null) {
+			return Collections.emptyList();
+		} else {
+			return Collections.unmodifiableSet(neighbors);
+		}
+	}
+
+	public synchronized int getNeighborsSize(V vertex) {
 		if (this.edges.get(vertex) == null)
 			return 0;
 		return this.edges.get(vertex).size();
