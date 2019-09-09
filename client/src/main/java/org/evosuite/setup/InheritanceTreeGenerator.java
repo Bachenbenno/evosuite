@@ -18,7 +18,7 @@
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * 
+ *
  */
 package org.evosuite.setup;
 
@@ -50,7 +50,7 @@ import com.thoughtworks.xstream.XStream;
 
 /**
  * @author Gordon Fraser
- * 
+ *
  */
 public class InheritanceTreeGenerator {
 
@@ -62,7 +62,7 @@ public class InheritanceTreeGenerator {
 
 	/**
 	 * Iterate over items in classpath and analyze them
-	 * 
+	 *
 	 * @param classPath
 	 * @return
 	 */
@@ -79,7 +79,7 @@ public class InheritanceTreeGenerator {
 				                                 "Error loading inheritance tree: {}", e);
 			}
 		}
-		
+
 		logger.debug("Reading JDK data");
 		InheritanceTree inheritanceTree = readJDKData();
         if(inheritanceTree==null){
@@ -111,10 +111,10 @@ public class InheritanceTreeGenerator {
 
 	/**
 	 * Create inheritance tree only for the classes passed as parameter
-	 * 
+	 *
 	 * <p>
 	 * Private classes will be ignored
-	 * 
+	 *
 	 * @param classNames
 	 * @return
 	 */
@@ -151,7 +151,7 @@ public class InheritanceTreeGenerator {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private static void analyze(InheritanceTree inheritanceTree, File file) {
 		if (!file.canRead()) {
@@ -229,7 +229,7 @@ public class InheritanceTreeGenerator {
 		if(stream==null){
 			throw new IllegalArgumentException("Failed to locate/load class: "+className);
 		}
-		
+
 		logger.debug("Going to analyze: {}", className);
 		analyzeClassStream(inheritanceTree, stream, false);
 	}
@@ -252,13 +252,13 @@ public class InheritanceTreeGenerator {
 			logger.error("ASM Error while reading class ("+e.getMessage()+")");
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private static void analyzeClassNode(InheritanceTree inheritanceTree,
 	        ClassNode cn, boolean onlyPublic) {
-		
+
 		logger.info("Analyzing class {}", cn.name);
-		
+
 		// Don't load classes already seen from a different CP entry
 		if(inheritanceTree.hasClass(cn.name))
 			return;
@@ -361,11 +361,10 @@ public class InheritanceTreeGenerator {
 		return true;
 	}
 
-	private static List<String> classExceptions = Arrays.asList(new String[] {
-	        "java/lang/Class", "java/lang/Object", "java/lang/String",
-	        "java/lang/Comparable", "java/io/Serializable", "com/apple", "apple/",
-	        "sun/", "com/sun", "com/oracle", "sun/awt", "jdk/internal",
-	        "java/util/prefs/MacOSXPreferences" });
+	private static List<String> classExceptions = Arrays.asList("java/lang/Class", "java/lang/Object", "java/lang/String",
+			"java/lang/Comparable", "java/io/Serializable", "com/apple", "apple/",
+			"sun/", "com/sun", "com/oracle", "sun/awt", "jdk/internal",
+			"java/util/prefs/MacOSXPreferences");
 
 	/**
 	 * During runtime, we do not want to consider standard classes to safe some
@@ -383,7 +382,7 @@ public class InheritanceTreeGenerator {
 		 * Filtering against other inheritance trees is necessary to remove any
 		 * version specific classes. For example, first generate an inheritance tree
 		 * with JDK6 and then one with JDK7, filtering against JDK6, to keep only
-		 * the intersection of classes. 
+		 * the intersection of classes.
 		 */
 		for (String filterFile : filters) {
 			logger.info("Trying to load {}", filterFile);
@@ -396,7 +395,7 @@ public class InheritanceTreeGenerator {
 		}
 
 		EXCEPTION: for (String name : list) {
-			// We do not consider sun.* and apple.* and com.* 
+			// We do not consider sun.* and apple.* and com.*
 			for (String exception : classExceptions) {
 				if (name.startsWith(exception.replace('/','.'))) {
 					logger.info("Skipping excluded class " + name);
