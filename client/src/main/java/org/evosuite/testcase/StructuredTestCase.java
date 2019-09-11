@@ -19,8 +19,6 @@
  */
 package org.evosuite.testcase;
 
-import org.evosuite.testcase.statements.Statement;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -52,7 +50,7 @@ public class StructuredTestCase extends DefaultTestCase {
 	 */
 	public Set<String> getTargetMethods() {
 		return primaryTargets.stream()
-				.map(TestFitnessFunction::getTargetMethod)
+				.map(TestFitnessFunction::getTargetMethodName)
 				.collect(Collectors.toSet());
 	}
 

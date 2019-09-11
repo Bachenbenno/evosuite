@@ -46,6 +46,7 @@ public class CBranchTestFitness extends TestFitnessFunction {
 	private final CallContext context;
 
 	public CBranchTestFitness(BranchCoverageGoal branch, CallContext context) {
+		super(branch.getClassName(), branch.getMethodName());
 		this.branchGoal = branch;
 		this.context = context;
 	}
@@ -157,22 +158,6 @@ public class CBranchTestFitness extends TestFitnessFunction {
 
 		return compareClassName(other);
 //		return -1;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.evosuite.testcase.TestFitnessFunction#getTargetClass()
-	 */
-	@Override
-	public String getTargetClass() {
-		return branchGoal.getClassName();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.evosuite.testcase.TestFitnessFunction#getTargetMethod()
-	 */
-	@Override
-	public String getTargetMethod() {
-		return branchGoal.getMethodName();
 	}
 
 	@Override

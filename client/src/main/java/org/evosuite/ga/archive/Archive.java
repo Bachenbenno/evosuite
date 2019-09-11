@@ -21,7 +21,6 @@ package org.evosuite.ga.archive;
 
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
-import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.SecondaryObjective;
 import org.evosuite.runtime.util.AtMostOnceLogger;
 import org.evosuite.setup.TestCluster;
@@ -464,11 +463,11 @@ public abstract class Archive<F extends TestFitnessFunction, T extends TestChrom
   }
 
   private String getClassName(F target) {
-    return target.getTargetClass();
+    return target.getTargetClassName();
   }
 
   private String getMethodName(F target) {
-    return target.getTargetMethod();
+    return target.getTargetMethodName();
   }
 
   /**

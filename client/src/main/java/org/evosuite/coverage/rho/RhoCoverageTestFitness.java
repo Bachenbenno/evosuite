@@ -39,6 +39,10 @@ public class RhoCoverageTestFitness extends TestFitnessFunction {
 
 	private Set<Set<Integer>> coverage_matrix_generated_so_far = new LinkedHashSet<Set<Integer>>();
 
+	public RhoCoverageTestFitness() {
+		super("???", "???"); // FIXME: Those are just dummy values... Is this OK or a problem?
+	}
+
 	@Override
 	public double getFitness(TestChromosome individual, ExecutionResult result) {
 
@@ -136,18 +140,6 @@ public class RhoCoverageTestFitness extends TestFitnessFunction {
 		if (previous_number_of_test_cases != other.previous_number_of_test_cases)
 			return false;
 		return true;
-	}
-
-	@Override
-	public String getTargetClass() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getTargetMethod() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public void incrementNumber_of_Ones(int n) {

@@ -87,11 +87,8 @@ public class IBranchSuiteFitness extends TestSuiteFitnessFunction {
 				}
 				tempInSet.add(goal);
 			} else {
-				String methodName = goal.getTargetClass() + "." + goal.getTargetMethod();
-				Map<CallContext, IBranchTestFitness> innermap = methodsMap.get(methodName);
-				if (innermap == null) {
-					methodsMap.put(methodName, innermap = new LinkedHashMap<>());
-				}
+				String methodName = goal.getTargetClassName() + "." + goal.getTargetMethodName();
+				Map<CallContext, IBranchTestFitness> innermap = methodsMap.computeIfAbsent(methodName, k -> new LinkedHashMap<>());
 				innermap.put(goal.getContext(), goal);
 			}
 			if (Properties.TEST_ARCHIVE) {
@@ -285,8 +282,8 @@ public class IBranchSuiteFitness extends TestSuiteFitnessFunction {
 		for (IBranchTestFitness method : toRemoveRootBranches) {
 			boolean removed = branchGoals.remove(method);
 
-			Map<CallContext, IBranchTestFitness> map = methodsMap.get(method.getTargetClass() + "."
-					+ method.getTargetMethod());
+			Map<CallContext, IBranchTestFitness> map = methodsMap.get(method.getTargetClassName() + "."
+					+ method.getTargetMethodName());
 
 			IBranchTestFitness f = map.remove(method.getContext());
 
