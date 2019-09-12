@@ -387,4 +387,7 @@ public interface Statement {
 	 */
 	public void setRetval(VariableReference newRetVal);
 
+	void decreaseTTL();
+
+	void resetTTL();
 }

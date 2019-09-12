@@ -19,6 +19,7 @@
  */
 package org.evosuite.testcase.statements;
 
+import org.evosuite.Properties;
 import org.evosuite.assertion.Assertion;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestCodeVisitor;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
  * @author Gordon Fraser
  */
 public abstract class AbstractStatement implements Statement, Serializable {
+	private int ttl = Properties.INITIAL_TTL;
 
 	/**
 	 * An interface to enable the concrete statements to use the executer/1
@@ -458,6 +460,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 		Statement result = copy(newTestCase, 0);
 		result.getReturnValue().setOriginalCode(retval.getOriginalCode());
 		result.addComment(getComment());
+		result.resetTTL(); // TODO: is this required? I don't know
 		return result;
 	}
 
@@ -482,5 +485,19 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	@Override
 	public boolean isReflectionStatement() {
 		return false;
+	}
+
+	public int getTTL() {
+		return ttl;
+	}
+
+	@Override
+	public void decreaseTTL() {
+		ttl--;
+	}
+
+	@Override
+	public void resetTTL() {
+		ttl = Properties.INITIAL_TTL;
 	}
 }
