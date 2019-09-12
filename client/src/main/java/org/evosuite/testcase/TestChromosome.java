@@ -306,6 +306,11 @@ public class TestChromosome extends ExecutableChromosome {
 		boolean changed = false;
 		mutationHistory.clear();
 
+		if (Properties.ENABLE_FAILURE_PENALTIES
+				&& Properties.INSERTION_STRATEGY == Properties.InsertionStrategy.GUIDED_INSERTION) {
+			test.decreaseStatementTTL();
+		}
+
 		if(mockChange()) {
 			changed = true;
 		}
