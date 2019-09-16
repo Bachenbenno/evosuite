@@ -19,28 +19,9 @@
  */
 package org.evosuite.rmi.service;
 
-import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import org.evosuite.*;
 import org.evosuite.Properties;
+import org.evosuite.*;
 import org.evosuite.Properties.NoSuchParameterException;
-import org.evosuite.TestGenerationContext;
-import org.evosuite.TestSuiteGenerator;
-import org.evosuite.TimeController;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.coverage.ClassStatisticsPrinter;
 import org.evosuite.ga.Chromosome;
@@ -53,12 +34,17 @@ import org.evosuite.runtime.sandbox.Sandbox;
 import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.setup.TestCluster;
 import org.evosuite.statistics.RuntimeVariable;
+import org.evosuite.utils.FileIOUtils;
 import org.evosuite.utils.Listener;
 import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.Randomness;
-import org.evosuite.utils.FileIOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
 
@@ -457,38 +443,35 @@ public class ClientNodeImpl implements ClientNodeLocal, ClientNodeRemote {
 		 * Needs to be done on separated thread, otherwise the master will block on this
 		 * function call until end of the search, even if it is on remote process
 		 */
-		searchExecutor.submit(new Runnable() {
-			@Override
-			public void run() {
-				changeState(ClientState.STARTED);
-				Sandbox.goingToExecuteSUTCode();
-                TestGenerationContext.getInstance().goingToExecuteSUTCode();
-				Sandbox.goingToExecuteUnsafeCodeOnSameThread();
+		searchExecutor.submit(() -> {
+			changeState(ClientState.STARTED);
+			Sandbox.goingToExecuteSUTCode();
+			TestGenerationContext.getInstance().goingToExecuteSUTCode();
+			Sandbox.goingToExecuteUnsafeCodeOnSameThread();
 
-				try {
-					LoggingUtils.getEvoLogger().info("* Analyzing classpath (dependency analysis)");
-					DependencyAnalysis.analyzeClass(Properties.TARGET_CLASS,
-							Arrays.asList(ClassPathHandler.getInstance().getClassPathElementsForTargetProject()));
-					StringBuffer fileNames = new StringBuffer();
-					for(Class<?> clazz : TestCluster.getInstance().getAnalyzedClasses()) {
-						fileNames.append(clazz.getName());
-						fileNames.append("\n");
-					}
-					LoggingUtils.getEvoLogger().info("* Writing class dependencies to file "+fileName);
-					FileIOUtils.writeFile(fileNames.toString(), fileName);
-				} catch (Throwable t) {
-					logger.error("Error when analysing coverage for: "
-							+ Properties.TARGET_CLASS + " with seed "
-							+ Randomness.getSeed() + ". Configuration id : "
-							+ Properties.CONFIGURATION_ID, t);
-				} finally {
-					Sandbox.doneWithExecutingUnsafeCodeOnSameThread();
-					Sandbox.doneWithExecutingSUTCode();
-                    TestGenerationContext.getInstance().doneWithExecutingSUTCode();
+			try {
+				LoggingUtils.getEvoLogger().info("* Analyzing classpath (dependency analysis)");
+				DependencyAnalysis.analyzeClass(Properties.TARGET_CLASS,
+						Arrays.asList(ClassPathHandler.getInstance().getClassPathElementsForTargetProject()));
+				StringBuffer fileNames = new StringBuffer();
+				for (Class<?> clazz : TestCluster.getInstance().getAnalyzedClasses()) {
+					fileNames.append(clazz.getName());
+					fileNames.append("\n");
 				}
-
-				changeState(ClientState.DONE);
+				LoggingUtils.getEvoLogger().info("* Writing class dependencies to file " + fileName);
+				FileIOUtils.writeFile(fileNames.toString(), fileName);
+			} catch (Throwable t) {
+				logger.error("Error when analysing coverage for: "
+						+ Properties.TARGET_CLASS + " with seed "
+						+ Randomness.getSeed() + ". Configuration id : "
+						+ Properties.CONFIGURATION_ID, t);
+			} finally {
+				Sandbox.doneWithExecutingUnsafeCodeOnSameThread();
+				Sandbox.doneWithExecutingSUTCode();
+				TestGenerationContext.getInstance().doneWithExecutingSUTCode();
 			}
+
+			changeState(ClientState.DONE);
 		});
 	}
 
