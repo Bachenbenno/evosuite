@@ -73,19 +73,19 @@ public abstract class Graph<V> {
 		return vertexSet.contains(e);
 	}
 
-	public synchronized Iterable<V> getNeighbors(V vertex) {
+	public synchronized Set<V> getNeighbors(V vertex) {
 		Set<V> neighbors = this.edges.get(vertex);
 		if (neighbors == null) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		} else {
 			return Collections.unmodifiableSet(neighbors);
 		}
 	}
 
-	public synchronized Iterable<V> getReverseNeighbors(V vertex) {
+	public synchronized Set<V> getReverseNeighbors(V vertex) {
 		Set<V> neighbors = this.reverseEdges.get(vertex);
 		if (neighbors == null) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		} else {
 			return Collections.unmodifiableSet(neighbors);
 		}
