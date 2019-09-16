@@ -635,18 +635,17 @@ public class TestCluster {
 	 * Return all calls that have a parameter with given type
 	 *
 	 * @param clazz
-	 * @param resolve
 	 * @return
 	 * @throws ConstructionFailedException
 	 */
-	public Set<GenericAccessibleObject<?>> getCallsFor(GenericClass clazz, boolean resolve)
+	public Set<GenericAccessibleObject<?>> getCallsFor(GenericClass clazz)
 	        throws ConstructionFailedException {
 		logger.debug("Getting calls for " + clazz);
 		if (clazz.hasWildcardOrTypeVariables()) {
 			logger.debug("Resolving generic type before getting modifiers");
 			GenericClass concreteClass = clazz.getGenericInstantiation();
 			if (!concreteClass.equals(clazz))
-				return getCallsFor(concreteClass, false);
+				return getCallsFor(concreteClass);
 		}
 
 		if (isSpecialCase(clazz)) {
@@ -665,7 +664,7 @@ public class TestCluster {
 	public GenericAccessibleObject<?> getRandomCallFor(GenericClass clazz, TestCase test, int position)
 	        throws ConstructionFailedException {
 
-		Set<GenericAccessibleObject<?>> calls = getCallsFor(clazz, true);
+		Set<GenericAccessibleObject<?>> calls = getCallsFor(clazz);
 		calls.removeIf(gao -> !ConstraintVerifier.isValidPositionForInsertion(gao, test, position));
 
 		if (calls.isEmpty()) {
