@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
@@ -173,6 +173,10 @@ public class TestGeneration {
             if (Properties.INSTRUMENT_CONTEXT||Properties.INHERITANCE_FILE.isEmpty()) {
                 String inheritanceFile = EvoSuite.generateInheritanceTree(cp);
                 args.add("-Dinheritance_file=" + inheritanceFile);
+            }
+            if (Properties.INSTRUMENT_CONTEXT||Properties.DEPENDENCY_FILE.isEmpty()) {
+                String dependenceFile = EvoSuite.generateMethodDependenceGraph(cp);
+                args.add("-Ddependence_file=" + dependenceFile);
             }
         } catch (IOException e) {
             LoggingUtils.getEvoLogger().info("* Error while traversing classpath: " + e);
@@ -618,6 +622,10 @@ public class TestGeneration {
             if (Properties.INSTRUMENT_CONTEXT||Properties.INHERITANCE_FILE.isEmpty()) {
                 String inheritanceFile = EvoSuite.generateInheritanceTree(cp);
                 args.add("-Dinheritance_file=" + inheritanceFile);
+            }
+            if (Properties.INSTRUMENT_CONTEXT||Properties.DEPENDENCY_FILE.isEmpty()) {
+                String dependenceFile = EvoSuite.generateMethodDependenceGraph(cp);
+                args.add("-Ddependence_file=" + dependenceFile);
             }
         } catch (IOException e) {
             LoggingUtils.getEvoLogger().info("* Error while traversing classpath: " + e);
