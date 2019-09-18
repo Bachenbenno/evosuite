@@ -19,16 +19,15 @@
  */
 package org.evosuite.ga.operators.selection;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import org.evosuite.ga.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Abstract base class of selection functions. Can be used to choose the parents for mutation or
@@ -78,10 +77,14 @@ public abstract class SelectionFunction<T extends Chromosome> implements Seriali
 	 * @return a {@link java.util.List} object.
 	 */
 	public List<T> select(List<T> population, int number) {
-		return Stream.generate(() -> getIndex(population))
-				.limit(number)
-				.map(population::get)
-				.collect(Collectors.toList());
+		if (population.isEmpty()) {
+			return Collections.emptyList();
+		} else {
+			return Stream.generate(() -> getIndex(population))
+					.limit(number)
+					.map(population::get)
+					.collect(Collectors.toList());
+		}
 	}
 
 	/**
