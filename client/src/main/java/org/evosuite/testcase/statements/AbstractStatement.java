@@ -23,7 +23,6 @@ import org.evosuite.Properties;
 import org.evosuite.assertion.Assertion;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestCodeVisitor;
-import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.execution.CodeUnderTestException;
 import org.evosuite.testcase.execution.EvosuiteError;
 import org.evosuite.testcase.variable.ArrayReference;
@@ -447,7 +446,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public boolean mutate(TestCase test, TestFactory factory) {
+	public boolean mutate(TestCase test) {
 		return false;
 	}
 

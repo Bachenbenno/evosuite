@@ -521,7 +521,7 @@ public class TestChromosome extends ExecutableChromosome {
 					int oldDistance = statement.getReturnValue().getDistance();
 
 					//constraints are handled directly in the statement mutations
-					if (statement.mutate(test, testFactory)) {
+					if (statement.mutate(test)) {
 						changed = true;
 						mutationHistory.addMutationEntry(new TestMutationHistoryEntry(
 						        TestMutationHistoryEntry.TestMutation.CHANGE, statement));

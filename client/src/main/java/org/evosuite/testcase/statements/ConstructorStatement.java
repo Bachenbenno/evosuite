@@ -33,7 +33,6 @@ import org.apache.commons.lang3.reflect.TypeUtils;
 import org.evosuite.Properties;
 import org.evosuite.runtime.annotation.Constraints;
 import org.evosuite.testcase.TestCase;
-import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testcase.variable.VariableReferenceImpl;
 import org.evosuite.testcase.execution.CodeUnderTestException;
@@ -361,15 +360,14 @@ public class ConstructorStatement extends EntityWithParametersStatement {
 
 	/**
 	 * Go through parameters of constructor call and apply local search
+	 *  @param test
 	 *
-	 * @param test
-	 * @param factory
 	 */
 	/* (non-Javadoc)
 	 * @see org.evosuite.testcase.AbstractStatement#mutate(org.evosuite.testcase.TestCase, org.evosuite.testcase.TestFactory)
 	 */
 	@Override
-	public boolean mutate(TestCase test, TestFactory factory) {
+	public boolean mutate(TestCase test) {
 
 		if (Randomness.nextDouble() >= Properties.P_CHANGE_PARAMETER)
 			return false;
