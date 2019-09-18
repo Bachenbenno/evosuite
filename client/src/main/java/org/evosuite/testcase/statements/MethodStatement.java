@@ -547,7 +547,7 @@ public class MethodStatement extends EntityWithParametersStatement {
 	 *
 	 */
 	@Override
-	public boolean mutate(TestCase test) {
+	protected boolean mutationImpl(TestCase test) {
 
 		if (Randomness.nextDouble() >= Properties.P_CHANGE_PARAMETER)
 			return false;

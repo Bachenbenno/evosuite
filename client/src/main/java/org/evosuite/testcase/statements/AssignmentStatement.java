@@ -364,7 +364,7 @@ public class AssignmentStatement extends AbstractStatement {
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public boolean mutate(TestCase test) {
+	protected boolean mutationImpl(TestCase test) {
 		assert (isValid());
 
 		// Either mutate parameter, or source
