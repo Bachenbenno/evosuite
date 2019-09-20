@@ -51,7 +51,6 @@ import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.ExecutionTrace;
 import org.evosuite.testcase.execution.TestCaseExecutor;
-import org.evosuite.testcase.mutation.GuidedInsertion;
 import org.evosuite.utils.ArrayUtil;
 import org.evosuite.utils.LoggingUtils;
 import org.slf4j.Logger;
@@ -74,6 +73,8 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 	protected BranchFitnessGraph graph;
 
 	protected Map<BranchCoverageTestFitness, Set<TestFitnessFunction>> dependencies;
+
+	private Set<TestFitnessFunction> infeasibleGoals = new HashSet<>();
 
 	/**
 	 * Maps branch IDs to the corresponding fitness function, only considering branches we want to
@@ -148,7 +149,8 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 			}
 		}
 
-		// initialize current goals
+		// Initialize current goals. At this point, only root branches of methods are free of
+		// control dependencies.
 		this.currentGoals.addAll(graph.getRootBranches());
 	}
 
@@ -393,15 +395,28 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 		// If the test failed to execute properly, it means none of the current gaols could be
 		// reached.
 		if (result.hasTimeout() || result.hasTestException()) {
-			currentGoals.forEach(f -> c.setFitness(f, Double.MAX_VALUE)); // assume minimization
+			currentGoals.forEach(g -> c.setFitness(g, Double.MAX_VALUE)); // assume minimization
+			if (test.getTarget() != null) {
+				increaseFailurePenalty(test.getTarget());
+			}
 			return;
 		}
 
 		Set<TestFitnessFunction> visitedTargets = new LinkedHashSet<>(getUncoveredGoals().size() * 2);
+
+		/*
+		 * The processing list of current targets. If it turns out that any such target has been
+		 * reached, we also enqueue its structural and control-dependent children. This is to
+		 * determine which of those children are already reached by control flow. Only the missed
+		 * children will be part of the currentGoals for the next generation (together with the
+		 * missed goals of the currentGoals of the current generation).
+		 */
 		LinkedList<TestFitnessFunction> targets = new LinkedList<>(this.currentGoals);
 
-		// 1) We update the set of current goals.
-		while (targets.size() > 0) {
+		// 1) We update the set of current targets.
+		while (!targets.isEmpty()) {
+			// We evaluate the given test case against all current targets.
+			// (There might have been serendipitous coverage of other targets, though.)
 			TestFitnessFunction target = targets.poll();
 
 			int pastSize = visitedTargets.size();
@@ -409,35 +424,81 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 			if (pastSize == visitedTargets.size())
 				continue;
 
-			double fitness = target.getFitness(c);
-
 			/*
 			 * Checks if the current test target has been reached and, in accordance, marks it as
 			 * covered or uncovered.
 			 */
-			if (fitness == 0.0) { // assume minimization function
+			final boolean targetCovered = target.getFitness(c) == 0.0; // assuming minimization
+			if (targetCovered) {
 				updateCoveredGoals(target, c); // marks the current goal as covered
 
 				/*
 				 * If the coverage criterion is branch coverage, we also add structural children
-				 * and control dependencies of the current target to the processing queue. This is
-				 * to see which ones of those goals are already reached by control flow.
+				 * and control dependent targets of the current target to the processing queue.
+				 * This is to see which ones of those targets are already reached by control flow.
 				 */
 				if (target instanceof BranchCoverageTestFitness){
-					for (TestFitnessFunction child : graph.getStructuralChildren(target)){
+					final Set<TestFitnessFunction> structuralChildren = graph.getStructuralChildren(target);
+					for (TestFitnessFunction child : structuralChildren){
 						targets.addLast(child);
 					}
-					for (TestFitnessFunction dependentTarget : dependencies.get(target)){
+					final Set<TestFitnessFunction> testFitnessFunctions = dependencies.get(target);
+					for (TestFitnessFunction dependentTarget : testFitnessFunctions){
 						targets.addLast(dependentTarget);
 					}
 				}
 			} else {
-				currentGoals.add(target); // marks the goal as uncovered
+				if (target.equals(test.getTarget())) {
+					// The test case failed to cover the intended target, thus we increase the
+					// failure penalty of that target.
+					increaseFailurePenalty(target);
+				}
+
+				// Marks the target as being still uncovered.
+				currentGoals.add(target);
 			}
 		}
 
+		// TODO: Basically copied from above, but not working yet
+		// While we're not trying to actively reach infeasible goals anymore, we might in fact
+		// have managed to reach them by the pure virtue of luck, i.e., as collateral coverage of a
+		// test case that targeted some other goal. In such cases, it would make sense to reinsert
+		// the formerly infeasible goal into the set of current goals again.
+		/*
+		LinkedList<TestFitnessFunction> infeasibleGoalsList = new LinkedList<>(this.infeasibleGoals);
+		while (!infeasibleGoalsList.isEmpty()) {
+			final TestFitnessFunction infeasibleGoal = infeasibleGoalsList.poll();
+			final boolean goalCovered = infeasibleGoal.getFitness(c) == 0;
+
+			if (goalCovered) {
+				this.infeasibleGoals.remove(infeasibleGoal);
+				updateCoveredGoals(infeasibleGoal, c);
+				// Resetting the failure penalty for the goal is not necessary. Also, the failure
+				// penalty for control dependent gaols and structural children is still 0
+				// because they haven't been targeted before.
+
+				if (infeasibleGoal instanceof BranchCoverageTestFitness){
+					for (TestFitnessFunction child : graph.getStructuralChildren(infeasibleGoal)) {
+						infeasibleGoalsList.addLast(child);
+					}
+					for (TestFitnessFunction dependentTarget : dependencies.get(infeasibleGoal)) {
+						infeasibleGoalsList.addLast(dependentTarget);
+					}
+				}
+			}
+		}
+		*/
+
 		// Removes all newly covered goals from the list of currently uncovered goals.
-		currentGoals.removeAll(this.getCoveredGoals());
+		// Don't remove the goal from currentGoals yet (even if it has been successfully covered)!
+		// Remember that this function computes the coverage only for the current test chromosome,
+		// one of potentially many individuals in the current population. The next test chromosome
+		// to be evaluated might cover the same target, but it might be shorter! Shorter tests
+		// covering the same target are better. Removing the covered goal already now will cause
+		// that the next chromosome is no longer evaluated against that goal. And thus, we're
+		// potentially missing out on some test cases that are even better than the one we just
+		// found.
+//		currentGoals.removeAll(this.getCoveredGoals());
 
 		// 2) We update the archive.
 		final ExecutionTrace trace = result.getTrace();
@@ -458,11 +519,6 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 			if (branch == null)
 				continue;
 			updateCoveredGoals(branch, c);
-		}
-
-		// 3) Notifies the insertion strategy about the currently targeted goals.
-		if (Properties.INSERTION_STRATEGY == Properties.InsertionStrategy.GUIDED_INSERTION) {
-			GuidedInsertion.getInstance().setGoals(this.currentGoals);
 		}
 
 		// let's manage the exception coverage
@@ -539,5 +595,60 @@ public class MultiCriteriaManager extends StructuralGoalManager implements Seria
 		this.initializeMaps(setOfBranches);
 
 		return new BranchFitnessGraph(setOfBranches);
+	}
+
+	/**
+	 * Removes all infeasible goals (i.e., their failure penalty has become too high) from
+	 * the set of current goals, such that no more search budget is wasted on trying to
+	 * cover them. This method should be invoked after computing the fitness values for the
+	 * current generation. This method is a NO-OP if the failure penalties are disabled and any
+	 * insertion strategy other than Guided Insertion is used.
+	 *
+	 * @see Properties#ENABLE_FAILURE_PENALTIES
+	 * @see Properties.MutationStrategy#GUIDED
+	 */
+	private void enforceFailurePenalty() {
+		for (TestFitnessFunction goal : currentGoals) {
+			if (goal.isFailurePenaltyReached()) {
+				// INFO: All goals that have the current goal as their only control dependency
+				// must now be considered infeasible as well. We will no longer try to actively
+				// reach them. By construction, they will not be inserted into the set of current
+				// goals because their only control dependency (the current goal) will no longer
+				// be inserted. However, while we're not trying to actively reach those infeasible
+				// goals anymore, we might still reach them by chance, i.e., as collateral coverage
+				// of a test case that targeted some other goal. In such cases, it would make sense
+				// to reinsert the formerly infeasible goal into the set of current goals.
+				infeasibleGoals.add(goal);
+				logger.debug("Giving up on infeasible goal {}", goal);
+			}
+		}
+
+		currentGoals.removeAll(infeasibleGoals);
+	}
+
+	public void updateGoalsForNextGen() {
+		currentGoals.removeAll(this.getCoveredGoals());
+
+		if (Properties.MUTATION_STRATEGY == Properties.MutationStrategy.GUIDED
+				&& Properties.ENABLE_FAILURE_PENALTIES) {
+			enforceFailurePenalty();
+		}
+	}
+
+	private void increaseFailurePenalty(TestFitnessFunction goal) {
+		if (currentGoals.contains(goal)) {
+			goal.increaseFailurePenalty();
+			logger.debug("Increasing failure penalty for goal {}", goal);
+		} else {
+			logger.debug("Goal not found: {}", goal);
+		}
+	}
+
+	public Set<TestFitnessFunction> getInfeasibleGoals() {
+		return infeasibleGoals;
+	}
+
+	public Set<TestFitnessFunction> getStructuralParents(TestFitnessFunction goal) {
+		return graph.getStructuralParents(goal);
 	}
 }
