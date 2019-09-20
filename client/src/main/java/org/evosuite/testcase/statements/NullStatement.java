@@ -68,7 +68,7 @@ public class NullStatement extends PrimitiveStatement<Void> {
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public Statement copy(TestCase newTestCase, int offset) {
+	public AbstractStatement copy(TestCase newTestCase, int offset) {
 		return new NullStatement(newTestCase, retval.getType());
 	}
 
