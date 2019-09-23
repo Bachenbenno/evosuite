@@ -1235,6 +1235,11 @@ public class DefaultTestCase implements TestCase, Serializable {
 	}
 
 	@Override
+	public int lastIndexOfCallTo(TestFitnessFunction goal) {
+		return lastIndexOfCallTo(goal.getTargetClassName(), goal.getTargetMethodName());
+	}
+
+	@Override
 	public List<Statement> getStatements() {
 		return statements;
 	}
