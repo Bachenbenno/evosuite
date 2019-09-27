@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -80,10 +81,11 @@ public abstract class SelectionFunction<T extends Chromosome> implements Seriali
 		if (population.isEmpty()) {
 			return Collections.emptyList();
 		} else {
-			return Stream.generate(() -> getIndex(population))
-					.limit(number)
-					.map(population::get)
-					.collect(Collectors.toList());
+			final List<T> offspring = new ArrayList<>();
+			for (int i = 0; i < number; i++) {
+				offspring.add(population.get(getIndex(population)));
+			}
+			return offspring;
 		}
 	}
 
