@@ -45,6 +45,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -86,8 +87,8 @@ public class TestCluster {
 
     private EnvironmentTestClusterAugmenter environmentAugmenter;
 
-	private final Map<GenericAccessibleObject<?>, Double> gaoConstructionComplexity = new HashMap<>();
-    private final Map<GenericClass, Double> instantiationComplexities = new HashMap<>();
+	private final Map<GenericAccessibleObject<?>, Double> gaoConstructionComplexity = new ConcurrentHashMap<>();
+    private final Map<GenericClass, Double> instantiationComplexities = new ConcurrentHashMap<>();
 	private static final double FAILURE_VALUE = Double.POSITIVE_INFINITY;
 
     //-------------------------------------------------------------------
