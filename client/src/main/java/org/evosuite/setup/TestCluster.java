@@ -1050,13 +1050,7 @@ public class TestCluster {
 		// Collection, Map, Number
 		if (isSpecialCase(clazz)) {
 			final Set<GenericAccessibleObject<?>> candidates = getGeneratorsForSpecialCase(clazz);
-			if (Properties.ECONOMICAL_GENERATORS) {
-				final Optional<GenericAccessibleObject<?>> choice =
-						rouletteWheelSelect(filterGenerators(clazz, candidates));
-				generator = choice.isPresent() ? choice.get() : Randomness.choice(candidates);
-			} else {
-				generator = Randomness.choice(candidates);
-			}
+			generator = chooseGenerator(clazz, candidates);
 			if (generator == null) {
 				logger.warn("No generator for special case class: " + clazz);
 				throw new ConstructionFailedException("Have no generators for special case: " + clazz);
@@ -1109,13 +1103,7 @@ public class TestCluster {
 				}
 			}
 
-			if (Properties.ECONOMICAL_GENERATORS) {
-				final Optional<GenericAccessibleObject<?>> choice =
-						rouletteWheelSelect(filterGenerators(clazz, candidates));
-				generator = choice.isPresent() ? choice.get() : Randomness.choice(candidates);
-			} else {
-				generator = Randomness.choice(candidates);
-			}
+			generator = chooseGenerator(clazz, candidates);
 
 			logger.debug("Chosen generator: " + generator);
 		}
@@ -1135,6 +1123,21 @@ public class TestCluster {
 
 		return generator;
 
+	}
+
+	private GenericAccessibleObject<?> chooseGenerator(final GenericClass clazz,
+													   final Set<GenericAccessibleObject<?>> candidates) {
+		if (Properties.ECONOMICAL_GENERATORS) {
+			final Optional<GenericAccessibleObject<?>> choice =
+					rouletteWheelSelect(filterGenerators(clazz, candidates));
+			if (choice.isPresent()) {
+				return choice.get();
+			} else {
+				logger.warn("Could not compute cheapest generator, choosing a random one");
+			}
+		}
+
+		return Randomness.choice(candidates);
 	}
 
 	/**
