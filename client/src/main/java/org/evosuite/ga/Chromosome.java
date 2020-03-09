@@ -122,7 +122,7 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
      * @return the fitness of this chromosome
      */
     public <T extends Chromosome> double getFitness(FitnessFunction<T> ff) {
-        return fitnessValues.getOrDefault(ff, ff.getFitness((T) this)); // Calculate new value if non is cached
+        return fitnessValues.containsKey(ff) ? fitnessValues.get(ff) : ff.getFitness((T)this); // Calculate new value if non is cached
     }
 
     public Map<FitnessFunction<?>, Double> getFitnessValues() {
