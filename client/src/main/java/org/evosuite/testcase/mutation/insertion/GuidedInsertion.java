@@ -130,6 +130,10 @@ public class GuidedInsertion extends AbstractInsertion {
         // to cover it last time and we decided to try it again), or a new goal.
         final TestFitnessFunction chosenGoal = retry ? previousGoal : chooseNewGoalFor(test);
 
+        if (chosenGoal == null) {
+            return false;
+        }
+
         return insertCallFor(test, chosenGoal, retry, position);
     }
 
@@ -215,18 +219,21 @@ public class GuidedInsertion extends AbstractInsertion {
          */
         final Optional<TestFitnessFunction> g =
                 chooseGoal(readingGoals.isEmpty() ? candidates : readingGoals);
-        final TestFitnessFunction chosenGoal = g.orElseThrow(IllegalStateException::new);
-
-        /*
-         * Encode the intended coverage goal in the test case. This is required since fitness
-         * evaluation would otherwise not be able to increase the failure penalty for that goal in
-         * case it was not covered or the test case was invalid (e.g., it dit not compile or threw
-         * an exception when it was executed). Also, it provides the mutation operator additional
-         * information to reason about the test case.
-         */
-        test.setTarget(chosenGoal);
-
-        return chosenGoal;
+        if (g.isPresent()) {
+            /*
+             * Encode the intended coverage goal in the test case. This is required since fitness
+             * evaluation would otherwise not be able to increase the failure penalty for that goal in
+             * case it was not covered or the test case was invalid (e.g., it dit not compile or threw
+             * an exception when it was executed). Also, it provides the mutation operator additional
+             * information to reason about the test case.
+             */
+            final TestFitnessFunction chosenGoal = g.get();
+            test.setTarget(chosenGoal);
+            return chosenGoal;
+        } else {
+            test.setTarget(null);
+            return null;
+        }
     }
 
     /**
