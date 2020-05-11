@@ -424,7 +424,7 @@ public class TestChromosome extends ExecutableChromosome {
         }
 
         // FIXME Retrieving the current goals like that... I don't find this so pretty, but hey...
-		final Set<TestFitnessFunction> goals = GuidedInsertion.getInstance().goals();
+		final Set<TestFitnessFunction> goals = GuidedInsertion.getInstance().currentGoals();
 
         // Check if the previous goal has been reached.
 		final TestFitnessFunction previousGoal = test.getTarget();

@@ -31,6 +31,7 @@ import org.evosuite.symbolic.instrument.ClassLoaderUtils;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.evosuite.testsuite.TestSuiteChromosome;
+import org.evosuite.utils.Randomness;
 import org.evosuite.utils.generic.GenericExecutable;
 
 import java.util.*;
@@ -525,5 +526,10 @@ public abstract class TestFitnessFunction extends FitnessFunction<TestChromosome
 	 */
 	public int getCyclomaticComplexity() {
 		return cyclomaticComplexity;
+	}
+
+	public boolean canRetry() {
+		return !(Properties.ENABLE_FAILURE_PENALTIES && isFailurePenaltyReached());
+//				|| Randomness.nextDouble() > (double) getFailurePenalty() / getMaxFailures();
 	}
 }

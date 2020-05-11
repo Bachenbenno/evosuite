@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static org.evosuite.testcase.mutation.MutationUtils.*;
 
 /**
@@ -80,7 +81,7 @@ public class GuidedInsertion extends AbstractInsertion {
      *
      * @return the current set of goals
      */
-    public Set<TestFitnessFunction> goals() {
+    public Set<TestFitnessFunction> currentGoals() {
         return goalsManager.getCurrentGoals();
     }
 
@@ -102,19 +103,17 @@ public class GuidedInsertion extends AbstractInsertion {
             throw new IllegalArgumentException("illegal position for statement insertion");
         }
 
-        if (goals().isEmpty()) { // all goals have been covered
+        if (currentGoals().isEmpty()) { // all goals have already been covered
             info("mutation: no more goals to cover");
             return insertRandomCall(test, position); // Just insert some random stuff then...
         }
 
-        // The goal the given test case intended to cover.
-        final TestFitnessFunction previousGoal = test.getTarget();
+        // See if the current test case managed to cover its intended goal.
+        final TestFitnessFunction oldGoal = test.getTarget();
+        // TODO: was muss passieren, damit der Teil hier false wird?
+        final boolean oldGoalCovered = !(test.isEmpty() || oldGoal == null || currentGoals().contains(oldGoal));
 
-        // Whether the test case actually managed to cover the intended goal.
-        final boolean previousGoalCovered = !goals().contains(previousGoal)
-                || previousGoal == null || !test.isEmpty();
-
-        debug("Previous goal has not been covered: {}", previousGoal);
+        debug("Previous goal has not been covered: {}", oldGoal);
 
         /*
          * Whether it should be retried to cover the previous goal. Only applies if the goal has
@@ -122,19 +121,18 @@ public class GuidedInsertion extends AbstractInsertion {
          * with the number of failed attempts to cover the goal. However, if the non-covered goal
          * is the only goal left, we always retry to cover it.
          */
-        final boolean retry = !previousGoalCovered
-                && (Randomness.nextDouble() < (double) previousGoal.getFailurePenalty() / previousGoal.getMaxFailures()
-                || goals().size() == 1);
+        final boolean retry = !oldGoalCovered
+                && (oldGoal != null && oldGoal.canRetry() || currentGoals().size() == 1);
 
         // The goal intended to cover this time. Might be the same goal as before (if we failed
         // to cover it last time and we decided to try it again), or a new goal.
-        final TestFitnessFunction chosenGoal = retry ? previousGoal : chooseNewGoalFor(test);
+        final TestFitnessFunction newGoal = retry ? oldGoal : chooseNewGoalFor(test);
 
-        if (chosenGoal == null) {
+        if (newGoal == null) {
             return false;
         }
 
-        return insertCallFor(test, chosenGoal, retry, position);
+        return insertCallFor(test, newGoal, retry, position);
     }
 
     /**
@@ -149,13 +147,13 @@ public class GuidedInsertion extends AbstractInsertion {
         debug("Choosing new goal for {}", test);
 
         // We exclude the goal the given test case intended to target last time.
-        final TestFitnessFunction previousGoal = test.getTarget(); // might be null
+        final TestFitnessFunction oldGoal = test.getTarget(); // might be null
 
         // Determine the set of executables that are directly callable without having to instantiate
         // the owner class first (i.e., constructors, static methods, and non-static methods for
         // which the test already contains a proper object).
-        final Map<Boolean, List<TestFitnessFunction>> partition = goals().stream()
-                .filter(g -> !g.equals(previousGoal))
+        final Map<Boolean, List<TestFitnessFunction>> partition = currentGoals().stream()
+                .filter(g -> !g.equals(oldGoal))
                 .collect(Collectors.partitioningBy(goal -> isPromising(goal, test)));
 
         /*
@@ -366,20 +364,44 @@ public class GuidedInsertion extends AbstractInsertion {
         }
     }
 
+    /**
+     * Tells whether the given variable has a "complex" data type. We consider
+     * a data type "complex" if it is none of the following:
+     * <ul>
+     *     <li>a primitive Java type,</li>
+     *     <li>a String,</li>
+     *     <li>an enum type,</li>
+     *     <li>the void type,</li>
+     *     <li>a reference to a public field,</li>
+     *     <li>an array index</li>
+     * </ul>
+     *
+     * @param v the variable to check
+     * @return <code>true</code> if the given variable has complex type,
+     * <code>false</code> otherwise
+     */
+    private static boolean isComplexType(final VariableReference v) {
+        return !(v.isPrimitive()
+                || v.isString()
+                || v.isEnum()
+                || v.isVoid()
+                || v.isFieldReference()
+                || v.isArrayIndex());
+    }
+
     private boolean fuzzComplexParameters(TestCase test, EntityWithParametersStatement call,
                                           VariableReference callee, int pos) {
         // TODO: Currently, we only handle objects and arrays. But FieldReferences and
         //  ArrayIndexes might point to complex objects and other arrays, too. It would be
         //  nice if we would try to resolve them recursively.
-        final Set<VariableReference> complexParameters = call.getParameterReferences().stream()
-                .filter(v -> !(v.isPrimitive()
-                        || v.isString()
-                        || v.isEnum()
-                        || v.isVoid()
-                        || v.isFieldReference()
-                        || v.isArrayIndex()))
-                .collect(Collectors.toSet());
+        final List<VariableReference> complexParameters =
+                call.getParameterReferences().stream()
+                        .filter(GuidedInsertion::isComplexType)
+                        .distinct().collect(toList());
 
+        // If the callee is null, then call is a static method.
+        // TODO: we can also fuzz the state of the class object!
+        //  We don't we do this?
         if (callee != null) {
             complexParameters.add(callee);
         }
@@ -389,12 +411,20 @@ public class GuidedInsertion extends AbstractInsertion {
         }
 
         boolean success = false;
-        final double fuzzingProbability = 1d / complexParameters.size();
-        for (VariableReference parameter : complexParameters) {
-            if (Randomness.nextDouble() < fuzzingProbability) {
-                success |= fuzzObjectState(test, parameter, pos);
-            }
+
+        // With uniform distribution we choose a number of parameters to fuzz.
+        // Any choice between one and all parameters has the same probability.
+        final int num = Randomness.nextInt(complexParameters.size()) + 1;
+
+        // Once we have determined the number of parameters to fuzz, we
+        // randomly select which ones should be fuzzed.
+        Randomness.shuffle(complexParameters);
+        final List<VariableReference> toFuzz = complexParameters.subList(0, num);
+
+        for (VariableReference parameter : toFuzz) {
+            success |= fuzzObjectState(test, parameter, pos);
         }
+
         return success;
     }
 
@@ -475,13 +505,13 @@ public class GuidedInsertion extends AbstractInsertion {
             throw new IllegalArgumentException("illegal position for statement insertion");
         }
 
-        if (goals().isEmpty()) {
+        if (currentGoals().isEmpty()) {
             info("mutation: no more goals to cover");
             return insertRandomParam(test, position);
         }
 
         final TestFitnessFunction previousGoal = test.getTarget();
-        final boolean previousGoalCovered = !goals().contains(previousGoal)
+        final boolean previousGoalCovered = !currentGoals().contains(previousGoal)
                 || (previousGoal == null && test.isEmpty());
 
         if (previousGoalCovered || !Properties.METHOD_DEPENDENCE_ANALYSIS) {
