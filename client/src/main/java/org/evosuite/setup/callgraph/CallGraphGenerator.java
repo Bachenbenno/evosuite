@@ -27,11 +27,9 @@ import java.util.*;
 import org.evosuite.Properties;
 import org.evosuite.graphs.ddg.MethodEntry;
 import org.evosuite.instrumentation.BytecodeInstrumentation;
-import org.evosuite.instrumentation.ExceptionTransformationClassAdapter;
 import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.setup.InheritanceTree;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
@@ -147,7 +145,7 @@ public class CallGraphGenerator {
 	 * @param mn
 	 */
 	private static void handleMethodNode(CallGraph callGraph, ClassNode cn, MethodNode mn, int depth) {
-		handlePublicMethodNode(callGraph, cn, mn);
+		handleMethodNode(callGraph, cn, mn);
 
 		InsnList instructions = mn.instructions;
 		Iterator<AbstractInsnNode> iterator = instructions.iterator();
@@ -161,9 +159,18 @@ public class CallGraphGenerator {
 		}
 	}
 
-	private static void handlePublicMethodNode(CallGraph callGraph, ClassNode cn, MethodNode mn) {
+	private static void handleMethodNode(CallGraph callGraph, ClassNode cn, MethodNode mn) {
+		final String nameDesc = mn.name + mn.desc;
+
+		// method is public
 		if ((mn.access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) {
-			callGraph.addPublicMethod(cn.name, mn.name + mn.desc);
+			callGraph.addPublicMethod(cn.name, nameDesc);
+		}
+
+		// method is not private (i.e., one of package-private, protected or
+		// public)
+		if (!((mn.access & Opcodes.ACC_PRIVATE) == Opcodes.ACC_PRIVATE)) {
+			callGraph.addAccessibleMethod(cn.name, nameDesc);
 		}
 	}
 

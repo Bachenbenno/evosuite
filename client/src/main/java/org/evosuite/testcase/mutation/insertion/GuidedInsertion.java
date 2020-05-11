@@ -333,7 +333,7 @@ public class GuidedInsertion extends AbstractInsertion {
                     return super.insertRandomCall(test, lastPos);
                 }
             } else {
-                debug("Goal is not public, trying to find a public caller");
+                debug("Goal is private, trying to find an accessible caller");
                 final String calleeClassName = goal.getTargetClassName();
                 final String calleeMethodName = goal.getTargetMethodName();
                 return insertCallFor(test, calleeClassName, calleeMethodName, lastPos);
@@ -409,13 +409,14 @@ public class GuidedInsertion extends AbstractInsertion {
                                   final String calleeClassName,
                                   final String calleeMethodName,
                                   final int lastPos) {
-        final GenericExecutable<?, ?> publicCaller =
-                findPublicCallerFor(calleeClassName, calleeMethodName);
-        if (publicCaller == null) {
-            warn("no public caller found for {} in {}", calleeMethodName, calleeClassName);
+        final GenericExecutable<?, ?> accessibleCaller =
+                findAccessibleCallerFor(calleeClassName, calleeMethodName);
+        if (accessibleCaller == null) {
+            warn("no accessible caller found for {} in {}", calleeMethodName,
+                    calleeClassName);
             return false;
         } else {
-            return super.insertCallFor(test, publicCaller, lastPos);
+            return super.insertCallFor(test, accessibleCaller, lastPos);
         }
     }
 
@@ -426,23 +427,23 @@ public class GuidedInsertion extends AbstractInsertion {
                 .collect(Collectors.toSet());
     }
 
-    private GenericExecutable<?, ?> findPublicCallerFor(final String calleeClassName,
-                                                        final String calleeMethodName) {
-        final MethodEntry[] publicCallers = DependencyAnalysis.getCallGraph()
-                .getPublicCallersOf(calleeClassName, calleeMethodName)
+    private GenericExecutable<?, ?> findAccessibleCallerFor(final String calleeClassName,
+                                                            final String calleeMethodName) {
+        final MethodEntry[] accessibleCallers = DependencyAnalysis.getCallGraph()
+                .getAccessibleCallersOf(calleeClassName, calleeMethodName)
                 .toArray(new MethodEntry[0]);
 
-        if (publicCallers.length == 0) {
-            // If we don't find a public caller, we can't do anything :(
-            warn("No public caller for {} in {}", calleeMethodName, calleeClassName);
+        if (accessibleCallers.length == 0) {
+            // If we don't find an accessible caller, we can't do anything :(
+            warn("No accessible caller for {} in {}", calleeMethodName, calleeClassName);
             return null;
         }
 
         // We randomly choose the first caller that works. In the future, we could try to make a
         // random biased selection based on how difficult it is to generate the input parameters
         // for the caller or the cyclomatic complexity of the caller.
-        Randomness.shuffle(publicCallers);
-        for (final MethodEntry caller : publicCallers) {
+        Randomness.shuffle(accessibleCallers);
+        for (final MethodEntry caller : accessibleCallers) {
             final String callerMethodNameDesc = caller.getMethodNameDesc();
             final String callerClassName = caller.getClassName();
 
@@ -461,7 +462,8 @@ public class GuidedInsertion extends AbstractInsertion {
             }
         }
 
-        warn("No public caller for {} in {} could be reflected!", calleeMethodName, calleeClassName);
+        warn("No accessible caller for {} in {} could be reflected!",
+                calleeMethodName, calleeClassName);
         return null;
     }
 
@@ -529,10 +531,10 @@ public class GuidedInsertion extends AbstractInsertion {
                     continue;
                 }
 
-                final boolean isPublic = Modifier.isPublic(f.getModifiers());
+                final boolean isAccessible = !Modifier.isPrivate(f.getModifiers());
                 final boolean isStatic = Modifier.isStatic(f.getModifiers());
 
-                if (isPublic && (isStatic || test.hasObject(clazz, test.size()))) {
+                if (isAccessible && (isStatic || test.hasObject(clazz, test.size()))) {
                     candidateFields.add(f);
                 }
             }
@@ -594,13 +596,13 @@ public class GuidedInsertion extends AbstractInsertion {
 
                 // All public callers of the non-public method that are already contained in the
                 // test case.
-                final Stream<MethodEntry> publicCallers = DependencyAnalysis.getCallGraph()
-                        .getPublicCallersOf(className, methodName)
+                final Stream<MethodEntry> accessibleCallers = DependencyAnalysis.getCallGraph()
+                        .getAccessibleCallersOf(className, methodName)
                         .stream()
                         .filter(m -> test.callsMethod(m.getClassName(), m.getMethodNameDesc()));
 
                 // The methods holding a data dependency on the public callers.
-                final Stream<MethodEntry> writingMethods1 = publicCallers
+                final Stream<MethodEntry> writingMethods1 = accessibleCallers
                         .flatMap(m -> getWritingMethodsMerged(m).stream());
 
                 // The methods holding a data dependency on the non-public target method.

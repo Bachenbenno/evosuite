@@ -70,6 +70,9 @@ public class CallGraph implements Iterable<MethodEntry> {
 
 	private final Set<CallContext> publicMethods = Collections.synchronizedSet(new LinkedHashSet<>());
 
+	private final Set<CallContext> accessibleMethods =
+			Collections.synchronizedSet(new LinkedHashSet<>());
+
 	// TODO: not sure if it really must be synchronized
 	private final Map<MethodEntry, Set<MethodEntry>> callerCache = Collections.synchronizedMap(new LinkedHashMap<>());
 
@@ -98,6 +101,12 @@ public class CallGraph implements Iterable<MethodEntry> {
 	public void addPublicMethod(String className, String methodName) {
 		publicMethods.add(new CallContext(ResourceList
 				.getClassNameFromResourcePath(className), methodName));
+	}
+
+	public void addAccessibleMethod(final String className,
+									final String methodName) {
+		final String cn = ResourceList.getClassNameFromResourcePath(className);
+		accessibleMethods.add(new CallContext(cn, methodName));
 	}
 
 	/**
@@ -178,22 +187,22 @@ public class CallGraph implements Iterable<MethodEntry> {
 	 * @param methodName the method name + descriptor of the callee for which to find callers
 	 * @return the set of public callers of the method
 	 */
-	public Set<MethodEntry> getPublicCallersOf(final String className, final String methodName) {
+	public Set<MethodEntry> getAccessibleCallersOf(final String className, final String methodName) {
 		Objects.requireNonNull(className);
 		Objects.requireNonNull(methodName);
-		return getPublicCallersOf(new MethodEntry(className, methodName));
+		return getAccessibleCallersOf(new MethodEntry(className, methodName));
 	}
 
-	public Set<MethodEntry> getPublicCallersOf(final MethodEntry callee) {
+	public Set<MethodEntry> getAccessibleCallersOf(final MethodEntry callee) {
 		Objects.requireNonNull(callee);
-		return callerCache.computeIfAbsent(callee, this::computePublicCallers);
+		return callerCache.computeIfAbsent(callee, this::computeAccessibleCallers);
 	}
 
-	private Set<MethodEntry> computePublicCallers(final MethodEntry callee) {
+	private Set<MethodEntry> computeAccessibleCallers(final MethodEntry callee) {
 		final Set<MethodEntry> result = new HashSet<>();
 		final List<MethodEntry> visited = new LinkedList<>();
-		final List<MethodDepthPair> queue =
-				new LinkedList<MethodDepthPair>() {{ add(p(callee, 0)); }};
+		final List<MethodDepthPair> queue = new LinkedList<>();
+		queue.add(p(callee, 0));
 
 		// Using a BFS approach, determine the public callers of the given callee. We do not
 		// perform an exhaustive search, but rather only explore paths up to a certain maximum
@@ -205,11 +214,11 @@ public class CallGraph implements Iterable<MethodEntry> {
 
 			visited.add(current);
 
-			final boolean isPublic = publicMethods.stream().anyMatch(cc ->
+			final boolean isAccessible = accessibleMethods.stream().anyMatch(cc ->
 					current.getClassName().equals(cc.getRootClassName())
 							&& current.getMethodNameDesc().equals(cc.getRootMethodName()));
 
-			if (isPublic) {
+			if (isAccessible) {
 				result.add(current);
 			} else if (depth < Properties.MAX_RECURSION) {
 				// The call graph is reversed, the edges already point from callee to caller.
@@ -228,12 +237,7 @@ public class CallGraph implements Iterable<MethodEntry> {
 	}
 
 	private static boolean contains(final List<MethodDepthPair> queue, final MethodEntry entry) {
-		for (final MethodDepthPair p : queue) {
-			if (p.method.equals(entry)) {
-				return true;
-			}
-		}
-		return false;
+		return queue.stream().anyMatch(p -> p.method.equals(entry));
 	}
 
 	/**

@@ -501,7 +501,7 @@ public class TestChromosome extends ExecutableChromosome {
                 logger.debug("Trying to fuzz input parameters of public callers for current goal");
 
                 final Set<MethodEntry> publicCallers = DependencyAnalysis.getCallGraph()
-                        .getPublicCallersOf(className, methodName);
+                        .getAccessibleCallersOf(className, methodName);
                 final Set<EntityWithParametersStatement> calls = getStatementsFor(publicCallers);
 
 				if (calls.isEmpty()) {
@@ -518,7 +518,7 @@ public class TestChromosome extends ExecutableChromosome {
     }
 
     private Set<MethodEntry> getPublicCallersOf(TestFitnessFunction target) {
-        return DependencyAnalysis.getCallGraph().getPublicCallersOf(toMethodEntry(target));
+        return DependencyAnalysis.getCallGraph().getAccessibleCallersOf(toMethodEntry(target));
     }
 
     private EntityWithParametersStatement getStatementFor(TestFitnessFunction goal) {
