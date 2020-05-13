@@ -147,17 +147,22 @@ public class DataDependenceGraph {
 
         // The set of field vertices with at least one incoming and one outgoing edge.
         final Set<ClassMember> fields = graph.getVertexSet().stream()
-                .filter(f -> f.isField() && hasOutgoingEdge(f) && hasIncomingEdge(f))
+                .filter(f -> !f.isDeclaredInAnonymousClass() && f.isField()
+                        && hasOutgoingEdge(f) && hasIncomingEdge(f))
                 .collect(Collectors.toSet());
 
         for (ClassMember field : fields) {
             // The set of methods writing to the current field.
             final Set<MethodEntry> writingMethods = new HashSet<>();
-            graph.getReverseNeighbors(field).forEach(w -> writingMethods.add(((MethodEntry) w)));
+            graph.getReverseNeighbors(field).stream()
+                    .filter(w -> !w.isDeclaredInAnonymousClass())
+                    .forEach(w -> writingMethods.add(((MethodEntry) w)));
 
             // The set of methods reading from the current field.
             final Set<MethodEntry> readingMethods = new HashSet<>();
-            graph.getNeighbors(field).forEach(r -> readingMethods.add((MethodEntry) r));
+            graph.getNeighbors(field).stream()
+                .filter(w -> !w.isDeclaredInAnonymousClass())
+                .forEach(r -> readingMethods.add((MethodEntry) r));
 
             // Adds the write-read pairs to the result graph.
             for (MethodEntry writing : writingMethods) {

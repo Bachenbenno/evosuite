@@ -19,6 +19,7 @@ public class FieldEntry extends ClassMember {
         this.fieldName = fieldName;
     }
 
+    @Override
     public String getClassName() {
         return className;
     }

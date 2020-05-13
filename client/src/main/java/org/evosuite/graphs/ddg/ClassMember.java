@@ -5,5 +5,12 @@ package org.evosuite.graphs.ddg;
  */
 public abstract class ClassMember {
     public abstract boolean isField();
+
     public abstract boolean isMethod();
+
+    public abstract String getClassName();
+
+    public final boolean isDeclaredInAnonymousClass() {
+        return getClassName() == null;
+    }
 }

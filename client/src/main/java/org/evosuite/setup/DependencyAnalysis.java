@@ -105,8 +105,9 @@ public class DependencyAnalysis {
 		final Set<MethodEntry> rm2 = getCallGraph().getCallsFromMethod(method).stream()
 				.flatMap(callee -> getReadingMethods(callee).stream())
 				.collect(Collectors.toSet());
-		final Set<MethodEntry> union =
-				new HashSet<MethodEntry>(rm1.size() + rm2.size()) {{ addAll(rm1); addAll(rm2); }};
+		final Set<MethodEntry> union = new HashSet<>(rm1.size() + rm2.size());
+		union.addAll(rm1);
+		union.addAll(rm2);
 		return union;
 	}
 

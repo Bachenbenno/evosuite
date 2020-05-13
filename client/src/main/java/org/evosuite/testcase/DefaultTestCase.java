@@ -48,6 +48,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparingInt;
 
 /**
  * A test case is a list of statements
@@ -1191,19 +1194,35 @@ public class DefaultTestCase implements TestCase, Serializable {
 		return toCode();
 	}
 
+	/**
+	 * Tells if the given {@code statement} calls a method in the specified class with the given
+	 * method name + descriptor.
+	 *
+	 * @param statement the statement to inspect
+	 * @param className the class containing the desired method or constructor
+	 * @param methodNameDesc the desired method or constructed for which to check if it is called
+	 * @return {@code true} if the {@code statement} calls it, {@code false} otherwise
+	 */
+	private static boolean statementCalls(final Statement statement,
+										  final String className,
+										  final String methodNameDesc) {
+		if (statement instanceof EntityWithParametersStatement) {
+			final EntityWithParametersStatement ewps = (EntityWithParametersStatement) statement;
+			final String declaringClassName = ewps.getDeclaringClassName();
+			if (declaringClassName == null) { // TODO: anonymous class!!! just return false for now
+				return false;
+			} else {
+				return declaringClassName.equals(className)
+						&& (ewps.getMethodName() + ewps.getDescriptor()).equals(methodNameDesc);
+			}
+		} else { // All other statements do not represent calls to executable entities.
+			return false;
+		}
+	}
+
 	@Override
 	public boolean callsMethod(String className, String methodNameDesc) {
-		for (Statement statement : statements) {
-			if (statement instanceof EntityWithParametersStatement) {
-				EntityWithParametersStatement stmt = (EntityWithParametersStatement) statement;
-				if (stmt.getDeclaringClassName().equals(className)
-						&& (stmt.getMethodName() + stmt.getDescriptor()).equals(methodNameDesc)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return statements.stream().anyMatch(stmt -> statementCalls(stmt, className, methodNameDesc));
 	}
 
 	@Override
@@ -1224,14 +1243,12 @@ public class DefaultTestCase implements TestCase, Serializable {
 	}
 
 	@Override
-	public int lastIndexOfCallTo(String targetClassName, String targetMethodName) {
-		final Optional<EntityWithParametersStatement> max = statements.stream()
-				.filter(stmt -> stmt instanceof EntityWithParametersStatement)
-				.map(stmt -> (EntityWithParametersStatement) stmt)
-				.filter(stmt -> stmt.getDeclaringClassName().equals(targetClassName)
-						&& (stmt.getMethodName() + stmt.getDescriptor()).equals(targetMethodName))
-				.max(Comparator.comparingInt(AbstractStatement::getPosition));
-		return max.map(AbstractStatement::getPosition).orElse(-1);
+	public int lastIndexOfCallTo(String className, String methodName) {
+		final OptionalInt max = statements.stream()
+				.filter(stmt -> statementCalls(stmt, className, methodName))
+				.mapToInt(Statement::getPosition)
+				.max();
+		return max.orElse(-1);
 	}
 
 	@Override

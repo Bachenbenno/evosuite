@@ -65,7 +65,7 @@ public abstract class TestFitnessFunction extends FitnessFunction<TestChromosome
 		this.methodName = Objects.requireNonNull(methodNameDesc, "method name + descriptor cannot be null");
 		this.clazz = Objects.requireNonNull(ClassLoaderUtils.getClazz(className));
 		this.executable = Objects.requireNonNull(ClassLoaderUtils.getExecutable(methodNameDesc, clazz));
-		this.accessibleExecutable = !executable.isPrivate();
+		this.accessibleExecutable = !executable.isPrivate() && executable.isAccessible();
 		this.staticExecutable = executable.isStatic();
 		this.constructor = executable.isConstructor();
 		this.cyclomaticComplexity = computeCyclomaticComplexity(className, methodName);

@@ -13,7 +13,7 @@ public class MethodEntry extends ClassMember {
 
     public MethodEntry(String className, String methodName,
                        String descriptor) {
-        this.className = className.replaceAll("/", ".");
+        this.className = className == null ? "" : className.replaceAll("/", ".");
         this.methodName = methodName;
         this.descriptor = descriptor;
     }
@@ -33,6 +33,7 @@ public class MethodEntry extends ClassMember {
         this.descriptor = methodNameDesc.substring(splitIndex);
     }
 
+    @Override
     public String getClassName() {
         return className;
     }
