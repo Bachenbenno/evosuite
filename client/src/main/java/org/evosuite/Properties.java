@@ -160,6 +160,16 @@ public class Properties {
             " within this branch with random insertion")
     public static boolean NO_GUIDED_INSERT_UUT_ACCESSIBLE_ELSE_CHECK_EXCEPTION_AND_REPLACE_FUZZING_WITH_GUIDED_DELETION = false;
 
+    // GUIDED_NONE_INSERTUUT_ACCESSIBLE_ELSE_CHECK_EXCEPTION_AND_CATCH_FALSE
+	@Parameter(key =
+			"no_guided_insert_uut_accessible_else_check_exception_and_catch_false",
+			group = "DEBUGGING", description = "Adds a new check for retried accessible goals in " +
+			"GuidedInsertion::insertCallFor and replaces all invocations of fuzzComplexParameters" +
+			" within this branch with random insertion")
+	public static boolean NO_GUIDED_INSERT_UUT_ACCESSIBLE_ELSE_CHECK_EXCEPTION_AND_CATCH_FALSE =
+			false;
+
+
     // ---------------------------------------------------------------
 	// Test sequence creation
 	@Parameter(key = "test_excludes", group = "Test Creation", description = "File containing methods that should not be used in testing")
