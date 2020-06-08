@@ -106,6 +106,12 @@ public class Properties {
 			"change, use random change instead")
 	public static boolean NO_GUIDED_CHANGE = false;
 
+	// GUIDED_NONE_NOINSERTUUT
+	@Parameter(key = "no_guided_insert_uut", group = "DEBUGGING", description = "GuidedInsertion" +
+			"::insertUUT delegates to RandomInsertion::insertUUT")
+	public static boolean NO_GUIDED_INSERT_UUT = false;
+
+
 	// ---------------------------------------------------------------
 	// Test sequence creation
 	@Parameter(key = "test_excludes", group = "Test Creation", description = "File containing methods that should not be used in testing")

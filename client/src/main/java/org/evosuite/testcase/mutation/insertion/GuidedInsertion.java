@@ -97,6 +97,10 @@ public class GuidedInsertion extends AbstractInsertion {
      */
     @Override
     protected boolean insertUUT(final TestCase test, final int position) {
+        if (Properties.NO_GUIDED_INSERT_UUT) {
+            return RandomInsertion.getInstance().insertUUT(test, position);
+        }
+
         Objects.requireNonNull(test, "mutation: test case to modify must not be null");
 
         if (!test.isEmpty() && position < 0) {
