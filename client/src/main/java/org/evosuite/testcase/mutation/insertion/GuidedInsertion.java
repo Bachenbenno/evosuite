@@ -503,6 +503,10 @@ public class GuidedInsertion extends AbstractInsertion {
 
     @Override
     protected int insertParam(TestCase test, int position) {
+        if (Properties.NO_GUIDED_INSERT_PARAM) {
+            return RandomInsertion.getInstance().insertParam(test, position);
+        }
+
         Objects.requireNonNull(test, "mutation: test case to modify must not be null");
 
         if (!test.isEmpty() && position < 0) {

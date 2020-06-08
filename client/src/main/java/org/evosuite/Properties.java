@@ -111,6 +111,11 @@ public class Properties {
 			"::insertUUT delegates to RandomInsertion::insertUUT")
 	public static boolean NO_GUIDED_INSERT_UUT = false;
 
+	// GUIDED_NONE_NOINSERTPARAM
+	@Parameter(key = "no_guided_insert_param", group = "DEBUGGING", description = "GuidedInsertion" +
+			"::insertParam delegates to RandomInsertion:insertParam")
+	public static boolean NO_GUIDED_INSERT_PARAM = false;
+
 
 	// ---------------------------------------------------------------
 	// Test sequence creation
