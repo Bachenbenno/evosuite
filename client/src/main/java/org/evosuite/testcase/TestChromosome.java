@@ -349,7 +349,7 @@ public class TestChromosome extends ExecutableChromosome {
 
 				// Change
 				if (Randomness.nextDouble() <= Properties.P_TEST_CHANGE) {
-					if (changed) { // coverage information etc. is invalid
+					if (changed || Properties.NO_GUIDED_CHANGE) { // coverage information etc. is invalid
 						logger.debug("Mutation: random change");
 						changed = mutationChange();
 					} else {
@@ -387,7 +387,7 @@ public class TestChromosome extends ExecutableChromosome {
 
 				// Change
 				if (Randomness.nextDouble() <= Properties.P_TEST_CHANGE) {
-					if (changed) { // coverage information etc. is invalid
+					if (changed || Properties.NO_GUIDED_CHANGE) { // coverage information etc. is invalid
 						logger.debug("Mutation: random change");
 						changed = mutationChange();
 					} else {

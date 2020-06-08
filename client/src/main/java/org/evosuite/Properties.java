@@ -101,6 +101,11 @@ public class Properties {
 			"original order of operations (delete -> change -> insert) in mutation operator")
 	public static boolean ORIGINAL_MUTATION_ORDER = false;
 
+	// GUIDED_NONE_NOGUIDEDCHANGE
+	@Parameter(key = "no_guided_change", group = "DEBUGGING", description = "Disable guided " +
+			"change, use random change instead")
+	public static boolean NO_GUIDED_CHANGE = false;
+
 	// ---------------------------------------------------------------
 	// Test sequence creation
 	@Parameter(key = "test_excludes", group = "Test Creation", description = "File containing methods that should not be used in testing")
