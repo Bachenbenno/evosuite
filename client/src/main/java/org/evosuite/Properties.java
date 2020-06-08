@@ -122,6 +122,12 @@ public class Properties {
 					"last-ditch effort")
 	public static boolean GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT = false;
 
+	// GUIDED_NONE_INSERTUUT_ACCESSIBLE
+	@Parameter(key = "no_guided_insert_uut_accessible_goal", group = "DEBUGGING", description =
+			"Replaces branch for accessible Goal in GuidedInsertion::insertCallFor with random " +
+					"insertion")
+	public static boolean NO_GUIDED_INSERT_UUT_ACCESSIBLE_GOAL = false;
+
 	// ---------------------------------------------------------------
 	// Test sequence creation
 	@Parameter(key = "test_excludes", group = "Test Creation", description = "File containing methods that should not be used in testing")

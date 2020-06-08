@@ -308,6 +308,15 @@ public class GuidedInsertion extends AbstractInsertion {
         return false;
     }
 
+    private boolean insertCallFor(final TestCase test, final TestFitnessFunction goal,
+                                  boolean retry, final int lastPos) {
+        if (Properties.NO_GUIDED_INSERT_UUT_ACCESSIBLE_GOAL) {
+            return insertCallFor_INSERT_UUT_ACCESSIBLE_GOAL(test, goal, retry, lastPos);
+        } else {
+            return insertCallFor_DEFAULT(test, goal, retry, lastPos);
+        }
+    }
+
     /**
      * Tries to append a statement calling the target method or target constructor of the given
      * coverage goal to the end of specified test case. If everything succeeds, a {@code
@@ -321,7 +330,7 @@ public class GuidedInsertion extends AbstractInsertion {
      * @return a reference to the return value of the statement calling the target method, or {@code
      * null} if unsuccessful
      */
-    private boolean insertCallFor(final TestCase test, final TestFitnessFunction goal,
+    private boolean insertCallFor_DEFAULT(final TestCase test, final TestFitnessFunction goal,
                                   boolean retry, final int lastPos) {
         debug("Trying to insert call that covers {}", goal);
 
@@ -351,6 +360,47 @@ public class GuidedInsertion extends AbstractInsertion {
                 final String calleeMethodName = goal.getTargetMethodName();
                 return insertCallFor(test, calleeClassName, calleeMethodName, lastPos);
             }
+        } else {
+            final boolean containsCall = test.callsMethod(goal);
+            if (retry && containsCall) {
+                // The test case already calls the right method but still misses the target.
+                // If the method has complex input parameters, we might want to fuzz the state of
+                // some of them.
+                final int index = test.lastIndexOfCallTo(goal);
+                final Statement stmt = test.getStatement(index);
+
+                // We are only interested in method or constructor statements, no functional mocks.
+                if (stmt instanceof ConstructorStatement) {
+                    ConstructorStatement call = (ConstructorStatement) stmt;
+                    return fuzzComplexParameters(test, call, null, index);
+                } else if (stmt instanceof MethodStatement) {
+                    MethodStatement call = (MethodStatement) stmt;
+                    return fuzzComplexParameters(test, call, call.getCallee(), index);
+                } else {
+                    error("can only handle method or constructor statements");
+                    return false;
+                }
+            } else {
+                // Try to call the target method directly.
+                final GenericExecutable<?, ?> executable = goal.getExecutable();
+                return super.insertCallFor(test, executable, lastPos);
+            }
+        }
+    }
+
+    private boolean insertCallFor_INSERT_UUT_ACCESSIBLE_GOAL(final TestCase test, final TestFitnessFunction goal,
+                                  boolean retry, final int lastPos) {
+        debug("Trying to insert call that covers {}", goal);
+
+        /*
+         * The executable to call might not be public. In this case, we cannot call it directly.
+         * Instead, we must search for a public method that calls the non-public method for us.
+         * When we find such a caller, there is no guarantee that the non-public method will
+         * actually be invoked. This might depend on many other factors, such as the particular
+         * assignment of input parameter values, the object's current state, etc.
+         */
+        if (!goal.isAccessible()) {
+            return RandomInsertion.getInstance().insertUUT(test, lastPos);
         } else {
             final boolean containsCall = test.callsMethod(goal);
             if (retry && containsCall) {
