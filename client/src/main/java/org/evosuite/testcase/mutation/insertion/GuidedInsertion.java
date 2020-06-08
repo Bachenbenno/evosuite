@@ -133,10 +133,21 @@ public class GuidedInsertion extends AbstractInsertion {
         final TestFitnessFunction newGoal = retry ? oldGoal : chooseNewGoalFor(test);
 
         if (newGoal == null) {
-            return false;
+            if (Properties.GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT) {
+                return RandomInsertion.getInstance().insertRandomCall(test, position);
+            } else {
+                return false;
+            }
         }
 
-        return insertCallFor(test, newGoal, retry, position);
+        final boolean success = insertCallFor(test, newGoal, retry, position);
+
+        if (Properties.GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT) {
+            return success || RandomInsertion.getInstance().insertUUT(test, position);
+        }
+
+        return success;
+
     }
 
     /**
@@ -369,8 +380,8 @@ public class GuidedInsertion extends AbstractInsertion {
     }
 
     /**
-     * Tells whether the given variable has a "complex" data type. We consider
-     * a data type "complex" if it is none of the following:
+     * Tells whether the given variable has a "complex" data type. We consider a data type "complex"
+     * if it is none of the following:
      * <ul>
      *     <li>a primitive Java type,</li>
      *     <li>a String,</li>

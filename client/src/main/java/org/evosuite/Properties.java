@@ -116,6 +116,11 @@ public class Properties {
 			"::insertParam delegates to RandomInsertion:insertParam")
 	public static boolean NO_GUIDED_INSERT_PARAM = false;
 
+	// (no config for this, was intertwined with GUIDED_NONE_INSERTUUT_ACCESSIBLE
+	@Parameter(key = "guided_insert_do_last_ditch_random_insert", group = "DEBUGGING",
+			description = "When guided insertion is not possible, try random insertion as " +
+					"last-ditch effort")
+	public static boolean GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT = false;
 
 	// ---------------------------------------------------------------
 	// Test sequence creation
