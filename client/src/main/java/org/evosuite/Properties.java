@@ -128,6 +128,12 @@ public class Properties {
 					"insertion")
 	public static boolean NO_GUIDED_INSERT_UUT_ACCESSIBLE_GOAL = false;
 
+	// GUIDED_NONE_INSERTUUT_NOTACCESSIBLE
+	@Parameter(key = "no_guided_insert_uut_non_accessible_goal", group = "DEBUGGING", description =
+			"Replaces branch for non-accessible Goal in GuidedInsertion::insertCallFor with " +
+					"random insertion")
+	public static boolean NO_GUIDED_INSERT_UUT_NON_ACCESSIBLE_GOAL = false;
+
 	// ---------------------------------------------------------------
 	// Test sequence creation
 	@Parameter(key = "test_excludes", group = "Test Creation", description = "File containing methods that should not be used in testing")

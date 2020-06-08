@@ -312,6 +312,8 @@ public class GuidedInsertion extends AbstractInsertion {
                                   boolean retry, final int lastPos) {
         if (Properties.NO_GUIDED_INSERT_UUT_ACCESSIBLE_GOAL) {
             return insertCallFor_INSERT_UUT_ACCESSIBLE_GOAL(test, goal, retry, lastPos);
+        } else if (Properties.NO_GUIDED_INSERT_UUT_NON_ACCESSIBLE_GOAL) {
+            return insertCallFor_INSERT_UUT_NON_ACCESSIBLE_GOAL(test, goal, retry, lastPos);
         } else {
             return insertCallFor_DEFAULT(test, goal, retry, lastPos);
         }
@@ -331,7 +333,7 @@ public class GuidedInsertion extends AbstractInsertion {
      * null} if unsuccessful
      */
     private boolean insertCallFor_DEFAULT(final TestCase test, final TestFitnessFunction goal,
-                                  boolean retry, final int lastPos) {
+                                          boolean retry, final int lastPos) {
         debug("Trying to insert call that covers {}", goal);
 
         /*
@@ -389,7 +391,7 @@ public class GuidedInsertion extends AbstractInsertion {
     }
 
     private boolean insertCallFor_INSERT_UUT_ACCESSIBLE_GOAL(final TestCase test, final TestFitnessFunction goal,
-                                  boolean retry, final int lastPos) {
+                                                             boolean retry, final int lastPos) {
         debug("Trying to insert call that covers {}", goal);
 
         /*
@@ -426,6 +428,42 @@ public class GuidedInsertion extends AbstractInsertion {
                 final GenericExecutable<?, ?> executable = goal.getExecutable();
                 return super.insertCallFor(test, executable, lastPos);
             }
+        }
+    }
+
+    private boolean insertCallFor_INSERT_UUT_NON_ACCESSIBLE_GOAL(final TestCase test,
+                                                                 final TestFitnessFunction goal,
+                                                                 boolean retry, final int lastPos) {
+        debug("Trying to insert call that covers {}", goal);
+
+        /*
+         * The executable to call might not be public. In this case, we cannot call it directly.
+         * Instead, we must search for a public method that calls the non-public method for us.
+         * When we find such a caller, there is no guarantee that the non-public method will
+         * actually be invoked. This might depend on many other factors, such as the particular
+         * assignment of input parameter values, the object's current state, etc.
+         */
+        if (!goal.isAccessible()) {
+            if (retry) {
+                // When we already tried to call the non-public method before, but we didn't reach
+                // the target, we could try to insert yet another call to a public "proxy" method.
+                // Or, alternatively, we could try to fuzz the parameters to the proxy method, or even
+                // fuzz the state of the callee object.
+                try {
+                    final VariableReference object = test.getLastObject(goal.getClazz(), lastPos);
+                    return super.insertRandomCallOnObjectAt(test, object, lastPos);
+                } catch (ConstructionFailedException e) {
+                    // Last-ditch effort.
+                    return super.insertRandomCall(test, lastPos);
+                }
+            } else {
+                debug("Goal is private, trying to find an accessible caller");
+                final String calleeClassName = goal.getTargetClassName();
+                final String calleeMethodName = goal.getTargetMethodName();
+                return insertCallFor(test, calleeClassName, calleeMethodName, lastPos);
+            }
+        } else {
+            return RandomInsertion.getInstance().insertUUT(test, lastPos);
         }
     }
 
