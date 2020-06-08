@@ -320,6 +320,8 @@ public class GuidedInsertion extends AbstractInsertion {
             return insertCallFor_INSERTUUT_ACCESSIBLE_IF(test, goal, retry, lastPos);
         } else if (Properties.NO_GUIDED_INSERT_UUT_ACCESSIBLE_ELSE_CHECK_EXCEPTION) {
             return insertCallFor_ACCESSIBLE_ELSE_CHECK_EXCEPTION(test, goal, retry, lastPos);
+        } else if (Properties.NO_GUIDED_INSERT_UUT_ACCESSIBLE_ELSE_CHECK_EXCEPTION_AND_REPLACE_FUZZING_WITH_GUIDED_DELETION) {
+            return insertCallFor_ACCESSIBLE_ELSE_CHECK_EXCEPTION_AND_REPLACE_FUZZING_WITH_GUIDED_DELETION(test, goal, retry, lastPos);
         } else {
             return insertCallFor_DEFAULT(test, goal, retry, lastPos);
         }
@@ -627,6 +629,66 @@ public class GuidedInsertion extends AbstractInsertion {
                 } else if (stmt instanceof MethodStatement) {
                     MethodStatement call = (MethodStatement) stmt;
                     return fuzzComplexParameters(test, call, call.getCallee(), index);
+                } else {
+                    error("can only handle method or constructor statements");
+                    return false;
+                }
+            } else {
+                // Try to call the target method directly.
+                final GenericExecutable<?, ?> executable = goal.getExecutable();
+                return super.insertCallFor(test, executable, lastPos);
+            }
+        }
+    }
+
+    private boolean insertCallFor_ACCESSIBLE_ELSE_CHECK_EXCEPTION_AND_REPLACE_FUZZING_WITH_GUIDED_DELETION(
+            final TestCase test, final TestFitnessFunction goal, boolean retry, final int lastPos) {
+        debug("Trying to insert call that covers {}", goal);
+
+        /*
+         * The executable to call might not be public. In this case, we cannot call it directly.
+         * Instead, we must search for a public method that calls the non-public method for us.
+         * When we find such a caller, there is no guarantee that the non-public method will
+         * actually be invoked. This might depend on many other factors, such as the particular
+         * assignment of input parameter values, the object's current state, etc.
+         */
+        if (!goal.isAccessible()) {
+            if (retry) {
+                // When we already tried to call the non-public method before, but we didn't reach
+                // the target, we could try to insert yet another call to a public "proxy" method.
+                // Or, alternatively, we could try to fuzz the parameters to the proxy method, or even
+                // fuzz the state of the callee object.
+                try {
+                    final VariableReference object = test.getLastObject(goal.getClazz(), lastPos);
+                    return super.insertRandomCallOnObjectAt(test, object, lastPos);
+                } catch (ConstructionFailedException e) {
+                    // Last-ditch effort.
+                    return super.insertRandomCall(test, lastPos);
+                }
+            } else {
+                debug("Goal is private, trying to find an accessible caller");
+                final String calleeClassName = goal.getTargetClassName();
+                final String calleeMethodName = goal.getTargetMethodName();
+                return insertCallFor(test, calleeClassName, calleeMethodName, lastPos);
+            }
+        } else {
+            final boolean containsCall = test.callsMethod(goal);
+            if (retry && containsCall) {
+                // The test case already calls the right method but still misses the target.
+                // If the method has complex input parameters, we might want to fuzz the state of
+                // some of them.
+                final int index = test.lastIndexOfCallTo(goal);
+
+                if (index > lastPos) { // NEW IF-BRANCH: CHECK FOR EXCEPTION!!!
+                    // The generated test case threw an exception before the goal could be reached.
+                    return RandomInsertion.getInstance().insertUUT(test, lastPos);
+                }
+
+                final Statement stmt = test.getStatement(index);
+
+                // We are only interested in method or constructor statements, no functional mocks.
+                if (stmt instanceof ConstructorStatement || stmt instanceof MethodStatement) {
+                    return RandomInsertion.getInstance().insertUUT(test, index);
                 } else {
                     error("can only handle method or constructor statements");
                     return false;
