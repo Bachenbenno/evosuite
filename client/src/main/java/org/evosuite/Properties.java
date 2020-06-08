@@ -94,6 +94,14 @@ public class Properties {
 	}
 
 	// ---------------------------------------------------------------
+	// DEBUGGING OPTIONS FOR GUIDED MUTATION
+
+	// GUIDED_NONE_EXP
+	@Parameter(key = "restore_mutation_order", group = "DEBUGGING", description = "Use " +
+			"original order of operations (delete -> change -> insert) in mutation operator")
+	public static boolean ORIGINAL_MUTATION_ORDER = false;
+
+	// ---------------------------------------------------------------
 	// Test sequence creation
 	@Parameter(key = "test_excludes", group = "Test Creation", description = "File containing methods that should not be used in testing")
 	public static String TEST_EXCLUDES = "test.excludes";

@@ -330,47 +330,85 @@ public class TestChromosome extends ExecutableChromosome {
 		}
 
 		if (Properties.MUTATION_STRATEGY == Properties.MutationStrategy.GUIDED) {
-			/*
-			 * The guided mutation strategy uses execution traces and coverage information
-			 * of the given test case from the previous generation. Performing one of
-			 * mutationInsert(), mutationChange() and mutationDelete() invalidates this
-			 * information for the other two, which means they have to fall back to uninformed
-			 * random operations. Since mutationInsert() can make the most of execution
-			 * traces and coverage information, it makes sense to always execute it before
-			 * mutationChange() and mutationDelete(). This way, mutationInsert() can always
-			 * rely on valid information.
-			 */
 
-			// Insert
-			if (Randomness.nextDouble() <= Properties.P_TEST_INSERT) {
-				logger.debug("Mutation: insert");
-				if (mutationInsert())
-					changed = true;
-			}
+			if (Properties.ORIGINAL_MUTATION_ORDER) {
 
-			// Change
-			if (Randomness.nextDouble() <= Properties.P_TEST_CHANGE) {
-				if (changed) { // coverage information etc. is invalid
-                    logger.debug("Mutation: random change");
-                    changed = mutationChange();
-				} else {
-                    logger.debug("Mutation: guided change");
-					if (guidedChange()) {
-						changed = true;
-					}
-				}
-			}
-
-			// Delete
-			if (Randomness.nextDouble() <= Properties.P_TEST_DELETE) {
-				if (Randomness.nextDouble() < Properties.P_RANDOM_DELETION
-						|| !Properties.MERGE_REDUNDANT_OBJECTS) {
-                    logger.debug("Mutation: random delete");
-                    mutationDelete();
-                } else {
-                    logger.debug("Mutation: guided delete");
+				// Delete
+				if (Randomness.nextDouble() <= Properties.P_TEST_DELETE) {
+					if (Randomness.nextDouble() < Properties.P_RANDOM_DELETION
+							|| !Properties.MERGE_REDUNDANT_OBJECTS) {
+						logger.debug("Mutation: random delete");
+						mutationDelete();
+					} else {
+						logger.debug("Mutation: guided delete");
 						if (guidedDeletion()) {
 							changed = true;
+						}
+					}
+				}
+
+				// Change
+				if (Randomness.nextDouble() <= Properties.P_TEST_CHANGE) {
+					if (changed) { // coverage information etc. is invalid
+						logger.debug("Mutation: random change");
+						changed = mutationChange();
+					} else {
+						logger.debug("Mutation: guided change");
+						if (guidedChange()) {
+							changed = true;
+						}
+					}
+				}
+
+				// Insert
+				if (Randomness.nextDouble() <= Properties.P_TEST_INSERT) {
+					logger.debug("Mutation: insert");
+					if (mutationInsert())
+						changed = true;
+				}
+			} else {
+				/*
+				 * The guided mutation strategy uses execution traces and coverage information
+				 * of the given test case from the previous generation. Performing one of
+				 * mutationInsert(), mutationChange() and mutationDelete() invalidates this
+				 * information for the other two, which means they have to fall back to uninformed
+				 * random operations. Since mutationInsert() can make the most of execution
+				 * traces and coverage information, it makes sense to always execute it before
+				 * mutationChange() and mutationDelete(). This way, mutationInsert() can always
+				 * rely on valid information.
+				 */
+
+				// Insert
+				if (Randomness.nextDouble() <= Properties.P_TEST_INSERT) {
+					logger.debug("Mutation: insert");
+					if (mutationInsert())
+						changed = true;
+				}
+
+				// Change
+				if (Randomness.nextDouble() <= Properties.P_TEST_CHANGE) {
+					if (changed) { // coverage information etc. is invalid
+						logger.debug("Mutation: random change");
+						changed = mutationChange();
+					} else {
+						logger.debug("Mutation: guided change");
+						if (guidedChange()) {
+							changed = true;
+						}
+					}
+				}
+
+				// Delete
+				if (Randomness.nextDouble() <= Properties.P_TEST_DELETE) {
+					if (Randomness.nextDouble() < Properties.P_RANDOM_DELETION
+							|| !Properties.MERGE_REDUNDANT_OBJECTS) {
+						logger.debug("Mutation: random delete");
+						mutationDelete();
+					} else {
+						logger.debug("Mutation: guided delete");
+						if (guidedDeletion()) {
+							changed = true;
+						}
 					}
 				}
 			}
