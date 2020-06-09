@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.evosuite.Properties.*;
+
 /**
  * This class is used to define and validate the input parameters passed by console
  * @author arcuri
@@ -76,8 +78,43 @@ public class CommandLineParameters {
         if(junitSuffix!=null && !junitSuffix.endsWith("Test")){
             throw new IllegalArgumentException("A JUnit suffix should always end with a 'Test'");
         }
+
+		if (!validateGuidedMutationOptions()){
+			throw new IllegalArgumentException("GUIDED_MUTATION: exclusive options given");
+		}
 	}
-	
+
+	private static boolean validateGuidedMutationOptions() {
+		if (NO_GUIDED_INSERT_UUT && GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT) {
+			return false;
+		}
+
+		// The following options are all exclusive. This means that at most one of these options
+		// must be active at a time.
+		final boolean[] exclusiveOptions = {
+				NO_GUIDED_INSERT_UUT,
+				NO_GUIDED_INSERT_UUT_ACCESSIBLE_GOAL,
+				NO_GUIDED_INSERT_UUT_NON_ACCESSIBLE_GOAL,
+				NO_GUIDED_INSERT_UUT_ACCESSIBLE_ELSE,
+				NO_GUIDED_INSERT_UUT_ACCESSIBLE_IF,
+				NO_GUIDED_INSERT_UUT_ACCESSIBLE_ELSE_CHECK_EXCEPTION,
+				NO_GUIDED_INSERT_UUT_ACCESSIBLE_ELSE_CHECK_EXCEPTION_AND_REPLACE_FUZZING_WITH_GUIDED_DELETION,
+				NO_GUIDED_INSERT_UUT_ACCESSIBLE_ELSE_CHECK_EXCEPTION_AND_CATCH_FALSE
+		};
+
+		boolean optionActive = false;
+		for (final boolean option : exclusiveOptions) {
+			if (option) {
+				if (!optionActive) {
+					optionActive = true;
+				} else {
+					return false; // Collision found, a second option is active
+				}
+			}
+		}
+
+		return true; // All good
+	}
 	
 	/**
 	 * Return all the available command line options that can be used with "-"

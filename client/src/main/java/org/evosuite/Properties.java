@@ -106,11 +106,6 @@ public class Properties {
 			"change, use random change instead")
 	public static boolean NO_GUIDED_CHANGE = false;
 
-	// GUIDED_NONE_NOINSERTUUT
-	@Parameter(key = "no_guided_insert_uut", group = "DEBUGGING", description = "GuidedInsertion" +
-			"::insertUUT delegates to RandomInsertion::insertUUT")
-	public static boolean NO_GUIDED_INSERT_UUT = false;
-
 	// GUIDED_NONE_NOINSERTPARAM
 	@Parameter(key = "no_guided_insert_param", group = "DEBUGGING", description = "GuidedInsertion" +
 			"::insertParam delegates to RandomInsertion:insertParam")
@@ -121,6 +116,11 @@ public class Properties {
 			description = "When guided insertion is not possible, try random insertion as " +
 					"last-ditch effort")
 	public static boolean GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT = false;
+
+	// GUIDED_NONE_NOINSERTUUT
+	@Parameter(key = "no_guided_insert_uut", group = "DEBUGGING", description = "GuidedInsertion" +
+			"::insertUUT delegates to RandomInsertion::insertUUT")
+	public static boolean NO_GUIDED_INSERT_UUT = false;
 
 	// GUIDED_NONE_INSERTUUT_ACCESSIBLE
 	@Parameter(key = "no_guided_insert_uut_accessible_goal", group = "DEBUGGING", description =
