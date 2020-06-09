@@ -113,6 +113,18 @@ public class CommandLineParameters {
 			}
 		}
 
+		// If one of the options related to Guided Mutation is active, but the mutation strategy
+		// has not been set to Guided Mutation, it means the user did something wrong (probably
+		// forgot to enable Guided Mutation or misunderstood the options).
+		if ((optionActive
+				|| ORIGINAL_MUTATION_ORDER
+				|| NO_GUIDED_CHANGE
+				|| NO_GUIDED_INSERT_PARAM
+				|| GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT)
+				&& MutationStrategy.GUIDED != Properties.MUTATION_STRATEGY) {
+			return false;
+		}
+
 		return true; // All good
 	}
 	
