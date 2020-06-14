@@ -80,14 +80,15 @@ public class CommandLineParameters {
         }
 
 		if (!validateGuidedMutationOptions()){
-			throw new IllegalArgumentException("GUIDED_MUTATION: exclusive options given");
+			throw new IllegalArgumentException("GUIDED_MUTATION: not enabled or exclusive options" +
+					" given");
 		}
 	}
 
 	private static boolean validateGuidedMutationOptions() {
-		if (NO_GUIDED_INSERT_UUT && GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT) {
-			return false;
-		}
+//		if (NO_GUIDED_INSERT_UUT && GUIDED_INSERT_DO_LAST_DITCH_RANDOM_INSERT) {
+//			return false;
+//		}
 
 		// The following options are all exclusive. This means that at most one of these options
 		// must be active at a time.
